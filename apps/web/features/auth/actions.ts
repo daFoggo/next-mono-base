@@ -34,10 +34,12 @@ export async function signInAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input", values }
   }
 
+  const provider = await getAuthProvider()
   try {
-    const provider = await getAuthProvider()
     await provider.signIn(parsed.data)
   } catch (error) {
+    // Only rejections of the input go back to the form; anything else reaches error.tsx.
+    if (!provider.isExpectedError(error)) throw error
     return { error: getErrorMessage(error, "Unable to sign in"), values }
   }
 
@@ -61,11 +63,12 @@ export async function signUpAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input", values }
   }
 
+  const provider = await getAuthProvider()
   let result: SignUpResult
   try {
-    const provider = await getAuthProvider()
     result = await provider.signUp(parsed.data)
   } catch (error) {
+    if (!provider.isExpectedError(error)) throw error
     return {
       error: getErrorMessage(error, "Unable to create the account"),
       values,
@@ -77,15 +80,15 @@ export async function signUpAction(
 }
 
 export async function signInWithGoogleAction(): Promise<void> {
+  const provider = await getAuthProvider()
   let url: string | undefined
   try {
-    const provider = await getAuthProvider()
     url = await provider.oauth?.start(
       "google",
       `${publicEnv.NEXT_PUBLIC_APP_URL}${OAUTH_CALLBACK_PATH}`
     )
-  } catch {
-    url = undefined
+  } catch (error) {
+    if (!provider.isExpectedError(error)) throw error
   }
   redirect(url ?? `${SIGN_IN_PATH}?error=oauth`)
 }

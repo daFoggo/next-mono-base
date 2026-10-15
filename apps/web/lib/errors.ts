@@ -10,6 +10,14 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * A backend `4xx`: the request was understood and rejected (validation, conflict), so actions
+ * return it as a value. Anything else, including Next's `redirect()`/`notFound()` signals, must be rethrown.
+ */
+export function isExpectedApiError(error: unknown): error is ApiError {
+  return error instanceof ApiError && error.status >= 400 && error.status < 500
+}
+
 export function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error && error.message) return error.message
   return fallback

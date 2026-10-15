@@ -21,13 +21,6 @@ export interface AuthProvider {
   /** Verified session, or null. Must not refresh tokens (the proxy does that). */
   getSession(): Promise<Session | null>
   /**
-   * Reads the session from the cookies without verification, expiry checks or
-   * `connection()`. Only for `"use cache: private"` scopes, which forbid
-   * `connection()`; callers must have called `verifySession()` earlier in the
-   * request, and the backend still validates the token on every call.
-   */
-  peekSession(): Promise<Session | null>
-  /**
    * Like `getSession`, but also asks the identity system whether the session is still
    * valid (not revoked). Use before sensitive actions (change password, delete account).
    */
@@ -37,6 +30,12 @@ export interface AuthProvider {
   /** Creates an account. Throws when the data is rejected (e.g. email already used). */
   signUp(input: SignUpInput): Promise<SignUpResult>
   signOut(): Promise<void>
+  /**
+   * True when `signIn` / `signUp` / `oauth.start` failed because the identity system rejected the
+   * input (wrong password, email taken, weak password, rate limit): safe to show in the form.
+   * Anything else (network, 5xx, unexpected response) is a bug or outage and must be rethrown.
+   */
+  isExpectedError(error: unknown): boolean
   /** Social login (redirect flow). Only providers that support it implement this. */
   oauth?: {
     /** Returns the URL to send the browser to. */

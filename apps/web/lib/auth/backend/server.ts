@@ -1,9 +1,10 @@
 import "server-only"
 
+import { io } from "next/cache"
 import { cookies } from "next/headers"
-import { connection } from "next/server"
 import { z } from "zod"
 
+import { isExpectedApiError } from "@/lib/errors"
 import { apiFetch } from "@/lib/http"
 
 import type {
@@ -31,20 +32,14 @@ const signInSchema = z.object({
 
 export const backendProvider: AuthProvider = {
   async getSession(): Promise<Session | null> {
-    // Opt into request-time rendering before reading the clock (Date.now) below.
-    await connection()
+    // Date.now() below must not run during prerender. io() suspends only there; unlike
+    // connection() it resolves inside "use cache: private" and does not block prefetches.
+    await io()
     const session = await unseal((await cookies()).get(cookieName())?.value)
     // The seal is authenticated encryption, so the userId can be trusted without
     // asking the backend. The backend still checks the token on every API call.
     if (!session || session.accessExpiresAt <= Date.now()) return null
     return { userId: session.userId, accessToken: session.accessToken }
-  },
-
-  async peekSession(): Promise<Session | null> {
-    const session = await unseal((await cookies()).get(cookieName())?.value)
-    return session
-      ? { userId: session.userId, accessToken: session.accessToken }
-      : null
   },
 
   // The backend validates the token and the user's status on every call, so a
@@ -86,4 +81,6 @@ export const backendProvider: AuthProvider = {
     const store = await cookies()
     store.delete(cookieName())
   },
+
+  isExpectedError: isExpectedApiError,
 }

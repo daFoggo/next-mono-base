@@ -2,7 +2,7 @@
 
 import { updateTag } from "next/cache"
 
-import { getErrorMessage } from "@/lib/errors"
+import { isExpectedApiError } from "@/lib/errors"
 import { verifySession } from "@/lib/dal"
 
 import { profileTag } from "./queries"
@@ -29,8 +29,10 @@ export async function updateProfileAction(
   try {
     await patchProfile(session.accessToken, parsed.data)
   } catch (error) {
-    // Expected failures are returned as values; unexpected ones would reach error.tsx.
-    return { error: getErrorMessage(error, "Unable to update profile") }
+    // Expected failures are returned as values. Everything else is rethrown: unexpected
+    // errors reach error.tsx, and apiFetch's redirect on 401 must not be swallowed.
+    if (isExpectedApiError(error)) return { error: error.message }
+    throw error
   }
 
   updateTag(profileTag(session.userId))

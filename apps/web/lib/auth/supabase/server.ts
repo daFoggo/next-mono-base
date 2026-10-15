@@ -1,6 +1,7 @@
 import "server-only"
 
-import { connection } from "next/server"
+import { isAuthError } from "@supabase/supabase-js"
+import { io } from "next/cache"
 
 import type {
   AuthProvider,
@@ -13,8 +14,8 @@ import { createClient } from "./client"
 
 export const supabaseProvider: AuthProvider = {
   async getSession(): Promise<Session | null> {
-    // getClaims checks token expiry against the clock: opt into request-time rendering first.
-    await connection()
+    // getClaims checks token expiry against the clock, which must not run during prerender.
+    await io()
     const supabase = await createClient()
     // getClaims verifies the JWT signature; getSession alone must not be trusted.
     const { data: claims } = await supabase.auth.getClaims()
@@ -27,18 +28,8 @@ export const supabaseProvider: AuthProvider = {
     return { userId, accessToken: data.session.access_token }
   },
 
-  async peekSession(): Promise<Session | null> {
-    const supabase = await createClient()
-    const { data } = await supabase.auth.getSession()
-    if (!data.session) return null
-    return {
-      userId: data.session.user.id,
-      accessToken: data.session.access_token,
-    }
-  },
-
   async verifySessionFresh(): Promise<Session | null> {
-    await connection()
+    await io()
     const supabase = await createClient()
     // getUser asks the Auth server, so revoked sessions are rejected.
     const { data, error } = await supabase.auth.getUser()
@@ -71,6 +62,13 @@ export const supabaseProvider: AuthProvider = {
     // "local" ends this browser's session only; the default "global" revokes every device.
     const { error } = await supabase.auth.signOut({ scope: "local" })
     if (error) throw error
+  },
+
+  // Auth API rejections carry a 4xx status; network failures and 5xx come as
+  // AuthRetryableFetchError with status 0 or 5xx, and are not the user's fault.
+  isExpectedError(error) {
+    const status = isAuthError(error) ? (error.status ?? 0) : 0
+    return status >= 400 && status < 500
   },
 
   oauth: {
