@@ -15,6 +15,13 @@ export type Credentials = {
 export interface AuthProvider {
   /** Verified session, or null. Must not refresh tokens (the proxy does that). */
   getSession(): Promise<Session | null>
+  /**
+   * Reads the session from the cookies without verification, expiry checks or
+   * `connection()`. Only for `"use cache: private"` scopes, which forbid
+   * `connection()`; callers must have called `verifySession()` earlier in the
+   * request, and the backend still validates the token on every call.
+   */
+  peekSession(): Promise<Session | null>
   /** Throws on invalid credentials. Only callable from a Server Action / Route Handler. */
   signIn(credentials: Credentials): Promise<void>
   signOut(): Promise<void>

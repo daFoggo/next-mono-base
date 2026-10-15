@@ -1,52 +1,69 @@
+import { sealData, unsealData } from "iron-session"
 import type { NextResponse } from "next/server"
+import { z } from "zod"
 
 import { authConfig } from "../config"
 
-/** Tokens stored in one httpOnly cookie. Expiries are epoch milliseconds. */
-export type BackendTokens = {
+/**
+ * The whole backend session lives in one encrypted + signed httpOnly cookie
+ * (iron-session seal). Decrypting it locally is how `getSession` knows the user
+ * without calling the backend on every request. Expiries are epoch milliseconds.
+ */
+export type BackendSession = {
+  userId: string
   accessToken: string
   refreshToken: string
   accessExpiresAt: number
   refreshExpiresAt: number
 }
 
+const sessionSchema = z.object({
+  userId: z.string(),
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  accessExpiresAt: z.number(),
+  refreshExpiresAt: z.number(),
+})
+
 export const ACCESS_REFRESH_SKEW_MS = 2 * 60 * 1000
 
-export function cookieName(): string {
+function backendConfig() {
   if (authConfig.AUTH_PROVIDER !== "backend") {
     throw new Error("backend cookie used while AUTH_PROVIDER is not 'backend'")
   }
-  return authConfig.SESSION_COOKIE_NAME
+  return authConfig
 }
 
-export const cookieOptions = (tokens: BackendTokens) =>
+export const cookieName = (): string => backendConfig().SESSION_COOKIE_NAME
+
+export const cookieOptions = (session: BackendSession) =>
   ({
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    expires: new Date(tokens.refreshExpiresAt),
+    expires: new Date(session.refreshExpiresAt),
   }) as const
 
-export const serialize = (tokens: BackendTokens): string =>
-  encodeURIComponent(JSON.stringify(tokens))
+export async function seal(session: BackendSession): Promise<string> {
+  const ttl = Math.max(1, Math.floor((session.refreshExpiresAt - Date.now()) / 1000))
+  return sealData(session, { password: backendConfig().SESSION_SECRET, ttl })
+}
 
-export function parse(raw: string | undefined): BackendTokens | null {
+/** Returns null for a missing, tampered, expired or malformed cookie. */
+export async function unseal(
+  raw: string | undefined
+): Promise<BackendSession | null> {
   if (!raw) return null
   try {
-    const value = JSON.parse(decodeURIComponent(raw)) as Partial<BackendTokens>
-    if (
-      typeof value.accessToken === "string" &&
-      typeof value.refreshToken === "string" &&
-      typeof value.accessExpiresAt === "number" &&
-      typeof value.refreshExpiresAt === "number"
-    ) {
-      return value as BackendTokens
-    }
+    const data = await unsealData(raw, {
+      password: backendConfig().SESSION_SECRET,
+    })
+    const parsed = sessionSchema.safeParse(data)
+    return parsed.success ? parsed.data : null
   } catch {
-    // malformed cookie -> treated as no session
+    return null
   }
-  return null
 }
 
 /** Accepts ISO strings or unix seconds/milliseconds (backend format is not fixed). */
@@ -58,6 +75,9 @@ export function parseExpirationMs(raw: string | number): number {
   return n > 1e12 ? n : n * 1000
 }
 
-export function setOnResponse(response: NextResponse, tokens: BackendTokens) {
-  response.cookies.set(cookieName(), serialize(tokens), cookieOptions(tokens))
+export async function setOnResponse(
+  response: NextResponse,
+  session: BackendSession
+) {
+  response.cookies.set(cookieName(), await seal(session), cookieOptions(session))
 }

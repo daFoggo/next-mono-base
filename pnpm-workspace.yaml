@@ -4,9 +4,11 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# Supply-chain: min age (minutes) a version must have before install. TEMPORARILY DISABLED (0).
-# TODO: set back to 2880 (48h) after the initial install settles.
-minimumReleaseAge: 0
+# Supply-chain: only install versions published at least 48h ago (minutes).
+minimumReleaseAge: 2880
+minimumReleaseAgeExclude:
+  # transitive dep of shadcn in the lockfile; reaches 48h on 2026-10-15 08:24 UTC, then remove this entry
+  - "@hono/node-server@2.1.5"
 
 allowBuilds:
   esbuild: true

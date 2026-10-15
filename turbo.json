@@ -20,6 +20,7 @@
         "AUTH_PROVIDER",
         "API_BASE_URL",
         "SESSION_COOKIE_NAME",
+        "SESSION_SECRET",
         "NODE_ENV"
       ]
     },

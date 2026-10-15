@@ -8,6 +8,11 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      # Build-time placeholders: the auth config is validated when routes are collected.
+      AUTH_PROVIDER: backend
+      API_BASE_URL: http://localhost:8000
+      SESSION_SECRET: ci-only-placeholder-secret-0123456789abcdef
     steps:
       - uses: actions/checkout@v4
         with:

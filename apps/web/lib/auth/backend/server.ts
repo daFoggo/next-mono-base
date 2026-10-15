@@ -4,61 +4,60 @@ import { cookies } from "next/headers"
 import { connection } from "next/server"
 import { z } from "zod"
 
-import { ApiError } from "@/lib/errors"
 import { apiFetch } from "@/lib/http"
 
 import type { AuthProvider, Credentials, Session } from "../types"
 import {
   cookieName,
   cookieOptions,
-  parse,
   parseExpirationMs,
-  serialize,
+  seal,
+  unseal,
 } from "./cookie"
 
-const tokenSchema = z.object({
+const signInSchema = z.object({
   access_token: z.string(),
   refresh_token: z.string(),
   expiration: z.union([z.string(), z.number()]),
   refresh_expiration: z.union([z.string(), z.number()]),
+  user_info: z.object({ id: z.string() }),
 })
-const meSchema = z.object({ id: z.string() })
 
 export const backendProvider: AuthProvider = {
   async getSession(): Promise<Session | null> {
     // Opt into request-time rendering before reading the clock (Date.now) below.
     await connection()
-    const tokens = parse((await cookies()).get(cookieName())?.value)
-    if (!tokens || tokens.accessExpiresAt <= Date.now()) return null
+    const session = await unseal((await cookies()).get(cookieName())?.value)
+    // The seal is authenticated encryption, so the userId can be trusted without
+    // asking the backend. The backend still checks the token on every API call.
+    if (!session || session.accessExpiresAt <= Date.now()) return null
+    return { userId: session.userId, accessToken: session.accessToken }
+  },
 
-    // The cookie is not trusted for identity: the backend resolves the user.
-    try {
-      const me = meSchema.parse(
-        await apiFetch<unknown>("users/me", { token: tokens.accessToken })
-      )
-      return { userId: me.id, accessToken: tokens.accessToken }
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 401) return null
-      throw error
-    }
+  async peekSession(): Promise<Session | null> {
+    const session = await unseal((await cookies()).get(cookieName())?.value)
+    return session
+      ? { userId: session.userId, accessToken: session.accessToken }
+      : null
   },
 
   async signIn(credentials: Credentials) {
-    const body = tokenSchema.parse(
+    const body = signInSchema.parse(
       await apiFetch<unknown>("auth/sign-in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       })
     )
-    const tokens = {
+    const session = {
+      userId: body.user_info.id,
       accessToken: body.access_token,
       refreshToken: body.refresh_token,
       accessExpiresAt: parseExpirationMs(body.expiration),
       refreshExpiresAt: parseExpirationMs(body.refresh_expiration),
     }
     const store = await cookies()
-    store.set(cookieName(), serialize(tokens), cookieOptions(tokens))
+    store.set(cookieName(), await seal(session), cookieOptions(session))
   },
 
   async signOut() {
