@@ -15,6 +15,10 @@ features/<name>/
 
 Create only the files a feature needs.
 
+## Reference Implementation
+
+- **`features/auth`**: Complete vertical slice implementation demonstrating authentication actions (`signInAction`, `signUpAction`, `signOutAction`), client form components, schema validation, and session handling.
+
 ## Rules (enforced in `eslint.config.js`)
 
 - `features/*` never imports `app/` and never imports another feature (compose in `app/`).

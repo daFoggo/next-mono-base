@@ -24,24 +24,24 @@ pnpm --filter=web add -D @playwright/test @next/playwright
 Tests must assert that when a navigation link is clicked, the fallback/skeleton is **immediately visible** before the final streaming payload resolves:
 
 ```ts
-// apps/web/__tests__/e2e/cases-instant.spec.ts
+// apps/web/__tests__/e2e/feature-instant.spec.ts
 import { test, expect } from '@playwright/test'
 import { instant } from '@next/playwright'
 
-test.describe('Instant Navigation: Cases Feature', () => {
-  test('navigating to /dashboard/cases reveals shell & skeleton immediately', async ({ page }) => {
+test.describe('Instant Navigation: Feature Shell', () => {
+  test('navigating to /dashboard/settings reveals shell & skeleton immediately', async ({ page }) => {
     // 1. Warm up session / start on dashboard
     await page.goto('/dashboard')
 
     // 2. Wrap client navigation in instant()
     await instant(async () => {
-      await page.click('a[href="/dashboard/cases"]')
+      await page.click('a[href="/dashboard/settings"]')
       // Assert that the static shell & fallback appear synchronously on click
-      await expect(page.locator('[data-slot="cases-table-skeleton"]')).toBeVisible()
+      await expect(page.locator('[data-slot="settings-skeleton"]')).toBeVisible()
     })
 
     // 3. Assert streamed content settles afterwards
-    await expect(page.locator('[data-slot="cases-table"]')).toBeVisible()
+    await expect(page.locator('[data-slot="settings-card"]')).toBeVisible()
   })
 })
 ```
@@ -304,25 +304,25 @@ When a real-time event arrives on the client (via SSE or Supabase Realtime Chann
 Use it for audit logs, analytics, and notification dispatch without delaying the user's paint:
 
 ```ts
-// features/cases/actions.ts
+// features/<domain>/actions.ts
 'use server'
 import { after } from 'next/server'
 import { verifySession } from '@/lib/dal'
 import { updateTag } from 'next/cache'
 
-export async function annotateCaseAction(caseId: string, note: string) {
+export async function updateItemAction(itemId: string, note: string) {
   const session = await verifySession()
 
   // 1. Critical path: write to DB
-  await patchCase(session.accessToken, caseId, { note })
-  updateTag(`cases:${session.userId}`)
+  await patchItem(session.accessToken, itemId, { note })
+  updateTag(`items:${session.userId}`)
 
   // 2. Non-blocking: background telemetry & audit log
   after(async () => {
     await sendAuditLog({
       userId: session.userId,
-      action: 'case.annotate',
-      caseId,
+      action: 'item.update',
+      itemId,
       timestamp: Date.now(),
     })
   })

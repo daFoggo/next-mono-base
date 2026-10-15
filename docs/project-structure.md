@@ -25,16 +25,17 @@ next-mono-base/
 │       │   ├── (auth)/                     # Route group: sign-in, sign-up
 │       │   ├── (dashboard)/                # Route group: authenticated application shell
 │       │   │   └── dashboard/
-│       │   │       ├── cases/              # /dashboard/cases route
-│       │   │       └── page.tsx
+│       │   │       └── page.tsx            # Protected dashboard home
 │       │   ├── api/                        # Route Handlers (webhooks, external integrations)
 │       │   ├── error.tsx                   # Route error boundary
+│       │   ├── global-error.tsx            # Root layout fatal error boundary
 │       │   ├── not-found.tsx               # 404 handler
+│       │   ├── robots.ts                   # Programmatic SEO robots.txt
+│       │   ├── sitemap.ts                  # Programmatic XML sitemap
 │       │   └── layout.tsx                  # Root HTML shell
 │       ├── features/                       # Vertical business domain slices
-│       │   ├── auth/                       # Authentication forms, actions, schemas
-│       │   ├── cases/                      # Case management domain
-│       │   └── profile/                    # User profile domain
+│       │   ├── auth/                       # Authentication reference feature (forms, actions, schemas)
+│       │   └── <domain>/                   # Custom business domains (e.g. billing, workspace, etc.)
 │       ├── components/                     # App-wide UI (shell, navigation, providers)
 │       │   ├── layout/                     # App sidebar, header, global nav
 │       │   └── providers/                  # ThemeProvider, Toaster, etc.
@@ -73,8 +74,8 @@ Every feature folder represents an isolated business domain slice:
 ```
 features/<name>/
 ├── components/         # UI components (Client or Server) specific to this domain
-│   ├── cases-table.tsx
-│   └── cases-filters.tsx
+│   ├── <name>-table.tsx
+│   └── <name>-filters.tsx
 ├── server.ts           # [server-only] Raw I/O with DB/backend; parses DTOs with Zod
 ├── queries.ts          # Reads for Server Components; verifies session via DAL; "use cache"
 ├── actions.ts          # [use server] Mutations; validates input; checks auth; calls updateTag()
@@ -104,28 +105,28 @@ When creating a new component, choose its location based on **reusability scope*
 
 | Scope | Location | When to Use | Example |
 | :--- | :--- | :--- | :--- |
-| **Page-Local** | `app/**/_components/` | Used on **only one page** or route. Next.js ignores `_` folders from routing. | `app/(dashboard)/cases/_components/cases-hero.tsx` |
-| **Feature-Domain** | `features/<name>/components/` | Used across **multiple pages within the same feature/domain**. | `features/cases/components/cases-table.tsx` |
+| **Page-Local** | `app/**/_components/` | Used on **only one page** or route. Next.js ignores `_` folders from routing. | `app/(dashboard)/<name>/_components/<name>-hero.tsx` |
+| **Feature-Domain** | `features/<name>/components/` | Used across **multiple pages within the same feature/domain**. | `features/auth/components/sign-in-form.tsx` |
 | **App-Wide Shell** | `components/layout/` | App shell, navigation, global header, sidebar. | `components/layout/sidebar.tsx` |
 | **App-Wide Shared** | `components/shared/` | Reusable across **multiple features**, but specific to `apps/web` (pure presentational UI). | `components/shared/empty-state.tsx`, `components/shared/confirm-dialog.tsx` |
 | **Primitive UI** | `packages/ui/src/components/` | Generic, **zero-business-logic** primitives from shadcn/ui. | `@workspace/ui/components/button` |
 
 #### How to Share UI Across Features Without Violating ESLint (`features/A` cannot import `features/B`)
 
-When Feature A needs to render a component owned by Feature B (for example, the `CasesTable` in `features/cases` needs to display a `UserBadge` from `features/profile`):
+When Feature A needs to render a component owned by Feature B (for example, a `DataTable` in Feature A needs to display an `AuthorBadge` from Feature B):
 
 1. **Composition via Slots / Children in `app/**/page.tsx` (Recommended)**:
    Keep features completely decoupled. Let the page compose them together:
    ```tsx
-   // apps/web/app/(dashboard)/cases/page.tsx
-   import { CasesTable } from "@/features/cases/components/cases-table"
-   import { UserAvatar } from "@/features/profile/components/user-avatar"
+   // apps/web/app/(dashboard)/projects/page.tsx
+   import { ProjectTable } from "@/features/projects/components/project-table"
+   import { UserAvatar } from "@/features/users/components/user-avatar"
 
    export default async function Page() {
-     const cases = await getCases()
+     const projects = await getProjects()
      return (
-       <CasesTable
-         list={cases}
+       <ProjectTable
+         list={projects}
          renderUser={(user) => <UserAvatar name={user.name} image={user.avatarUrl} />}
        />
      )
@@ -232,22 +233,22 @@ sequenceDiagram
     participant Action as features/actions.ts
 
     Note over User,Page: 1. Read Flow
-    User->>Page: Navigate to /dashboard/cases
-    Page->>Queries: getCases(params)
+    User->>Page: Navigate to route
+    Page->>Queries: getItems(params)
     Queries->>DAL: verifySession()
     DAL-->>Queries: session (userId, role)
-    Queries->>Server: fetchCasesFromBackend(userId, params)
+    Queries->>Server: fetchItemsFromBackend(userId, params)
     Server-->>Queries: DTO list
-    Queries-->>Page: cases
-    Page->>Component: <CasesTable list={cases} />
+    Queries-->>Page: items
+    Page->>Component: <ItemTable list={items} />
 
     Note over User,Action: 2. Write Flow (Mutation)
     User->>Component: Submit mutation
-    Component->>Action: updateCaseAction(formData)
+    Component->>Action: updateItemAction(formData)
     Action->>Action: ZodSchema.safeParse(formData)
     Action->>DAL: verifySession()
-    Action->>Server: updateCaseInBackend(id, data)
-    Action->>Action: updateTag(`case:${id}`)
+    Action->>Server: updateItemInBackend(id, data)
+    Action->>Action: updateTag(`item:${id}`)
     Action-->>Component: { success: true }
     Component->>User: Toast notification & optimistic update
 ```
@@ -261,7 +262,7 @@ sequenceDiagram
 
 ## 6. Monorepo Package Extraction: When to Extract to `packages/`
 
-A major failure mode in Turborepo projects is **premature package extraction** (extracting features into `packages/feature-cases` before there is any concrete consumer).
+A major failure mode in Turborepo projects is **premature package extraction** (extracting features into `packages/feature-*` before there is any concrete consumer).
 
 ### Empirical Analysis of Production Monorepos
 

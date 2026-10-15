@@ -15,19 +15,19 @@ Use when implementing data fetching for a page, layout, or passing server data i
 ## 3. Canonical Pattern
 
 ```tsx
-// features/cases/server.ts
+// features/<domain>/server.ts
 import "server-only"
-export async function fetchCases(token: string) {
-  return CasesSchema.parse(await apiFetch("cases", { token }))
+export async function fetchItems(token: string) {
+  return ItemsSchema.parse(await apiFetch("items", { token }))
 }
 
-// app/cases/page.tsx
-export default function Page({ params }: PageProps<"/cases/[id]">) {
+// app/(dashboard)/<domain>/page.tsx
+export default function Page({ params }: PageProps<"/items/[id]">) {
   return (
     <>
-      <h1>Cases</h1> {/* In static shell */}
-      <Suspense fallback={<CasesSkeleton />}>
-        {params.then(({ id }) => <CaseList id={id} />)}
+      <h1>Items</h1> {/* In static shell */}
+      <Suspense fallback={<ItemsSkeleton />}>
+        {params.then(({ id }) => <ItemList id={id} />)}
       </Suspense>
     </>
   )

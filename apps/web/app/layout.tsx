@@ -1,8 +1,17 @@
+import type { Metadata } from "next"
 import { Geist_Mono, Inter } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
+
+export const metadata: Metadata = {
+  title: {
+    default: "next-mono-base",
+    template: "%s | next-mono-base",
+  },
+  description: "Next.js 16.4 + React 19 Monorepo Base",
+}
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 

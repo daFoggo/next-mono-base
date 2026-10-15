@@ -38,7 +38,7 @@ Only create files that are needed:
 - ❌ **Features never import `app/`**: Features are route-agnostic.
 - ❌ **No cross-feature imports**: `features/A` never imports `features/B`. Compose them together in `app/`.
 - ❌ **Client components never import server code**: `features/*/components/` and `components/` never import `server.ts`, `queries.ts`, `@/lib/dal`, `@/lib/http`, or `@/lib/auth`.
-- ❌ **No barrel files (`index.ts`)**: Always deep-import (e.g. `@/features/cases/components/cases-table`).
+- ❌ **No barrel files (`index.ts`)**: Always deep-import (e.g. `@/features/auth/components/sign-in-form`).
 
 ---
 

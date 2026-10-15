@@ -158,8 +158,8 @@ enable Google in Supabase → Authentication → Providers; add `<NEXT_PUBLIC_AP
    first opts into request-time rendering [N17]. Both providers' `getSession` call `await io()` instead, which suspends only while
    prerendering and, unlike `connection()`, does not block prefetches [N25].
 
-Reference feature [`profile`](../apps/web/features/profile): `"use cache: private"` calling `verifySession()` + `cacheTag("profile:<userId>")` +
-`cacheLife({ stale: 300, revalidate: 300, expire: 3600 })`; the action authenticates, validates, writes, then `updateTag`.
+Pattern for per-user private caching: `"use cache: private"` calling `verifySession()` + `cacheTag("<domain>:<userId>")` +
+`cacheLife({ stale: 300, revalidate: 300, expire: 3600 })`; the mutation action authenticates, validates, writes, then calls `updateTag`.
 
 Differences from the official example [N8]: identity comes from the sealed cookie, not a per-request lookup (trade-off in section 4);
 per-user data is cached in the browser, not on the server. For data shared across users use the unexported `use cache` pattern and never

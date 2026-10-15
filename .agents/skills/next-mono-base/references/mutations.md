@@ -13,21 +13,21 @@ Use when writing, updating, or deleting data and revalidating cached UI.
 ## 3. Canonical Pattern
 
 ```ts
-// features/cases/actions.ts
+// features/<domain>/actions.ts
 "use server"
-export async function updateCaseAction(_prev: State, formData: FormData): Promise<State> {
+export async function updateItemAction(_prev: State, formData: FormData): Promise<State> {
   const session = await verifySession()
-  const parsed = UpdateCaseSchema.safeParse(Object.fromEntries(formData))
+  const parsed = UpdateItemSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { error: parsed.error.issues[0]?.message }
 
   try {
-    await patchCase(session.accessToken, parsed.data)
+    await patchItem(session.accessToken, parsed.data)
   } catch (error) {
     if (isExpectedApiError(error)) return { error: error.message }
     throw error // Unexpected errors bubble to error.tsx
   }
 
-  updateTag(`cases:${session.userId}`)
+  updateTag(`items:${session.userId}`)
   return { saved: true }
 }
 ```

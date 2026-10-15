@@ -14,7 +14,7 @@ Use when caching data functions or components across requests or sessions.
 ## 3. Canonical Patterns
 
 ```ts
-// Shared data: features/cases/queries.ts
+// Shared data pattern: features/<domain>/queries.ts
 export async function getCategories() {
   "use cache"
   cacheLife("hours")
@@ -22,13 +22,13 @@ export async function getCategories() {
   return fetchCategories()
 }
 
-// Per-user data: features/profile/queries.ts
-export async function getProfile() {
+// Per-user data pattern: features/<domain>/queries.ts
+export async function getUserSettings() {
   "use cache: private"
   cacheLife({ stale: 300, revalidate: 300, expire: 3600 })
   const { accessToken, userId } = await verifySession()
-  cacheTag(`profile:${userId}`)
-  return fetchProfile(accessToken)
+  cacheTag(`settings:${userId}`)
+  return fetchUserSettings(accessToken)
 }
 ```
 

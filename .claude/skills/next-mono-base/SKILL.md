@@ -24,6 +24,9 @@ All principles derive from and link back to the Single Source of Truth in `docs/
 | **Cache per-user data** | `"use cache: private"` + `cacheLife()` (browser-only) | [caching.md](references/caching.md) | [data-fetching.md §5.2](../../../docs/data-fetching.md#52-per-user-data) |
 | **Write / Update / Delete** | Server Action in `actions.ts` + `updateTag()` | [mutations.md](references/mutations.md) | [data-fetching.md §8](../../../docs/data-fetching.md#8-mutations) |
 | **Filters, search, pagination** | URL searchParams + `<Form>` / `<Link>` (no client state) | [interactive.md](references/interactive.md) | [data-fetching.md §7.2](../../../docs/data-fetching.md#72-interactive-lists-and-forms-without-a-client-data-library) |
+| **Multi-panel layout / Modals** | Parallel Routes (`@slot`) & Intercepting Routes (`(.)`) | [project-structure.md](references/project-structure.md) | [routing-and-layouts.md](../../../docs/routing-and-layouts.md) |
+| **Lazy load / Code-split client UI** | `next/dynamic` (`{ ssr: false }`) & on-demand imports | [reads.md](references/reads.md) | [performance-optimization.md](../../../docs/performance-optimization.md#1-code-splitting--lazy-loading-lazy-loadingmd) |
+| **Prevent flash / Preserve UI state** | Inline script + `suppressHydrationWarning` / `<Activity>` | [reads.md](references/reads.md) | [performance-optimization.md](../../../docs/performance-optimization.md#4-preventing-flash-before-hydration) |
 | **Authenticate / verify session** | `verifySession()` from `@/lib/dal` (inside queries/actions) | [auth-dal.md](references/auth-dal.md) | [authentication.md §2](../../../docs/authentication.md#2-architecture) |
 | **Extract code to `packages/`** | Keep in `apps/web` unless 2+ apps or diff runtime | [project-structure.md](references/project-structure.md) | [project-structure.md §6](../../../docs/project-structure.md#6-monorepo-package-extraction-when-to-extract-to-packages) |
 | **Random, time, sync DB** | `await io()` from `next/cache` inside `<Suspense>` | [reads.md](references/reads.md) | [data-fetching.md §1](../../../docs/data-fetching.md#1-mental-model) |
@@ -45,6 +48,8 @@ All principles derive from and link back to the Single Source of Truth in `docs/
 
 When facing complex edge cases, always consult the full architecture docs:
 - [docs/project-structure.md](../../../docs/project-structure.md) — Feature-based architecture, ESLint boundaries, and monorepo package extraction.
+- [docs/routing-and-layouts.md](../../../docs/routing-and-layouts.md) — Parallel Routes, Intercepting Routes, Route Groups, and Layout/Template lifecycle.
 - [docs/data-fetching.md](../../../docs/data-fetching.md) — Core reading, caching, streaming, and mutation model.
+- [docs/performance-optimization.md](../../../docs/performance-optimization.md) — Code splitting, lazy loading, package bundling, hydration flash prevention, and Core Web Vitals.
 - [docs/authentication.md](../../../docs/authentication.md) — Session lifecycle, token refresh in proxy, Supabase & backend providers.
 - [docs/advanced-patterns.md](../../../docs/advanced-patterns.md) — Distributed Redis cache, large uploads, SSE, OpenTelemetry & Playwright instant tests.

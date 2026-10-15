@@ -14,13 +14,13 @@ Use when implementing search, multi-select filters, sort orders, and paginated t
 ## 3. Canonical Pattern
 
 ```tsx
-// app/cases/page.tsx
+// app/(dashboard)/<domain>/page.tsx
 export default function Page({ searchParams }: PageProps) {
   return (
     <>
-      <CasesFilters /> {/* GET <Form> from next/form */}
-      <Suspense fallback={<CasesTableSkeleton />}>
-        {searchParams.then((sp) => <CasesTable searchParams={sp} />)}
+      <ItemFilters /> {/* GET <Form> from next/form */}
+      <Suspense fallback={<ItemTableSkeleton />}>
+        {searchParams.then((sp) => <ItemTable searchParams={sp} />)}
       </Suspense>
     </>
   )
@@ -34,5 +34,5 @@ While navigation to new search params is in flight, React automatically keeps th
 - ❌ **Never `await searchParams` at page top-level**: Always read inside the `<Suspense>` boundary.
 
 ## 5. Source of Truth (Deep Dive)
-- Reference implementation (`features/cases` benchmark): [docs/data-fetching.md §7.2](../../../../docs/data-fetching.md#72-interactive-lists-and-forms-without-a-client-data-library)
+- Interactive table pattern: [docs/data-fetching.md §7.2](../../../../docs/data-fetching.md#72-interactive-lists-and-forms-without-a-client-data-library)
 - When client library is justified (SWR): [docs/data-fetching.md §7.3](../../../../docs/data-fetching.md#73-when-a-client-data-library-would-be-justified)

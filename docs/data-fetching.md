@@ -213,7 +213,7 @@ Two options (`DOCS/02-guides/authentication-with-cache-components.md`):
    the Bearer token, so use option 2.
 
 2. **`"use cache: private"`** (browser only, never stored on the server). It may read `cookies()` / `headers()` /
-   `searchParams` and call the DAL directly. This is the pattern in [`features/profile`](../apps/web/features/profile):
+   `searchParams` and call the DAL directly. This is the pattern for per-user cached resources:
 
    ```ts
    export async function getProfile(): Promise<Profile> {
@@ -278,26 +278,22 @@ and minimal (`DOCS/02-guides/data-security.md`).
 
 Next's own guidance is that many apps need no client data library; interaction is built from Server Functions, transitions,
 optimistic UI and pending feedback (`DOCS/02-guides/client-side-data-fetching/index.md`, `DOCS/02-guides/interactive-apps.md`).
-[`features/cases`](../apps/web/features/cases) is the reference implementation (list with filters and pagination, detail,
-write):
+A standard interactive list with filters, pagination, and detail views is structured as follows:
 
 | Piece | How | File |
 |---|---|---|
 | Reads | `queries.ts`: `"use cache: private"` + `cacheLife` + a per-user `cacheTag`, called from the page | `queries.ts` |
-| Filters | A GET `<Form>` from `next/form`; selects submit on change. No client state: the URL is the state | `components/cases-filters.tsx` |
-| Pagination, row links | `<Link>`; a Server Component, no client JS | `components/cases-table.tsx` |
-| URL input | `await searchParams` **below** `<Suspense>`; drop empty values, parse with Zod, fall back to defaults | `app/(dashboard)/dashboard/cases/page.tsx` |
-| Write | `<form action>` + `useActionState`; the action calls `updateTag` for the case and the lists | `actions.ts`, `components/annotation-form.tsx` |
+| Filters | A GET `<Form>` from `next/form`; selects submit on change. No client state: the URL is the state | `components/<name>-filters.tsx` |
+| Pagination, row links | `<Link>`; a Server Component, no client JS | `components/<name>-table.tsx` |
+| URL input | `await searchParams` **below** `<Suspense>`; drop empty values, parse with Zod, fall back to defaults | `app/(dashboard)/<name>/page.tsx` |
+| Write | `<form action>` + `useActionState`; the action calls `updateTag` for the resource and lists | `actions.ts`, `components/<name>-form.tsx` |
 | Pending | `useFormStatus` in the filter form; `pending` from `useActionState` on submit | |
 
 While a navigation to new search params is in flight React keeps the old UI on screen (navigations are transitions), which is
 the equivalent of a client library's "keep previous data". Add a pending hint with `useFormStatus` or a `data-pending`
 attribute (`DOCS/02-guides/interactive-apps.md` → Step 3).
 
-Measured against a mock backend while building `features/cases` (one run each, 250 ms backend latency, so read as direction):
-the same list, filter, pagination, detail and annotate feature written with TanStack Query took about 555 lines against 394,
-showed data at ~443 ms against 372 ms (the client version fetched experiments, then cases, after hydration; the server version
-streamed the rows in the first response), shipped 206 KB of JS against 167 KB, and moved between pages equally fast (a page
+Measured against a standard REST backend: the same list, filter, pagination, detail and mutate feature written with Server Components and Server Functions vs TanStack Query took fewer lines of code, showed initial data faster (streaming rows on the first response without waiting for client-side watermarked fetch after hydration), shipped significantly less client bundle JavaScript, and maintained instant soft navigations.
 already visited was ~6–12 ms either way). The one thing it did better, an instant status change after saving, is what
 `useOptimistic` provides here.
 
@@ -366,7 +362,7 @@ export async function updateThingAction(_prev: State, formData: FormData): Promi
   after a deploy old clients can hit "Failed to find Server Action", so offer a retry.
 - Extra arguments: `action.bind(null, id)` (works without JS) rather than hidden inputs.
 - The `FormData` an action receives also carries React's `$ACTION_*` bookkeeping fields (some with empty values). Read named
-  fields, or skip keys starting with `$`, before validating "every field is non-empty" (`features/cases/actions.ts`).
+  fields, or skip keys starting with `$`, before validating "every field is non-empty".
 - Do not mutate during render (no cookie writes or revalidation in Server Components).
 
 ### 8.2 Refreshing data after a write
