@@ -1,5 +1,9 @@
 import "server-only"
 
+import { redirect } from "next/navigation"
+
+import { SESSION_EXPIRED_PATH } from "@/config/routes"
+
 import { env } from "./env"
 import { ApiError } from "./errors"
 import { apiUrl } from "./url"
@@ -29,6 +33,8 @@ export async function apiFetch<T>(
   })
 
   if (!res.ok) {
+    // A token the session still holds was rejected: end the session (see the route).
+    if (res.status === 401 && token) redirect(SESSION_EXPIRED_PATH)
     const body = await res.json().catch(() => undefined)
     // The backend answers with RFC 7807 problem details ({ title, detail, status }).
     const detail =

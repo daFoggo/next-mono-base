@@ -15,6 +15,16 @@ export const getSession = cache(async (): Promise<Session | null> => {
   return provider.getSession()
 })
 
+/**
+ * For `"use cache: private"` functions only (they cannot call `connection()`, which
+ * `getSession` needs). Call `verifySession()` first in the same request.
+ */
+export async function peekSession(): Promise<Session> {
+  const session = await (await getAuthProvider()).peekSession()
+  if (!session) redirect(SIGN_IN_PATH)
+  return session
+}
+
 /** Call close to the data (queries, actions), not in layouts. */
 export const verifySession = cache(async (): Promise<Session> => {
   const session = await getSession()

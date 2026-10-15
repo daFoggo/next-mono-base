@@ -9,6 +9,8 @@ const featureRestrictions = [
   },
 ]
 
+const authRestrictedGroup = ["@/lib/auth", "@/lib/auth/**", "@/lib/env"]
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   ...nextJsConfig,
@@ -28,9 +30,33 @@ export default [
           patterns: [
             ...featureRestrictions,
             {
-              group: ["**/server", "**/queries", "@/lib/dal", "@/lib/http"],
+              group: [
+                "**/server",
+                "**/queries",
+                "@/lib/dal",
+                "@/lib/http",
+                ...authRestrictedGroup,
+              ],
               message:
-                "Feature components must not import server-only modules (server, queries, dal, http).",
+                "Feature components must not import server-only modules (server, queries, dal, http, auth).",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // App shell components may be client components; auth config holds SESSION_SECRET.
+    files: ["components/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/lib/dal", "@/lib/http", ...authRestrictedGroup],
+              message:
+                "Shared components must not import server-only modules (dal, http, auth).",
             },
           ],
         },
