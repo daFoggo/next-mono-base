@@ -1,7 +1,9 @@
+import Link from "next/link"
 import { Suspense } from "react"
 
-import { authConfig } from "@/lib/auth/config"
+import { FormError } from "@/features/auth/components/form-error"
 import { SignInForm } from "@/features/auth/components/sign-in-form"
+import { authConfig } from "@/lib/auth/config"
 
 async function OAuthError({
   searchParams,
@@ -11,9 +13,7 @@ async function OAuthError({
   const { error } = await searchParams
   if (!error) return null
   return (
-    <p role="alert" className="text-destructive text-sm">
-      Sign-in with the provider failed. Please try again.
-    </p>
+    <FormError message="Sign-in with the provider failed. Please try again." />
   )
 }
 
@@ -23,12 +23,28 @@ export default function SignInPage({
   searchParams: Promise<{ error?: string }>
 }) {
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-4 p-6">
-      <h1 className="text-lg font-medium">Sign in</h1>
-      <Suspense>
-        <OAuthError searchParams={searchParams} />
-      </Suspense>
-      <SignInForm showGoogle={authConfig.AUTH_PROVIDER === "supabase"} />
-    </main>
+    <>
+      <div className="mb-8">
+        <h1 className="mb-2 text-2xl font-medium lg:text-3xl">Welcome back</h1>
+        <p className="text-muted-foreground text-sm">
+          Sign in to your account.
+        </p>
+      </div>
+      <div className="flex flex-col gap-4">
+        <Suspense>
+          <OAuthError searchParams={searchParams} />
+        </Suspense>
+        <SignInForm showGoogle={authConfig.AUTH_PROVIDER === "supabase"} />
+      </div>
+      <p className="text-muted-foreground mt-6 text-center text-sm">
+        No account yet?{" "}
+        <Link
+          href="/sign-up"
+          className="hover:text-foreground font-medium underline underline-offset-4"
+        >
+          Create one
+        </Link>
+      </p>
+    </>
   )
 }

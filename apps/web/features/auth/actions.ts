@@ -7,34 +7,72 @@ import {
   OAUTH_CALLBACK_PATH,
   SIGN_IN_PATH,
 } from "@/config/routes"
-import { getAuthProvider } from "@/lib/auth"
+import { getAuthProvider, type SignUpResult } from "@/lib/auth"
 import { getErrorMessage } from "@/lib/errors"
 import { publicEnv } from "@/lib/env.public"
 
-import { SignInSchema } from "./schemas"
+import { SignInSchema, SignUpSchema } from "./schemas"
 
-export type SignInState = { error?: string }
+/** `values` echoes non-secret fields back: React resets the form after an action finishes. */
+export type SignInState = { error?: string; values?: { email: string } }
+export type SignUpState = {
+  error?: string
+  confirmEmail?: boolean
+  values?: { name: string; email: string }
+}
 
 export async function signInAction(
   _previous: SignInState,
   formData: FormData
 ): Promise<SignInState> {
+  const values = { email: String(formData.get("email") ?? "") }
   const parsed = SignInSchema.safeParse({
-    email: formData.get("email"),
+    email: values.email,
     password: formData.get("password"),
   })
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" }
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input", values }
   }
 
   try {
     const provider = await getAuthProvider()
     await provider.signIn(parsed.data)
   } catch (error) {
-    return { error: getErrorMessage(error, "Unable to sign in") }
+    return { error: getErrorMessage(error, "Unable to sign in"), values }
   }
 
   // redirect() throws, so it must stay outside the try/catch.
+  redirect(DASHBOARD_PATH)
+}
+
+export async function signUpAction(
+  _previous: SignUpState,
+  formData: FormData
+): Promise<SignUpState> {
+  const values = {
+    name: String(formData.get("name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+  }
+  const parsed = SignUpSchema.safeParse({
+    ...values,
+    password: formData.get("password"),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input", values }
+  }
+
+  let result: SignUpResult
+  try {
+    const provider = await getAuthProvider()
+    result = await provider.signUp(parsed.data)
+  } catch (error) {
+    return {
+      error: getErrorMessage(error, "Unable to create the account"),
+      values,
+    }
+  }
+
+  if (result === "confirm-email") return { confirmEmail: true }
   redirect(DASHBOARD_PATH)
 }
 
