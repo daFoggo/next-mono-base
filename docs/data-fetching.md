@@ -27,6 +27,16 @@ authentication, revalidating, proxy) and TanStack Query "Advanced SSR".
 - **Server Actions are public endpoints**: each one calls `verifySession()` and validates input with Zod.
 - `NEXT_PUBLIC_*` values are inlined at build time; reference them literally.
 
+## Per-user data and errors
+
+- Per-user reads use `"use cache: private"` (browser-only cache). It cannot call `connection()`, so read the
+  token with `peekSession()` after `verifySession()` has run in the same request; tag with `profile:${userId}` and
+  invalidate from the action with `updateTag`. Reference implementation: `features/profile`.
+- Expected failures in Server Actions (validation, backend `4xx`) are **returned as values** and read with
+  `useActionState`; unexpected failures are thrown and handled by `error.tsx` (it receives `retry`, not `reset`).
+- Any code that compares with the clock after reading `cookies()` must call `await connection()` first
+  (otherwise the prerender fails on `Date.now()`).
+
 ## Adding TanStack Query later (client fetching)
 
 Not installed yet. When added (per TanStack Advanced SSR guide):
@@ -50,6 +60,10 @@ and produce the same `Session { userId, accessToken }`, so `lib/http.ts` always 
 
 - Tokens are refreshed only in `proxy.ts`; Server Components cannot write cookies and refreshing in two
   places can revoke single-use refresh tokens.
-- Never authorize from cookie contents alone: backend mode resolves the user via `users/me`, Supabase mode
-  uses `getClaims()`. This also keeps `userId` safe to use as a `"use cache"` argument.
+- Backend mode keeps the whole session in one encrypted + signed httpOnly cookie (iron-session, `SESSION_SECRET`),
+  so `getSession` decrypts it locally and never calls `users/me`. Supabase mode uses `getClaims()` (local JWT
+  verification against cached JWKS). The backend still validates the token on every API call; a `401` on a call
+  that sent a token redirects to `/auth/expired`, which clears the session and goes to sign-in.
+- `userId` is therefore trustworthy as an argument of `"use cache"`; tokens are not (cache keys and tags are plain text).
+- `lib/auth` and `lib/env` hold secrets: ESLint forbids importing them from `components/` and `features/*/components/`.
 - Misconfigured provider env fails every request with a 500 (zod error) instead of silently degrading.

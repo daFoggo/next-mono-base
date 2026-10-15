@@ -30,4 +30,4 @@ This block is written and re-added by `turbo` before repository-scoped commands 
 - Import workspace packages through their `exports` (e.g. `@workspace/ui/components/button`); do not add tsconfig `paths` for them.
 - Feature-based layout in `apps/web`: `app/` (routing, composition only), `features/<name>/` (components, server.ts, queries.ts, actions.ts, schemas.ts), `components/` (app shell/providers), `lib/` (env, DAL, http), `config/`. See `apps/web/features/README.md`.
 - Data fetching, caching and mutation rules: `docs/data-fetching.md`.
-- Auth: one provider per deployment (`AUTH_PROVIDER=backend|supabase`) behind `lib/auth`; the DAL (`lib/dal.ts`) exposes `getSession`/`verifySession`. Env template: `apps/web/.env.example`.
+- Auth: one provider per deployment (`AUTH_PROVIDER=backend|supabase`) behind `lib/auth`; the DAL (`lib/dal.ts`) exposes `getSession`/`verifySession`. Env template: `apps/web/.env.example`. Full design with citations: `docs/authentication.md`.
