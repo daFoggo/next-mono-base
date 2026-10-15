@@ -2,7 +2,13 @@ import "server-only"
 
 import { connection } from "next/server"
 
-import type { AuthProvider, Credentials, Session } from "../types"
+import type {
+  AuthProvider,
+  Credentials,
+  Session,
+  SignUpInput,
+  SignUpResult,
+} from "../types"
 import { createClient } from "./client"
 
 export const supabaseProvider: AuthProvider = {
@@ -29,6 +35,29 @@ export const supabaseProvider: AuthProvider = {
       userId: data.session.user.id,
       accessToken: data.session.access_token,
     }
+  },
+
+  async verifySessionFresh(): Promise<Session | null> {
+    await connection()
+    const supabase = await createClient()
+    // getUser asks the Auth server, so revoked sessions are rejected.
+    const { data, error } = await supabase.auth.getUser()
+    if (error || !data.user) return null
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) return null
+    return { userId: data.user.id, accessToken: sessionData.session.access_token }
+  },
+
+  async signUp({ name, email, password }: SignUpInput): Promise<SignUpResult> {
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    })
+    if (error) throw error
+    // No session means the project requires email confirmation first.
+    return data.session ? "signed-in" : "confirm-email"
   },
 
   async signIn(credentials: Credentials) {

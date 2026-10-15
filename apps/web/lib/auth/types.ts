@@ -11,6 +11,11 @@ export type Credentials = {
   password: string
 }
 
+export type SignUpInput = Credentials & { name: string }
+
+/** `confirm-email`: the account exists but the user must confirm their email first. */
+export type SignUpResult = "signed-in" | "confirm-email"
+
 /** Server-side contract (Server Components, Server Actions). */
 export interface AuthProvider {
   /** Verified session, or null. Must not refresh tokens (the proxy does that). */
@@ -22,8 +27,15 @@ export interface AuthProvider {
    * request, and the backend still validates the token on every call.
    */
   peekSession(): Promise<Session | null>
+  /**
+   * Like `getSession`, but also asks the identity system whether the session is still
+   * valid (not revoked). Use before sensitive actions (change password, delete account).
+   */
+  verifySessionFresh(): Promise<Session | null>
   /** Throws on invalid credentials. Only callable from a Server Action / Route Handler. */
   signIn(credentials: Credentials): Promise<void>
+  /** Creates an account. Throws when the data is rejected (e.g. email already used). */
+  signUp(input: SignUpInput): Promise<SignUpResult>
   signOut(): Promise<void>
   /** Social login (redirect flow). Only providers that support it implement this. */
   oauth?: {

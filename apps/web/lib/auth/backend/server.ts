@@ -6,7 +6,13 @@ import { z } from "zod"
 
 import { apiFetch } from "@/lib/http"
 
-import type { AuthProvider, Credentials, Session } from "../types"
+import type {
+  AuthProvider,
+  Credentials,
+  Session,
+  SignUpInput,
+  SignUpResult,
+} from "../types"
 import {
   cookieName,
   cookieOptions,
@@ -39,6 +45,22 @@ export const backendProvider: AuthProvider = {
     return session
       ? { userId: session.userId, accessToken: session.accessToken }
       : null
+  },
+
+  // The backend validates the token and the user's status on every call, so a
+  // "fresh" check is the same as a normal session read here.
+  async verifySessionFresh(): Promise<Session | null> {
+    return backendProvider.getSession()
+  },
+
+  async signUp(input: SignUpInput): Promise<SignUpResult> {
+    await apiFetch<unknown>("auth/sign-up", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    })
+    await backendProvider.signIn({ email: input.email, password: input.password })
+    return "signed-in"
   },
 
   async signIn(credentials: Credentials) {
