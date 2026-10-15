@@ -1,6 +1,12 @@
+engineStrict: true
+
 packages:
   - "apps/*"
   - "packages/*"
+
+# Supply-chain: min age (minutes) a version must have before install. TEMPORARILY DISABLED (0).
+# TODO: set back to 2880 (48h) after the initial install settles.
+minimumReleaseAge: 0
 
 allowBuilds:
   esbuild: true
