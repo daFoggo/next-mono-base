@@ -58,6 +58,7 @@ Paths relative to `apps/web/`: [proxy.ts](../apps/web/proxy.ts), [config/routes.
 | Endpoint (relative to `API_BASE_URL`, which may include a path like `/api/v1/`) | Request | Response |
 |---|---|---|
 | `POST auth/sign-in` | `{ email, password }` | `{ access_token, refresh_token, expiration, refresh_expiration, user_info: { id } }` |
+| `POST auth/sign-up` | `{ name, email, password }` | Any `2xx`; the body is ignored and the provider signs the user in right after |
 | `POST auth/refresh` | `{ refresh_token }` | `{ access_token, refresh_token, expiration, refresh_expiration }` |
 | Protected APIs | `Authorization: Bearer <access_token>` | `401` when the token is not accepted |
 
@@ -84,7 +85,8 @@ One cookie (`SESSION_COOKIE_NAME`, default `session`) holds an iron-session seal
 3. **Read the session**: `await connection()`, then unseal (section 7).
 4. **Backend returns `401`** on a call that sent a token (e.g. deactivated user): `apiFetch` redirects to `/auth/expired`, which clears
    the cookie and goes to sign-in; a route is needed because Server Components cannot delete cookies [N2], and clearing prevents a loop.
-5. **Sign out**: delete the cookie.
+5. **Sign up**: `auth/sign-up`, then the sign-in flow above, so the user lands signed in. Backend errors (for example a duplicate email) are returned to the form as values.
+6. **Sign out**: delete the cookie.
 
 ### Limits
 
@@ -112,8 +114,11 @@ Implementation:
 - [server.ts](../apps/web/lib/auth/supabase/server.ts): `getSession` = `await connection()` → `getClaims()` for the verified `userId` →
   `getSession()` only to forward `access_token` to your API [S1]; `signOut({ scope: "local" })` (the default `global` scope signs out every
   device [S2]); OAuth start/exchange.
-- **Sensitive actions** (change password/email, delete account, payments) should call `supabase.auth.getUser()` inside the Server Action,
-  because `getClaims()` cannot see revocation [S2]. The base has no such action yet.
+- **Sensitive actions** (change password/email, delete account, payments) call `verifySessionFresh()` from the DAL, which runs
+  `supabase.auth.getUser()` (a round trip to the Auth server) because `getClaims()` cannot see revocation [S2]. For the `backend`
+  provider it is the same as `getSession` since the backend checks the token on every call. No action in the base needs it yet.
+- **Sign up**: `auth.signUp` with the name stored as user metadata. If the project requires email confirmation no session is returned, and
+  the form shows "Check your email" instead of signing in.
 
 Google OAuth (PKCE): `signInWithGoogleAction` → authorize URL (verifier cookie stored) → Google → Supabase → `/auth/callback?code=` →
 `exchangeCodeForSession` [S4]. Setup: a Google Cloud OAuth client whose redirect URI is `https://<project>.supabase.co/auth/v1/callback`;
@@ -124,7 +129,8 @@ enable Google in Supabase → Authentication → Providers; add `<NEXT_PUBLIC_AP
 | Function | Use when | Notes |
 |---|---|---|
 | `getSession()` | You only need to know if a session exists | `React.cache`-memoized |
-| `verifySession()` | A Server Component/Action requires a session | No session → `redirect(SIGN_IN_PATH)` [N10] |
+| `verifySession()` | A Server Component/Action requires a session | No session → `redirect(SESSION_EXPIRED_PATH)`, which clears any leftover cookie and goes to sign-in (this also prevents a proxy/DAL redirect loop) [N10] |
+| `verifySessionFresh()` | Sensitive actions | Also asks the identity system whether the session was revoked (extra round trip on Supabase) |
 | `peekSession()` | **Only** inside `"use cache: private"` | Reads the cookie, no `connection()`, no verification |
 
 - Check next to the data: layouts do not re-render on navigation and do not control child segments [N3]. Client Components cannot import
@@ -160,18 +166,28 @@ pass a token as an argument (one entry per user, misses after every refresh, sto
 
 - `SESSION_SECRET` ≥ 32 random chars, different per environment, never `NEXT_PUBLIC_`; env files gitignored [N7]. Supabase cookies are
   readable by JavaScript by design, so XSS defenses matter more with that provider.
-- **CSP**: nonces require dynamic rendering of every page and are **incompatible with Partial Prerendering**, which this base enables;
-  use the `next.config` header CSP without nonces, or experimental SRI to keep static generation [N24]. No CSP is configured yet; add one
-  before production.
-- Rate limiting, sign-up, password reset and email verification are not part of the base; rate limiting belongs to the backend/Supabase [N23].
+- **CSP**: nonces require dynamic rendering of every page and are **incompatible with Partial Prerendering**, which this base enables, so
+  [next.config.ts](../apps/web/next.config.ts) sets a header CSP without nonces (`script-src 'self' 'unsafe-inline'`, plus `'unsafe-eval'` and
+  websockets in development only, `upgrade-insecure-requests` in production only) [N24]. With the `supabase` provider `form-action` also
+  allows `https://accounts.google.com` and the Supabase origin, because the OAuth redirect starts from a form. Tighten with experimental
+  SRI if you need a stricter policy while keeping static generation [N24]. The policy is computed at build time, so build with the same
+  `AUTH_PROVIDER` you deploy.
+- Rate limiting, password reset and email verification are not part of the base; rate limiting belongs to the backend/Supabase [N23].
+- Unexpected errors render [error.tsx](../apps/web/app/error.tsx) (`retry`) and unknown URLs [not-found.tsx](../apps/web/app/not-found.tsx).
+- Signed-in users requesting `/sign-in` or `/sign-up` are redirected to the dashboard in `proxy.ts`; the redirect copies the refreshed
+  session cookies, otherwise single-use refresh tokens would be lost.
+- Forms keep non-secret values (email, name) after an error because React resets a form when its action finishes; passwords are never echoed.
 - **CI**: auth config is validated while `next build` collects routes, so the workflow sets placeholder `AUTH_PROVIDER`, `API_BASE_URL` and
   `SESSION_SECRET` ([ci.yml](../.github/workflows/ci.yml)). The CI command passed locally without `.env.local`; the workflow has not run on
   GitHub yet.
 - **Automated** (`pnpm check`): `parseExpirationMs`, seal/unseal round trip, tampered/malformed cookie rejection, cookie size, `apiUrl` [E1].
 - **Verified against a stand-in backend + production build**: no per-request identity call; token refresh; profile update + `updateTag`;
-  backend `401` → sign-in without a loop.
-- **Verified manually by the maintainer** with real services: email sign-in on both providers and Google sign-in on Supabase; the dev
-  server log after the fixes shows no errors. (This session's log only records server start, env reload and browser info lines.)
+  backend `401` → sign-in without a loop; sign-up (duplicate email shown as a form error with values kept, then success → dashboard);
+  signed-in redirect away from `/sign-in`; not-found page; CSP header present with no violations logged; with `AUTH_PROVIDER=supabase`
+  the Google button reaches the Supabase authorize URL under the CSP (the request was intercepted there, nothing was sent to Google).
+- **Verified manually with real services** during development: email sign-in on both providers and Google sign-in on Supabase, with no
+  errors in the dev server log. Not yet exercised against real services: sign-up, `verifySessionFresh()` and the Supabase
+  confirm-email path.
 
 ## 9. Citations
 
