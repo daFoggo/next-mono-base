@@ -70,9 +70,14 @@ export function SignUpForm() {
           placeholder="••••••••"
           disabled={pending}
         />
-        <p className="text-muted-foreground text-xs">At least 6 characters</p>
+        <p className="text-xs text-muted-foreground">At least 6 characters</p>
       </div>
-      <Button type="submit" size="lg" className="mt-2 w-full" disabled={pending}>
+      <Button
+        type="submit"
+        size="lg"
+        className="mt-2 w-full"
+        disabled={pending}
+      >
         {pending ? (
           <>
             <Spinner className="mr-2" />

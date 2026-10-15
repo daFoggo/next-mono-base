@@ -15,7 +15,7 @@ export const STATUS_OPTIONS = Object.entries(LABELS) as [CaseStatus, string][]
 
 export function StatusBadge({ status }: { status: CaseStatus }) {
   return (
-    <span className="border-border rounded-full border px-2 py-0.5 text-xs">
+    <span className="rounded-full border border-border px-2 py-0.5 text-xs">
       {LABELS[status]}
     </span>
   )

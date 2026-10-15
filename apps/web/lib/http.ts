@@ -40,7 +40,10 @@ export async function apiFetch<T>(
     const body = await res.json().catch(() => undefined)
     // The backend answers with RFC 7807 problem details ({ title, detail, status }).
     const detail =
-      body && typeof body === "object" && "detail" in body && typeof body.detail === "string"
+      body &&
+      typeof body === "object" &&
+      "detail" in body &&
+      typeof body.detail === "string"
         ? body.detail
         : undefined
     throw new ApiError(

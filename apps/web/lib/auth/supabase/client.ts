@@ -6,7 +6,9 @@ import { authConfig } from "../config"
 /** New client per request (it is bound to that request's cookies). */
 export async function createClient() {
   if (authConfig.AUTH_PROVIDER !== "supabase") {
-    throw new Error("Supabase client used while AUTH_PROVIDER is not 'supabase'")
+    throw new Error(
+      "Supabase client used while AUTH_PROVIDER is not 'supabase'"
+    )
   }
   const cookieStore = await cookies()
   return createServerClient(

@@ -1,10 +1,11 @@
-import Link from "next/link"
 import { Suspense } from "react"
 
+import { EmptyState } from "@/components/shared/empty-state"
 import { CasesFilters } from "@/features/cases/components/cases-filters"
 import { CasesTable } from "@/features/cases/components/cases-table"
 import { getCases, getExperiments } from "@/features/cases/queries"
 import { CaseListParamsSchema } from "@/features/cases/schemas"
+import { CasesPageHeader } from "./_components/cases-page-header"
 
 const PATH = "/dashboard/cases"
 
@@ -27,9 +28,10 @@ async function CasesContent({
   const experimentId = params.experiment_id ?? experiments.founds[0]?.id
   if (!experimentId) {
     return (
-      <p className="text-muted-foreground text-sm">
-        No experiments yet, so there are no cases to show.
-      </p>
+      <EmptyState
+        title="No experiments found"
+        description="There are no experiments yet, so there are no cases to show."
+      />
     )
   }
   const list = await getCases({ ...params, experiment_id: experimentId })
@@ -52,17 +54,10 @@ async function CasesContent({
   )
 }
 
-export default function CasesServerPage(
-  props: PageProps<"/dashboard/cases">
-) {
+export default function CasesServerPage(props: PageProps<"/dashboard/cases">) {
   return (
     <main className="flex min-h-svh flex-col items-center gap-4 p-6">
-      <div className="flex w-full max-w-3xl items-center justify-between">
-        <h1 className="text-lg font-medium">Cases</h1>
-        <Link href="/dashboard" className="text-sm underline underline-offset-2">
-          Back to dashboard
-        </Link>
-      </div>
+      <CasesPageHeader />
       <div className="flex w-full max-w-3xl flex-col gap-4">
         <Suspense fallback={<p className="text-sm">Loading cases…</p>}>
           <CasesContent searchParams={props.searchParams} />

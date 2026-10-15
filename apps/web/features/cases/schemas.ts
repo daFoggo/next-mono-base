@@ -63,5 +63,8 @@ export const CaseListParamsSchema = z.object({
 export type CaseListParams = z.infer<typeof CaseListParamsSchema>
 
 /** Payload of `POST cases/{id}/annotation`: one answer per required field. */
-export const AnnotationValuesSchema = z.record(z.string(), z.string().trim().min(1))
+export const AnnotationValuesSchema = z.record(
+  z.string(),
+  z.string().trim().min(1)
+)
 export type AnnotationValues = z.infer<typeof AnnotationValuesSchema>

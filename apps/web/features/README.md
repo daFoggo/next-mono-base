@@ -21,3 +21,5 @@ Create only the files a feature needs.
 - Same-feature imports are relative; cross-layer imports use `@/`.
 - `components/` never imports `server.ts`, `queries.ts`, `lib/dal` or `lib/http`.
 - No barrel `index.ts`; import the file you need.
+
+See [docs/project-structure.md](../../../docs/project-structure.md) for the complete architecture guide and package extraction rules.

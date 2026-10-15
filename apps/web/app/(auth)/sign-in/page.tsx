@@ -26,7 +26,7 @@ export default function SignInPage({
     <>
       <div className="mb-8">
         <h1 className="mb-2 text-2xl font-medium lg:text-3xl">Welcome back</h1>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           Sign in to your account.
         </p>
       </div>
@@ -36,11 +36,11 @@ export default function SignInPage({
         </Suspense>
         <SignInForm showGoogle={authConfig.AUTH_PROVIDER === "supabase"} />
       </div>
-      <p className="text-muted-foreground mt-6 text-center text-sm">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         No account yet?{" "}
         <Link
           href="/sign-up"
-          className="hover:text-foreground font-medium underline underline-offset-4"
+          className="font-medium underline underline-offset-4 hover:text-foreground"
         >
           Create one
         </Link>

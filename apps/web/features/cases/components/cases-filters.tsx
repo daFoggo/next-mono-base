@@ -12,7 +12,7 @@ const selectClass =
 function Pending() {
   const { pending } = useFormStatus()
   return (
-    <span className="text-muted-foreground text-xs" aria-live="polite">
+    <span className="text-xs text-muted-foreground" aria-live="polite">
       {pending ? "Updating…" : ""}
     </span>
   )

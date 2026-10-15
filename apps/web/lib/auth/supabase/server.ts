@@ -36,7 +36,10 @@ export const supabaseProvider: AuthProvider = {
     if (error || !data.user) return null
     const { data: sessionData } = await supabase.auth.getSession()
     if (!sessionData.session) return null
-    return { userId: data.user.id, accessToken: sessionData.session.access_token }
+    return {
+      userId: data.user.id,
+      accessToken: sessionData.session.access_token,
+    }
   },
 
   async signUp({ name, email, password }: SignUpInput): Promise<SignUpResult> {

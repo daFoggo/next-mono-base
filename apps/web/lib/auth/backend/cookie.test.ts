@@ -12,7 +12,9 @@ const session = (): BackendSession => ({
 
 describe("parseExpirationMs", () => {
   it("accepts ISO strings, unix seconds and milliseconds", () => {
-    expect(parseExpirationMs("2030-01-01T00:00:00Z")).toBe(Date.parse("2030-01-01T00:00:00Z"))
+    expect(parseExpirationMs("2030-01-01T00:00:00Z")).toBe(
+      Date.parse("2030-01-01T00:00:00Z")
+    )
     expect(parseExpirationMs(1_900_000_000)).toBe(1_900_000_000_000)
     expect(parseExpirationMs(1_900_000_000_000)).toBe(1_900_000_000_000)
     expect(parseExpirationMs("1900000000")).toBe(1_900_000_000_000)

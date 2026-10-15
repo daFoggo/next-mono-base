@@ -19,7 +19,7 @@ export default function Error({
   return (
     <main className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
       <h1 className="text-lg font-medium">Something went wrong</h1>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         An unexpected error occurred. Please try again.
       </p>
       <Button onClick={() => retry()}>Try again</Button>

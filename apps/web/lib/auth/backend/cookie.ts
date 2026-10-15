@@ -46,7 +46,10 @@ export const cookieOptions = (session: BackendSession) =>
   }) as const
 
 export async function seal(session: BackendSession): Promise<string> {
-  const ttl = Math.max(1, Math.floor((session.refreshExpiresAt - Date.now()) / 1000))
+  const ttl = Math.max(
+    1,
+    Math.floor((session.refreshExpiresAt - Date.now()) / 1000)
+  )
   return sealData(session, { password: backendConfig().SESSION_SECRET, ttl })
 }
 
@@ -79,5 +82,9 @@ export async function setOnResponse(
   response: NextResponse,
   session: BackendSession
 ) {
-  response.cookies.set(cookieName(), await seal(session), cookieOptions(session))
+  response.cookies.set(
+    cookieName(),
+    await seal(session),
+    cookieOptions(session)
+  )
 }

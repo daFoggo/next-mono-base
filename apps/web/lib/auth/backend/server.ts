@@ -54,7 +54,10 @@ export const backendProvider: AuthProvider = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     })
-    await backendProvider.signIn({ email: input.email, password: input.password })
+    await backendProvider.signIn({
+      email: input.email,
+      password: input.password,
+    })
     return "signed-in"
   },
 

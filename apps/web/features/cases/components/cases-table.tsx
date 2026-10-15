@@ -1,9 +1,124 @@
 import Link from "next/link"
+import type { ReactNode } from "react"
 
-import type { CaseList } from "../schemas"
+import { EmptyState } from "@/components/shared/empty-state"
+import type { Case, CaseList } from "../schemas"
 import { StatusBadge } from "./status-badge"
 
-/** Server Component: rendered with the data, no client JS for the table or pagination. */
+/* -------------------------------------------------------------------------- */
+/*                            Compound Components                             */
+/* -------------------------------------------------------------------------- */
+
+function CasesTableFrame({ children }: { children: ReactNode }) {
+  return <table className="w-full text-left text-sm">{children}</table>
+}
+
+function CasesTableHeader({ children }: { children?: ReactNode }) {
+  return (
+    <thead>
+      <tr className="border-b">
+        {children ?? (
+          <>
+            <th className="py-2 font-medium">Case</th>
+            <th className="py-2 font-medium">Started</th>
+            <th className="py-2 font-medium">Status</th>
+          </>
+        )}
+      </tr>
+    </thead>
+  )
+}
+
+function CasesTableRow({
+  item,
+  detailBasePath,
+  renderActions,
+}: {
+  item: Case
+  detailBasePath: string
+  renderActions?: (item: Case) => ReactNode
+}) {
+  return (
+    <tr key={item.id} className="border-b">
+      <td className="py-2">
+        <Link
+          href={`${detailBasePath}/${item.id}`}
+          className="underline underline-offset-2"
+        >
+          {item.id}
+        </Link>
+      </td>
+      <td className="py-2">{item.t_start}</td>
+      <td className="py-2">
+        <StatusBadge status={item.status} />
+      </td>
+      {renderActions ? <td className="py-2">{renderActions(item)}</td> : null}
+    </tr>
+  )
+}
+
+function CasesTableEmpty({
+  message = "No cases match this filter.",
+}: {
+  message?: string
+}) {
+  return (
+    <tbody>
+      <tr>
+        <td colSpan={3} className="py-6 text-center">
+          <EmptyState title={message} />
+        </td>
+      </tr>
+    </tbody>
+  )
+}
+
+function CasesTablePagination({
+  page,
+  totalPages,
+  totalCount,
+  getPageHref,
+}: {
+  page: number
+  totalPages: number
+  totalCount: number
+  getPageHref: (page: number) => string
+}) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span>
+        Page {page} of {totalPages} · {totalCount} cases
+      </span>
+      <div className="flex gap-3">
+        {page > 1 ? (
+          <Link
+            href={getPageHref(page - 1)}
+            className="underline underline-offset-2"
+          >
+            Previous
+          </Link>
+        ) : null}
+        {page < totalPages ? (
+          <Link
+            href={getPageHref(page + 1)}
+            className="underline underline-offset-2"
+          >
+            Next
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/*                      Default Variant (Drop-in Export)                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Server Component: renders case rows and pagination without client JS.
+ * Supports compound subcomponents for customized composition.
+ */
 export function CasesTable({
   list,
   basePath,
@@ -11,10 +126,8 @@ export function CasesTable({
   query,
 }: {
   list: CaseList
-  /** Page path, used to build pagination links. */
   basePath: string
   detailBasePath: string
-  /** Current filters, kept in the pagination links. */
   query: Record<string, string | undefined>
 }) {
   const pages = Math.max(1, Math.ceil(list.total_count / list.page_size))
@@ -28,60 +141,43 @@ export function CasesTable({
     return `${basePath}?${search}`
   }
 
+  if (list.founds.length === 0) {
+    return (
+      <CasesTableFrame>
+        <CasesTableHeader />
+        <CasesTableEmpty />
+      </CasesTableFrame>
+    )
+  }
+
   return (
-    <>
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b">
-            <th className="py-2 font-medium">Case</th>
-            <th className="py-2 font-medium">Started</th>
-            <th className="py-2 font-medium">Status</th>
-          </tr>
-        </thead>
+    <div className="flex flex-col gap-4">
+      <CasesTableFrame>
+        <CasesTableHeader />
         <tbody>
           {list.founds.map((item) => (
-            <tr key={item.id} className="border-b">
-              <td className="py-2">
-                <Link
-                  href={`${detailBasePath}/${item.id}`}
-                  className="underline underline-offset-2"
-                >
-                  {item.id}
-                </Link>
-              </td>
-              <td className="py-2">{item.t_start}</td>
-              <td className="py-2">
-                <StatusBadge status={item.status} />
-              </td>
-            </tr>
+            <CasesTableRow
+              key={item.id}
+              item={item}
+              detailBasePath={detailBasePath}
+            />
           ))}
-          {list.founds.length === 0 ? (
-            <tr>
-              <td colSpan={3} className="text-muted-foreground py-6 text-center">
-                No cases match this filter.
-              </td>
-            </tr>
-          ) : null}
         </tbody>
-      </table>
+      </CasesTableFrame>
 
-      <div className="flex items-center justify-between text-sm">
-        <span>
-          Page {list.page} of {pages} · {list.total_count} cases
-        </span>
-        <div className="flex gap-3">
-          {list.page > 1 ? (
-            <Link href={pageHref(list.page - 1)} className="underline underline-offset-2">
-              Previous
-            </Link>
-          ) : null}
-          {list.page < pages ? (
-            <Link href={pageHref(list.page + 1)} className="underline underline-offset-2">
-              Next
-            </Link>
-          ) : null}
-        </div>
-      </div>
-    </>
+      <CasesTablePagination
+        page={list.page}
+        totalPages={pages}
+        totalCount={list.total_count}
+        getPageHref={pageHref}
+      />
+    </div>
   )
 }
+
+// Attach compound subcomponents to CasesTable
+CasesTable.Frame = CasesTableFrame
+CasesTable.Header = CasesTableHeader
+CasesTable.Row = CasesTableRow
+CasesTable.Empty = CasesTableEmpty
+CasesTable.Pagination = CasesTablePagination

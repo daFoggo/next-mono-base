@@ -4,9 +4,10 @@ How `apps/web` reads data, caches it and changes it. Written against **Next.js 1
 `cacheComponents: true` and `partialPrefetching: true` ([next.config.ts](../apps/web/next.config.ts)).
 Sources are the docs shipped with the package (`apps/web/node_modules/next/dist/docs/01-app/`, written `DOCS/` below);
 re-read them after upgrading Next. Authentication details live in [authentication.md](authentication.md).
+Advanced production extensions (distributed cache, large file uploads, SSE, telemetry and instant-navigation tests) live in [advanced-patterns.md](advanced-patterns.md).
 
 Performance work (growing the static shell, prefetch tuning, instant-navigation tests) is summarized in
-[section 9](#9-navigation-and-prefetching-optimization) and treated separately.
+[section 9](#9-navigation-and-prefetching-optimization) and treated separately in [advanced-patterns.md](advanced-patterns.md).
 
 ## 1. Mental model
 
@@ -43,6 +44,7 @@ lib/dal.ts                       getSession / verifySession / verifySessionFresh
 This is the **Data Access Layer** approach Next recommends for new projects: server-only, authorizes, returns minimal
 DTOs; only the DAL and `lib/env.ts` read secrets (`DOCS/02-guides/data-security.md`). ESLint enforces the boundaries
 (`features/` never import `app/` or each other; `components/` never import `server.ts`, `queries.ts`, `lib/dal`, `lib/http`).
+For complete project structure conventions, feature anatomy, and package extraction rules, see [project-structure.md](project-structure.md).
 
 ## 3. Choosing how to read data
 
@@ -231,7 +233,7 @@ Two options (`DOCS/02-guides/authentication-with-cache-components.md`):
 
 Stores entries in a remote cache handler (`cacheHandlers.remote` in `next.config.ts`) shared by every instance. Worth it only
 for request-time content with a high hit rate (rate-limited or slow upstreams); key on low-cardinality values (category,
-language), never on user ids. It cannot nest with `private` in either direction. Not configured in this repo.
+language), never on user ids. It cannot nest with `private` in either direction. See [advanced-patterns.md](advanced-patterns.md#2-distributed-remote-cache-cachehandlers--redis--upstash) for Redis implementation details. Not configured in this repo.
 
 ### 5.4 What not to use
 

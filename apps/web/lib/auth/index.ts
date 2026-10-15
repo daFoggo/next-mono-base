@@ -3,12 +3,7 @@ import "server-only"
 import { authConfig } from "./config"
 import type { AuthProvider } from "./types"
 
-export type {
-  Credentials,
-  Session,
-  SignUpInput,
-  SignUpResult,
-} from "./types"
+export type { Credentials, Session, SignUpInput, SignUpResult } from "./types"
 
 /** The active provider, chosen once per deployment via `AUTH_PROVIDER`. */
 export async function getAuthProvider(): Promise<AuthProvider> {

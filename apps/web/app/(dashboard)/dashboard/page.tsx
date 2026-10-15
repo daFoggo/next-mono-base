@@ -31,7 +31,10 @@ export default function DashboardPage() {
   return (
     <main className="flex min-h-svh flex-col items-center justify-center gap-4 p-6">
       <h1 className="text-lg font-medium">Dashboard</h1>
-      <Link href="/dashboard/cases" className="text-sm underline underline-offset-2">
+      <Link
+        href="/dashboard/cases"
+        className="text-sm underline underline-offset-2"
+      >
         Cases
       </Link>
       <Suspense fallback={<p className="text-sm">Loading…</p>}>

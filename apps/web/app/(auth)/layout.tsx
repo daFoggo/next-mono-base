@@ -7,7 +7,7 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-background flex min-h-svh flex-col">
+    <div className="flex min-h-svh flex-col bg-background">
       <header className="px-6 py-6 sm:px-8">
         <Link href="/" className="text-base font-semibold">
           App
@@ -17,7 +17,7 @@ export default function AuthLayout({
         <div className="flex w-full max-w-sm flex-1 flex-col justify-center">
           {children}
         </div>
-        <p className="text-muted-foreground mt-8 max-w-sm text-center text-xs text-balance">
+        <p className="mt-8 max-w-sm text-center text-xs text-balance text-muted-foreground">
           By continuing, you agree to the Terms of Service and Privacy Policy.
         </p>
       </main>

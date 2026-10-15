@@ -2,11 +2,7 @@ import "server-only"
 
 import { apiFetch } from "@/lib/http"
 
-import {
-  ProfileSchema,
-  type Profile,
-  type UpdateProfileInput,
-} from "./schemas"
+import { ProfileSchema, type Profile, type UpdateProfileInput } from "./schemas"
 
 export async function fetchProfile(token: string): Promise<Profile> {
   return ProfileSchema.parse(await apiFetch<unknown>("users/me", { token }))

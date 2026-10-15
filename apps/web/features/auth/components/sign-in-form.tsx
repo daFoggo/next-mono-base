@@ -41,7 +41,12 @@ export function SignInForm({ showGoogle }: { showGoogle: boolean }) {
             disabled={pending}
           />
         </div>
-        <Button type="submit" size="lg" className="mt-2 w-full" disabled={pending}>
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-2 w-full"
+          disabled={pending}
+        >
           {pending ? (
             <>
               <Spinner className="mr-2" />
