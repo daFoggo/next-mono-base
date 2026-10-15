@@ -28,14 +28,14 @@ Principles:
 ```
 Browser ─cookie─▶ proxy.ts ─▶ updateSession (provider): decrypt/refresh, set cookies, isAuthenticated (optimistic)
                      ▼
-   Server Component / Action / Route Handler ─▶ lib/dal.ts (getSession · verifySession · peekSession)
+   Server Component / Action / Route Handler ─▶ lib/dal.ts (getSession · verifySession · verifySessionFresh)
                      ▼
         getAuthProvider() ─▶ lib/auth/backend/server.ts | lib/auth/supabase/server.ts
 ```
 
 Paths relative to `apps/web/`: [proxy.ts](../apps/web/proxy.ts), [config/routes.ts](../apps/web/config/routes.ts),
 [lib/auth/](../apps/web/lib/auth) (`config.ts`, `types.ts`, `index.ts`, `backend/`, `supabase/`), [lib/dal.ts](../apps/web/lib/dal.ts),
-[lib/http.ts](../apps/web/lib/http.ts) (`apiFetch`: Bearer header, RFC 7807 errors → `ApiError`, `401` → `/auth/expired`),
+[lib/http.ts](../apps/web/lib/http.ts) (`apiFetch`: Bearer header, RFC 7807 errors → `ApiError`, `401` ends the session, see flow 4),
 [features/auth/actions.ts](../apps/web/features/auth/actions.ts), [app/auth/callback/route.ts](../apps/web/app/auth/callback/route.ts)
 (OAuth code exchange), [app/auth/expired/route.ts](../apps/web/app/auth/expired/route.ts) (clears the session after a backend `401`).
 `lib/auth/config.ts` has no `server-only` because the proxy uses it, and it holds `SESSION_SECRET`: client code must not import it
@@ -82,9 +82,11 @@ One cookie (`SESSION_COOKIE_NAME`, default `session`) holds an iron-session seal
 1. **Sign in**: `auth/sign-in` → parse → set cookie from a Server Action (cookies are writable only in Server Functions/Route Handlers [N2]).
 2. **Each request** (`proxy.ts`): cookie not unsealable → delete it, unauthenticated · more than 2 min of access token left → pass through ·
    otherwise `auth/refresh` and re-seal on request + response · refresh failed but access still valid → continue, else clear the session.
-3. **Read the session**: `await connection()`, then unseal (section 7).
-4. **Backend returns `401`** on a call that sent a token (e.g. deactivated user): `apiFetch` redirects to `/auth/expired`, which clears
-   the cookie and goes to sign-in; a route is needed because Server Components cannot delete cookies [N2], and clearing prevents a loop.
+3. **Read the session**: `await io()`, then unseal (section 7).
+4. **Backend returns `401`** on a call that sent a token (e.g. deactivated user). During a render, `apiFetch` redirects to
+   `/auth/expired`, which clears the cookie and goes to sign-in; a route is needed because Server Components cannot delete cookies [N2],
+   and clearing prevents a loop. Inside a Server Action (request header `next-action`) it signs out directly and redirects to `/sign-in`:
+   an action can only soft-navigate to a page, and redirecting it to the route left the old UI on screen (seen in testing).
 5. **Sign up**: `auth/sign-up`, then the sign-in flow above, so the user lands signed in. Backend errors (for example a duplicate email) are returned to the form as values.
 6. **Sign out**: delete the cookie.
 
@@ -111,7 +113,7 @@ Implementation:
   intentionally not httpOnly (the browser needs them) and are chunked [S1].
 - [proxy.ts](../apps/web/lib/auth/supabase/proxy.ts): `getClaims()`, new cookies on request + response, and the cache headers from `setAll`
   copied to the response so CDNs do not cache a `Set-Cookie` response.
-- [server.ts](../apps/web/lib/auth/supabase/server.ts): `getSession` = `await connection()` → `getClaims()` for the verified `userId` →
+- [server.ts](../apps/web/lib/auth/supabase/server.ts): `getSession` = `await io()` → `getClaims()` for the verified `userId` →
   `getSession()` only to forward `access_token` to your API [S1]; `signOut({ scope: "local" })` (the default `global` scope signs out every
   device [S2]); OAuth start/exchange.
 - **Sensitive actions** (change password/email, delete account, payments) call `verifySessionFresh()` from the DAL, which runs
@@ -131,31 +133,32 @@ enable Google in Supabase → Authentication → Providers; add `<NEXT_PUBLIC_AP
 | `getSession()` | You only need to know if a session exists | `React.cache`-memoized |
 | `verifySession()` | A Server Component/Action requires a session | No session → `redirect(SESSION_EXPIRED_PATH)`, which clears any leftover cookie and goes to sign-in (this also prevents a proxy/DAL redirect loop) [N10] |
 | `verifySessionFresh()` | Sensitive actions | Also asks the identity system whether the session was revoked (extra round trip on Supabase) |
-| `peekSession()` | **Only** inside `"use cache: private"` | Reads the cookie, no `connection()`, no verification |
 
 - Check next to the data: layouts do not re-render on navigation and do not control child segments [N3]. Client Components cannot import
   the DAL; pass data as props [N3].
-- `peekSession()` exists because `connection()` is prohibited in `"use cache: private"` (section 7); call `verifySession()` earlier in
-  the same request. Its Supabase variant takes `userId` from the stored session unverified: it only builds the cache tag, the API you call
-  still validates the token.
+- The DAL works inside `"use cache: private"` too (it reads cookies and uses `io()`, both allowed there), so per-user cached reads call
+  `verifySession()` themselves (section 7).
 - Server Actions: call `verifySession()` and validate input with zod in each one; a page-level check does not cover them [N11][N12][N18].
   A proxy matcher that excludes a path also skips Server Function calls there, so never rely on the proxy alone [N22].
 - **Expected** failures (validation, backend `4xx`) are **returned as values** and read with `useActionState`; **unexpected** ones throw to
-  `error.tsx`, which receives `retry` in this version [N19][N20]. `redirect()` throws, so keep it outside `try/catch` [N21].
+  `error.tsx`, which receives `retry` in this version [N19][N20]. The auth actions ask the active provider: `provider.isExpectedError(error)`
+  is true for a backend `4xx` (`ApiError`) or a Supabase `AuthError` with a `4xx` status (wrong password, email taken, weak password,
+  rate limit); network failures, `5xx` and unexpected responses are rethrown. `redirect()` throws, so keep it outside `try/catch` [N21].
 
 ## 7. Cache Components and auth
 
 1. `cookies()` is runtime data: its readers must sit inside `<Suspense>` [N8][N13].
 2. `use cache` / `use cache: remote` cannot read `cookies()`; `use cache: private` can, and stays in browser memory only [N8][N14].
-3. `connection()` is prohibited in both `use cache` and `use cache: private` [N14][N15].
+3. `connection()` is prohibited in both `use cache` and `use cache: private` [N14][N15]; `io()` resolves immediately inside cache scopes [N25].
 4. Cache keys and `cacheTag` values are plain text: never put tokens in them; use a stable id like `userId`. Export a getter that resolves
    the user, then calls an **unexported** `use cache` function taking `userId` [N8].
 5. `updateTag` works only in Server Actions and expires the tag immediately [N16]. Private `stale` must be ≥ 30 s for per-link prefetching
    and ≥ 5 min to be in the App Shell [N14].
 6. Comparing a token's expiry with the clock after `await cookies()` fails prerender ("unstable value `Date.now()`"); `await connection()`
-   first opts into request-time rendering [N17]. Both providers' `getSession` do this.
+   first opts into request-time rendering [N17]. Both providers' `getSession` call `await io()` instead, which suspends only while
+   prerendering and, unlike `connection()`, does not block prefetches [N25].
 
-Reference feature [`profile`](../apps/web/features/profile): `"use cache: private"` + `cacheTag("profile:<userId>")` +
+Reference feature [`profile`](../apps/web/features/profile): `"use cache: private"` calling `verifySession()` + `cacheTag("profile:<userId>")` +
 `cacheLife({ stale: 300, revalidate: 300, expire: 3600 })`; the action authenticates, validates, writes, then `updateTag`.
 
 Differences from the official example [N8]: identity comes from the sealed cookie, not a per-request lookup (trade-off in section 4);
@@ -220,6 +223,7 @@ upgrading Next.
 | N22 | `DOCS/03-api-reference/03-file-conventions/proxy.md` 236–253 | Server Functions are not separate routes in the proxy chain |
 | N23 | `DOCS/02-guides/data-security.md` 476 | Rate limiting |
 | N24 | `DOCS/02-guides/content-security-policy.md` 34–38, 385–397, 417–452, 456–458 | Nonces need dynamic rendering, incompatible with PPR; header CSP; SRI |
+| N25 | `DOCS/03-api-reference/04-functions/io.md` 8–10, 85–87, 103 | `io()`: suspends only in prerender, resolves in cache scopes, does not block prefetch |
 
 | ID | Supabase source | Cited for |
 |---|---|---|

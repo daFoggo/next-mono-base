@@ -1,69 +1,396 @@
-# Data fetching & mutation
+# Data fetching, caching and mutation
 
-Sources: Next.js 16.4 docs (fetching data, caching, `use cache`, data security,
-authentication, revalidating, proxy) and TanStack Query "Advanced SSR".
+How `apps/web` reads data, caches it and changes it. Written against **Next.js 16.4.0** with
+`cacheComponents: true` and `partialPrefetching: true` ([next.config.ts](../apps/web/next.config.ts)).
+Sources are the docs shipped with the package (`apps/web/node_modules/next/dist/docs/01-app/`, written `DOCS/` below);
+re-read them after upgrading Next. Authentication details live in [authentication.md](authentication.md).
 
-## Default model: RSC-first
+Performance work (growing the static shell, prefetch tuning, instant-navigation tests) is summarized in
+[section 9](#9-navigation-and-prefetching-optimization) and treated separately.
 
-| Need | Use |
+## 1. Mental model
+
+With Cache Components, **nothing is cached unless you say so**, and every route is prerendered into a **static shell**
+at build time. Each piece of async work in a component ends up in exactly one of three places
+(`DOCS/01-getting-started/08-caching.md` → Prerendering):
+
+| The work is… | Mark it with | Ends up |
+|---|---|---|
+| Pure / module-level / sync I/O (imports, `fs.readFileSync`) | nothing | In the static shell |
+| Reusable across requests (shared data, or per-user data with a lifetime) | `"use cache"` (+ variants) and `cacheLife` | In the static shell, or in the browser cache for `private` |
+| Fresh per request, or reads `cookies()` / `headers()` / `params` / `searchParams` | `<Suspense fallback>` around it | Fallback in the shell, content streamed at request time |
+
+Uncached or runtime work **outside** `<Suspense>` is a "blocking route": the dev overlay and `next build` report it with
+fix cards (`DOCS/02-guides/instant-navigation.md`). `<Suspense>` alone does not make sync work dynamic.
+
+`Math.random()`, `Date.now()`, `new Date()`, `crypto.randomUUID()` must be decided explicitly: cache the value with
+`"use cache"`, or call `await io()` (from `next/cache`) first so it runs per request (`DOCS/03-api-reference/04-functions/io.md`).
+Prefer `io()` over `connection()`: `connection()` waits for a real request and also blocks prefetches; `io()` resolves
+immediately inside cache scopes and at request time, and only suspends while prerendering.
+
+## 2. Where code lives
+
+```
+app/**/page.tsx, layout.tsx      compose only; await nothing at the top level
+  └─ features/<x>/queries.ts     reads for Server Components: auth via lib/dal, cache directives here
+       └─ features/<x>/server.ts "server-only" I/O, parses responses with Zod
+            └─ lib/http.ts       apiFetch: JSON or throws ApiError, never returns fallback data
+features/<x>/actions.ts          "use server" mutations: verifySession, Zod, write, invalidate
+features/<x>/schemas.ts          Zod schemas + types, safe on client and server
+lib/dal.ts                       getSession / verifySession / verifySessionFresh
+```
+
+This is the **Data Access Layer** approach Next recommends for new projects: server-only, authorizes, returns minimal
+DTOs; only the DAL and `lib/env.ts` read secrets (`DOCS/02-guides/data-security.md`). ESLint enforces the boundaries
+(`features/` never import `app/` or each other; `components/` never import `server.ts`, `queries.ts`, `lib/dal`, `lib/http`).
+
+## 3. Choosing how to read data
+
+| Need | Use | Section |
+|---|---|---|
+| Data for a page, read on the server | Async Server Component calling `queries.ts` | [4](#4-reading-on-the-server) |
+| Same read from several components in one request | `fetch` memoization or `React.cache` | [4.3](#43-deduplicating-within-a-request) |
+| Shared data reused across requests | `"use cache"` + `cacheLife` + `cacheTag` | [5.1](#51-use-cache) |
+| Per-user data with a lifetime | `"use cache: private"`, or extract `userId` and pass it to `"use cache"` | [5.2](#52-per-user-data) |
+| Shared runtime cache across serverless instances | `"use cache: remote"` (needs a cache handler) | [5.3](#53-use-cache-remote) |
+| Fresh data on every request | No directive, inside `<Suspense>` | [6](#6-streaming-and-loading-states) |
+| Server data needed by a Client Component | Pass the **un-awaited promise**, read it with `use()` | [7.1](#71-promise--use) |
+| Polling, focus refetch, infinite scroll, shared browser cache | TanStack Query (not installed yet) | [7.2](#72-client-data-libraries) |
+| An HTTP endpoint for the browser, webhooks, non-UI responses | Route Handler | [7.3](#73-route-handlers) |
+| Writing data | Server Action in `actions.ts` | [8](#8-mutations) |
+
+Pick one approach per piece of data; do not render the same data from a Server Component and a client query.
+
+## 4. Reading on the server
+
+### 4.1 Basics
+
+Server Components can `await` any I/O. Here every backend call goes through a feature `server.ts` → `apiFetch`:
+
+```ts
+// features/<x>/server.ts
+import "server-only"
+export async function fetchThing(token: string, id: string) {
+  return ThingSchema.parse(await apiFetch<unknown>(`things/${id}`, { token }))
+}
+```
+
+- `apiFetch` throws `ApiError` on any non-2xx. A `401` on a request that carried a token ends the session: renders redirect
+  to `/auth/expired` (a route, because renders cannot delete cookies); Server Actions sign out and redirect to `/sign-in`
+  directly, because an action can only soft-navigate to a page. Failed reads throw; they never become `[]` or `null`.
+- Parse responses with Zod in `server.ts` and return only the fields the UI needs (DTO).
+- Do not call this app's own Route Handlers from Server Components: at build time there is no server, at runtime it adds a
+  round trip (`DOCS/02-guides/backend-for-frontend.md` → Caveats).
+
+### 4.2 Parallel and sequential reads
+
+Two `await`s in a row run one after the other. Start independent requests first, then await together
+(`DOCS/01-getting-started/06-fetching-data.md`):
+
+```ts
+const [a, b] = await Promise.all([getA(id), getB(id)]) // Promise.allSettled if one may fail alone
+```
+
+Better still, put independent reads in **sibling components**, each behind its own `<Suspense>`, so each streams on its own.
+A read that needs another's result (`getPlaylists(artist.id)`) is sequential by nature: render it in a child behind
+`<Suspense>` so the first result can paint. Layouts and pages of one route already render in parallel.
+
+**Preload** when a known input is available before other blocking work: call the read without `await` (`void getItem(id)`)
+early, then call it again where it renders; the second call reuses the first because the read is deduplicated.
+
+### 4.3 Deduplicating within a request
+
+- `fetch` `GET` calls with the same URL and options are memoized for one render pass (not in Route Handlers).
+- Other reads: wrap in `React.cache` (the DAL does this for the session). Scope is one request; nothing is shared across requests.
+- `React.cache` does **not** cross into a `"use cache"` scope: each cache scope has its own isolated `React.cache`.
+  Pass values in as arguments instead (`DOCS/03-api-reference/01-directives/use-cache.md` → React.cache isolation).
+
+### 4.4 Request-time data
+
+`cookies()`, `headers()`, `params`, `searchParams` are runtime data. Read them **inside the component that needs them**,
+behind `<Suspense>`; never `await` them at the top of a layout or page, which would pull everything below out of the shell
+(`DOCS/02-guides/streaming.md` → Push dynamic access down):
+
+```tsx
+export default function Page({ params }: PageProps<"/things/[id]">) {
+  return (
+    <>
+      <h1>Thing</h1> {/* in the static shell */}
+      <Suspense fallback={<ThingSkeleton />}>
+        {params.then(({ id }) => <Thing id={id} />)}
+      </Suspense>
+    </>
+  )
+}
+```
+
+Passing the promise as a prop (`<Thing params={params} />`) works too. Client hooks follow the same rule: `useSearchParams()`
+always needs `<Suspense>`; `usePathname()` / `useParams()` need it under dynamic segments.
+
+### 4.5 Errors in reads
+
+| Case | Do |
 |---|---|
-| Read data for a page | Server Component calls `features/<x>/queries.ts` (→ `server.ts` → `lib/http.ts`) |
-| Reuse a read within one request | `React.cache` (DAL does this for the session) |
-| Cache across requests | `"use cache"` + `cacheLife` (+ `cacheTag`) on the data function |
-| Request-dependent UI (cookies, headers, `params`, `searchParams`) | Read it in a component wrapped in `<Suspense>` |
-| Mutation | Server Action in `actions.ts`, then `updateTag` (read-your-writes) or `revalidateTag(tag, "max")` |
-| Streamed data to a client component | Pass the un-awaited promise as a prop and read it with `use()` inside `<Suspense>` |
-| Rich client-side fetching (polling, infinite scroll, optimistic UI) | TanStack Query (see below) |
+| Resource does not exist | `notFound()` (renders `not-found.tsx`) |
+| Unexpected failure (5xx, network, schema mismatch) | Let it throw: the nearest `error.tsx` renders, `retry()` re-fetches |
+| Failure scoped to one component | Wrap it with a `catchError` boundary (`next/error`) |
+| Session gone | `verifySession()` / `apiFetch` redirect to `/auth/expired` |
 
-## Rules from the docs that shape our code
+Once streaming has started the status is already `200`: `notFound()` or `redirect()` inside a streamed boundary becomes a
+`noindex` meta tag or a client redirect. Run checks that must set a real status before any `<Suspense>`, or in `proxy.ts`.
 
-- **Data Access Layer** (Next's recommendation for new projects): server-only, does authorization,
-  returns minimal DTOs. Only the DAL / `lib/env.ts` read `process.env` secrets. Pick one approach; do not mix.
-- **Check auth next to the data**, not in layouts (layouts do not re-render on navigation).
-  `proxy.ts` is only an optimistic redirect.
-- **`"use cache"` cannot read `cookies()`/`headers()`/`searchParams`**, directly or via a helper.
-  Read them outside and pass values (e.g. `userId`) as arguments. Arguments and results must be serializable.
-  `React.cache` values do not cross into a `use cache` scope.
-- **Server Actions are public endpoints**: each one calls `verifySession()` and validates input with Zod.
-- `NEXT_PUBLIC_*` values are inlined at build time; reference them literally.
+## 5. Caching
 
-## Per-user data and errors
+### 5.1 `"use cache"`
 
-- Per-user reads use `"use cache: private"` (browser-only cache). It cannot call `connection()`, so read the
-  token with `peekSession()` after `verifySession()` has run in the same request; tag with `profile:${userId}` and
-  invalidate from the action with `updateTag`. Reference implementation: `features/profile`.
-- Expected failures in Server Actions (validation, backend `4xx`) are **returned as values** and read with
-  `useActionState`; unexpected failures are thrown and handled by `error.tsx` (it receives `retry`, not `reset`).
-- Any code that compares with the clock after reading `cookies()` must call `await connection()` first
-  (otherwise the prerender fails on `Date.now()`).
+Caches the return value of an async function or component. Put it on the **data function**, not the page, unless the whole
+UI is reusable (`DOCS/03-api-reference/01-directives/use-cache.md`):
 
-## Adding TanStack Query later (client fetching)
+```ts
+// features/<x>/queries.ts
+export async function getCategories() {
+  "use cache"
+  cacheLife("hours")
+  cacheTag("categories")
+  return fetchCategories()
+}
+```
 
-Not installed yet. When added (per TanStack Advanced SSR guide):
+- **Always call `cacheLife`** (one call per invocation). Without it the `default` profile applies and nested caches change the
+  outer lifetime silently; a short-lived inner cache without an explicit outer `cacheLife` fails the prerender.
+- **Cache key** = build id + function id + serialized arguments + captured closure variables. Keys and `cacheTag` values are
+  stored **in plain text**: never pass tokens, emails or other secrets as arguments or tags; use stable ids.
+- Arguments and return values must be serializable (no class instances, functions, URL). JSX can be returned; `children`
+  and Server Actions can be passed through without being read.
+- Cannot read `cookies()` / `headers()` / `searchParams`, directly or through a helper (`next-request-in-use-cache`;
+  on dynamic routes this can pass `next build` and fail at runtime). Read outside, pass the value in.
+- Passing a promise of runtime data into a cache scope hangs the build (50 s timeout). Await outside, pass the value.
+- `"use cache"` at the top of a file caches every export (all must be async).
 
-1. `getQueryClient()`: new client per request on the server, singleton in the browser; `staleTime` > 0;
-   dehydrate pending queries so prefetches can stream.
-2. A `"use client"` `Providers` component wrapping `children` in `app/layout.tsx`.
-3. Prefetch in a Server Component **without awaiting**, wrap the client component in `HydrationBoundary`,
-   and read with `useSuspenseQuery`.
-4. Do **not** use Server Actions as `queryFn` (they run serially from the client); use Route Handlers.
-   Server Actions stay for mutations.
-5. Do not render the same data from a Server Component and a query; Server Components cannot be
-   revalidated by the query cache and would drift. Treat the server as a prefetch location only.
-6. Query hooks live in `features/<x>/` client files (e.g. `use-<x>.ts`) and never import `server.ts`.
+`cacheLife` profiles (`DOCS/03-api-reference/04-functions/cacheLife.md`):
 
-## Auth providers (one per deployment)
+| Profile | `stale` (browser) | `revalidate` (server, SWR) | `expire` (server, hard) |
+|---|---|---|---|
+| `default` | 5m | 15m | never |
+| `seconds` | 30s | 1s | 1m |
+| `minutes` | 5m | 1m | 1h |
+| `hours` | 5m | 1h | 1d |
+| `days` | 5m | 1d | 1w |
+| `weeks` | 5m | 1w | 30d |
+| `max` | 5m | 30d | 1y |
 
-`AUTH_PROVIDER=backend|supabase` (see `apps/web/.env.example`). Both implement `lib/auth/types.ts`
-and produce the same `Session { userId, accessToken }`, so `lib/http.ts` always sends the Bearer token
-(Supabase login + custom backend works if the backend validates Supabase JWTs).
+Lifetime thresholds: `revalidate: 0` or `expire` < 5 min → excluded from prerenders (a dynamic hole, needs `<Suspense>`);
+`stale` < 30 s → excluded from prerenders and prefetches; `stale` 30 s–5 min → prerendered but not in the App Shell.
+Custom profiles go in `next.config.ts` → `cacheLife`. Data that only changes on writes: `cacheLife("max")` + a tag invalidated
+by the mutation.
 
-- Tokens are refreshed only in `proxy.ts`; Server Components cannot write cookies and refreshing in two
-  places can revoke single-use refresh tokens.
-- Backend mode keeps the whole session in one encrypted + signed httpOnly cookie (iron-session, `SESSION_SECRET`),
-  so `getSession` decrypts it locally and never calls `users/me`. Supabase mode uses `getClaims()` (local JWT
-  verification against cached JWKS). The backend still validates the token on every API call; a `401` on a call
-  that sent a token redirects to `/auth/expired`, which clears the session and goes to sign-in.
-- `userId` is therefore trustworthy as an argument of `"use cache"`; tokens are not (cache keys and tags are plain text).
-- `lib/auth` and `lib/env` hold secrets: ESLint forbids importing them from `components/` and `features/*/components/`.
-- Misconfigured provider env fails every request with a 500 (zod error) instead of silently degrading.
+**Where entries live.** The server store is in-memory LRU per instance (50 MB, `cacheMaxMemorySize`): it persists across
+requests on a long-running server but rarely survives between requests on serverless. Entries never survive a deploy
+(the build id is part of the key). The browser keeps results for `stale` (minimum 30 s).
+
+### 5.2 Per-user data
+
+Two options (`DOCS/02-guides/authentication-with-cache-components.md`):
+
+1. **Extract and pass** (server cache, shared by sessions with the same value). The exported getter resolves the user,
+   then calls an **unexported** cached function with `userId`, so no caller can ask for another user's data:
+
+   ```ts
+   export async function getNotes() {
+     const { userId } = await verifySession()
+     return getNotesByUser(userId) // unexported, "use cache", cacheTag(`notes:${userId}`)
+   }
+   ```
+
+   This only works when the cached function can load the data without the user's token (for example a database or a
+   service credential), because a token argument would become part of the key. With this backend every per-user call needs
+   the Bearer token, so use option 2.
+
+2. **`"use cache: private"`** (browser only, never stored on the server). It may read `cookies()` / `headers()` /
+   `searchParams` and call the DAL directly. This is the pattern in [`features/profile`](../apps/web/features/profile):
+
+   ```ts
+   export async function getProfile(): Promise<Profile> {
+     "use cache: private"
+     cacheLife({ stale: 300, revalidate: 300, expire: 3600 })
+     const { userId, accessToken } = await verifySession()
+     cacheTag(profileTag(userId))
+     return fetchProfile(accessToken)
+   }
+   ```
+
+   Rules: `connection()` is not allowed inside (the session helpers use `io()`, which is); keep `stale` ≥ 30 s for per-link
+   prefetch and ≥ 5 min to be in the App Shell; it runs at request time, so its caller still needs `<Suspense>`.
+   `cacheLife({ stale: Infinity })` gives request-scoped dedupe without lowering the route's stale time.
+
+### 5.3 `"use cache: remote"`
+
+Stores entries in a remote cache handler (`cacheHandlers.remote` in `next.config.ts`) shared by every instance. Worth it only
+for request-time content with a high hit rate (rate-limited or slow upstreams); key on low-cardinality values (category,
+language), never on user ids. It cannot nest with `private` in either direction. Not configured in this repo.
+
+### 5.4 What not to use
+
+`fetch(..., { cache, next: { revalidate, tags } })`, `unstable_cache`, `unstable_noStore` and the segment configs `dynamic`,
+`revalidate`, `fetchCache`, `dynamicParams` belong to the previous model (`DOCS/02-guides/caching-without-cache-components.md`);
+the last four fail the build with Cache Components. The only reason to reach for `unstable_cache` / `fetch` cache is data that
+must survive a deploy.
+
+## 6. Streaming and loading states
+
+- `<Suspense>` is the unit of streaming: everything outside it is in the shell; each boundary resolves independently and is
+  also a selective-hydration unit. Prefer granular boundaries close to the dynamic read.
+- `loading.tsx` wraps the whole page in one boundary and is prefetched as the instant fallback. It does **not** cover the
+  `layout.tsx` of its own segment: runtime reads in a layout need their own `<Suspense>`.
+- Sibling boundaries reveal independently; nested boundaries reveal in stages (nesting changes reveal order, not request order).
+- Fallbacks should match the size of the final UI (CLS). Keep the LCP element (main heading, hero image) outside boundaries.
+  An empty fallback is fine only when the resolved UI has no footprint (an auth gate returning `null`).
+- Do not add boundaries you do not need: under a slow network React may show any boundary's fallback.
+
+## 7. Client-side data
+
+### 7.1 Promise + `use()`
+
+The default way to get server data into a Client Component without a library (`DOCS/01-getting-started/06-fetching-data.md`):
+
+```tsx
+// Server Component
+const statsPromise = getStats() // not awaited
+return (
+  <Suspense fallback={<ChartSkeleton />}>
+    <StatsChart statsPromise={statsPromise} />
+  </Suspense>
+)
+// "use client": const stats = use(statsPromise)
+```
+
+To share one promise with many Client Components, create it inside the boundary and put it in a context provider that
+consumers read with `use()` (`DOCS/02-guides/single-page-applications.md`). Props crossing the boundary must be serializable
+and minimal (`DOCS/02-guides/data-security.md`).
+
+### 7.2 Client data libraries
+
+Use TanStack Query only when Client Components need a **browser cache**: polling, focus/reconnect refetch, infinite lists,
+optimistic updates shared across components (`DOCS/02-guides/client-side-data-fetching/`). Not installed yet; when it is:
+
+1. A `"use client"` provider with `getQueryClient()`: new client per server render, one client in the browser; render it in
+   the nearest layout that needs it, not the root.
+2. One **cache contract** per resource, free of server-only/client-only imports: `{ key, tag, options }` (`queryOptions` with a
+   `staleTime` > 0). The query key and the server `cacheTag` stay together.
+3. `queryFn` calls a **Route Handler** (relative URL); on the server, override `queryFn` with the server function. Never use a
+   Server Action as `queryFn` (actions run one at a time).
+4. Server-provided initial data: render `<HydrationBoundary>` inside `<Suspense>`. With Cache Components, TanStack's
+   `dehydrate()` reads `Date.now()` during prerender; use the guide's helper that builds the state from a cached timestamp
+   tagged like the data (`tanstack-query.md` → Build a prerenderable hydration state).
+5. Mutations: `useMutation` with `mutationFn` = the Server Action, `onMutate` optimistic update + rollback in `onError`; the
+   action calls `updateTag(contract.tag(...))`.
+6. Multiple `useSuspenseQuery` calls in one component run sequentially; split into siblings or `useSuspenseQueries`.
+
+SWR follows the same structure (`<SWRConfig fallback>` with an un-awaited promise, key = Route Handler URL).
+
+### 7.3 Route Handlers
+
+`app/**/route.ts` are public HTTP endpoints: authenticate, validate, rate-limit, and never forward incoming headers to the
+response. Use them for browser fetches (client libraries), webhooks (`revalidateTag(tag, "max")` or `{ expire: 0 }`), OAuth
+callbacks and non-UI responses. With Cache Components a `GET` handler prerenders like a page unless it reads the request,
+uncached data or `Math.random()`; `"use cache"` must go on a helper, not on the handler.
+
+## 8. Mutations
+
+### 8.1 Server Actions
+
+Writes go through Server Actions in `features/<x>/actions.ts` (`DOCS/02-guides/server-actions.md`):
+
+```ts
+"use server"
+export async function updateThingAction(_prev: State, formData: FormData): Promise<State> {
+  const session = await verifySession()                       // 1. authenticate (public endpoint)
+  const parsed = UpdateThingSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message }  // 2. validate
+  try {
+    await patchThing(session.accessToken, parsed.data)        // 3. write
+  } catch (error) {
+    if (isExpectedApiError(error)) return { error: error.message }        // expected → value
+    throw error                                                // unexpected → error.tsx
+  }
+  updateTag(thingTag(session.userId))                          // 4. invalidate
+  return { saved: true }                                       // 5. minimal return value
+}
+```
+
+- **Every action authenticates and authorizes**, even if the form is only shown to signed-in users; check ownership of the
+  resource, take ids from the client but never trusted data. Return only what the UI renders.
+- **Expected** failures (validation, backend `4xx`) are returned as values and read with `useActionState`; **unexpected** ones
+  throw to `error.tsx`. Never catch everything: `redirect()` and `notFound()` work by throwing, so a broad `catch` swallows them.
+  Keep `redirect()` after the `try`, and rethrow anything that is not an expected error.
+- The auth actions classify errors through the provider (`provider.isExpectedError`), so they stay provider-agnostic.
+- Actions are dispatched **one at a time** per client: never use them to read data or expect `Promise.all` to parallelize them.
+- Built-in protections: POST only, `Origin` vs host check (`serverActions.allowedOrigins`), 1 MB body (`bodySizeLimit`),
+  encrypted ids, unused actions removed. Self-hosting on several instances needs a stable `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`;
+  after a deploy old clients can hit "Failed to find Server Action", so offer a retry.
+- Extra arguments: `action.bind(null, id)` (works without JS) rather than hidden inputs.
+- Do not mutate during render (no cookie writes or revalidation in Server Components).
+
+### 8.2 Refreshing data after a write
+
+| Call | Effect | Where |
+|---|---|---|
+| `updateTag(tag)` | Expires now; next read waits for fresh data (read-your-own-writes) | Server Actions only |
+| `revalidateTag(tag, "max")` | Marks stale; next read serves stale and refreshes in background | Actions, Route Handlers |
+| `revalidateTag(tag, { expire: 0 })` | Expires now, for webhooks where `updateTag` is unavailable | Route Handlers |
+| `revalidatePath(path, type?)` | Invalidates by route path (soft tags) | Actions, Route Handlers |
+| `refresh()` | Re-renders the current route; does not touch cached entries (for uncached reads) | Server Actions only |
+
+`updateTag`, `revalidatePath`, `refresh` and cookie writes in an action make the response carry the re-rendered route, so the
+UI updates in the same round trip; `revalidateTag(…, "max")` does not. Any of them clears the browser router cache. Call them
+before `redirect()`. Prefer tags over paths. The single-argument `revalidateTag(tag)` is deprecated.
+
+Tag naming: `<resource>` for lists, `<resource>:<id>` for one item, `<resource>:<userId>` for per-user data
+(`profile:<userId>`). Up to 128 tags per call, 256 characters each.
+
+### 8.3 Pending and optimistic UI
+
+- `useActionState(action, initial)` → `[state, formAction, pending]` for forms; `useFormStatus` in a child button.
+- `useOptimistic` + `startTransition` to show the result before the server answers; it reverts when the transition ends
+  and fresh props arrive. State updates after an `await` inside a transition need their own `startTransition`.
+- A `data-pending` attribute lets ancestors style pending work with CSS (`DOCS/02-guides/interactive-apps.md`).
+- With Cache Components, routes are kept mounted (React `<Activity>`), so form values and `useActionState` results persist
+  when the user navigates back; reset them explicitly where that is wrong (`DOCS/02-guides/preserving-ui-state.md`).
+
+## 9. Navigation and prefetching (optimization)
+
+Summary only; tuning is a separate task.
+
+- With `partialPrefetching`, a default `<Link>` prefetches the route's **App Shell**: static + cached content + session data
+  from `cookies()`/`headers()` (cached per session in the browser). Content that depends on `params`/`searchParams` streams
+  after the click unless the link sets `prefetch={true}` (one server render per visible link).
+- `await prefetch()` / `await navigation()` (`next/cache`) defer a subtree to the per-link prefetch / the navigation;
+  `ensureStatic = 'shell' | 'prefetch' | 'navigation'` enforces static output for a stage; `export const prefetch =
+  'force-disabled'` skips a segment. `connection()` excludes work from every prefetch.
+- Dev validates every page load and client navigation for instant UI; `export const instant = false` opts a segment out.
+  Inspect with the Navigation Inspector; lock behavior with `@next/playwright` `instant()` tests.
+- Prefetches run layouts and pages: keep render pure (no analytics or writes during render).
+
+## 10. Checklist
+
+- [ ] No `await` of runtime data or uncached reads at the top of a layout or page.
+- [ ] Every uncached / runtime read sits inside a `<Suspense>` with a sized fallback.
+- [ ] Every `"use cache"` has `cacheLife`; tagged if a mutation changes it; no tokens or PII in arguments or tags.
+- [ ] Per-user data uses `"use cache: private"` (or an unexported `use cache` keyed by `userId` when no token is needed).
+- [ ] Reads throw on failure; `apiFetch` responses are Zod-parsed into DTOs.
+- [ ] Every action: `verifySession`, Zod, ownership check, minimal return, expected errors as values, others rethrown.
+- [ ] Every write invalidates what it changed (`updateTag` for the user's own change).
+- [ ] Clock and random values are cached or behind `io()`.
+- [ ] Client data: promise + `use()` first; TanStack only for real browser-cache needs, with Route Handlers as `queryFn`.
+
+## 11. Sources
+
+All under `DOCS/` (Next.js 16.4.0): `01-getting-started/` 05 server and client components, 06 fetching data, 07 mutating data,
+08 caching, 09 revalidating, 10 error handling, 15 route handlers; `02-guides/` client-side-data-fetching (index, swr,
+tanstack-query), backend-for-frontend, server-actions, forms, interactive-apps, single-page-applications, data-security,
+streaming, authentication-with-cache-components, caching-without-cache-components, how-revalidation-works,
+migrating-to-cache-components, optimizing-prefetching, prefetching, instant-navigation, preserving-ui-state;
+`03-api-reference/` directives (use-cache, use-cache-private, use-cache-remote, use-server), functions (cacheLife, cacheTag,
+updateTag, revalidateTag, revalidatePath, refresh, io, connection, prefetch, navigation, fetch, cookies, after, catchError),
+file conventions (route, loading, error, route segment config), config (cacheComponents, cacheHandlers, cacheLife,
+partialPrefetching, serverActions, cacheMaxMemorySize).
