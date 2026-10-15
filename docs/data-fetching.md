@@ -55,11 +55,15 @@ DTOs; only the DAL and `lib/env.ts` read secrets (`DOCS/02-guides/data-security.
 | Shared runtime cache across serverless instances | `"use cache: remote"` (needs a cache handler) | [5.3](#53-use-cache-remote) |
 | Fresh data on every request | No directive, inside `<Suspense>` | [6](#6-streaming-and-loading-states) |
 | Server data needed by a Client Component | Pass the **un-awaited promise**, read it with `use()` | [7.1](#71-promise--use) |
-| Polling, focus refetch, infinite scroll, shared browser cache | TanStack Query (not installed yet) | [7.2](#72-client-data-libraries) |
-| An HTTP endpoint for the browser, webhooks, non-UI responses | Route Handler | [7.3](#73-route-handlers) |
+| Filters, search, pagination | URL search params: `<Form>` / `<Link>`, the Server Component re-reads | [7.2](#72-interactive-lists-and-forms-without-a-client-data-library) |
+| Instant feedback while a write runs | `useOptimistic` + `useTransition`, `useActionState` | [7.2](#72-interactive-lists-and-forms-without-a-client-data-library), [8.3](#83-pending-and-optimistic-ui) |
+| Live data (polling, focus refetch) | Not needed so far; see the rule in [7.3](#73-when-a-client-data-library-would-be-justified) | [7.3](#73-when-a-client-data-library-would-be-justified) |
+| Webhooks, OAuth callbacks, non-UI responses | Route Handler (never for this app's own UI reads) | [7.4](#74-route-handlers) |
 | Writing data | Server Action in `actions.ts` | [8](#8-mutations) |
 
-Pick one approach per piece of data; do not render the same data from a Server Component and a client query.
+**Server-first is the only default.** The app ships no client data library (no TanStack Query, no SWR): reads happen in Server
+Components, writes in Server Actions, and the client only adds pending and optimistic state. Pick one approach per piece of
+data; do not render the same data from a Server Component and a client fetch.
 
 ## 4. Reading on the server
 
@@ -268,32 +272,62 @@ To share one promise with many Client Components, create it inside the boundary 
 consumers read with `use()` (`DOCS/02-guides/single-page-applications.md`). Props crossing the boundary must be serializable
 and minimal (`DOCS/02-guides/data-security.md`).
 
-### 7.2 Client data libraries
+### 7.2 Interactive lists and forms without a client data library
 
-Use TanStack Query only when Client Components need a **browser cache**: polling, focus/reconnect refetch, infinite lists,
-optimistic updates shared across components (`DOCS/02-guides/client-side-data-fetching/`). Not installed yet; when it is:
+Next's own guidance is that many apps need no client data library; interaction is built from Server Functions, transitions,
+optimistic UI and pending feedback (`DOCS/02-guides/client-side-data-fetching/index.md`, `DOCS/02-guides/interactive-apps.md`).
+[`features/cases`](../apps/web/features/cases) is the reference implementation (list with filters and pagination, detail,
+write):
 
-1. A `"use client"` provider with `getQueryClient()`: new client per server render, one client in the browser; render it in
-   the nearest layout that needs it, not the root.
-2. One **cache contract** per resource, free of server-only/client-only imports: `{ key, tag, options }` (`queryOptions` with a
-   `staleTime` > 0). The query key and the server `cacheTag` stay together.
-3. `queryFn` calls a **Route Handler** (relative URL); on the server, override `queryFn` with the server function. Never use a
-   Server Action as `queryFn` (actions run one at a time).
-4. Server-provided initial data: render `<HydrationBoundary>` inside `<Suspense>`. With Cache Components, TanStack's
-   `dehydrate()` reads `Date.now()` during prerender; use the guide's helper that builds the state from a cached timestamp
-   tagged like the data (`tanstack-query.md` → Build a prerenderable hydration state).
-5. Mutations: `useMutation` with `mutationFn` = the Server Action, `onMutate` optimistic update + rollback in `onError`; the
-   action calls `updateTag(contract.tag(...))`.
-6. Multiple `useSuspenseQuery` calls in one component run sequentially; split into siblings or `useSuspenseQueries`.
+| Piece | How | File |
+|---|---|---|
+| Reads | `queries.ts`: `"use cache: private"` + `cacheLife` + a per-user `cacheTag`, called from the page | `queries.ts` |
+| Filters | A GET `<Form>` from `next/form`; selects submit on change. No client state: the URL is the state | `components/cases-filters.tsx` |
+| Pagination, row links | `<Link>`; a Server Component, no client JS | `components/cases-table.tsx` |
+| URL input | `await searchParams` **below** `<Suspense>`; drop empty values, parse with Zod, fall back to defaults | `app/(dashboard)/dashboard/cases/page.tsx` |
+| Write | `<form action>` + `useActionState`; the action calls `updateTag` for the case and the lists | `actions.ts`, `components/annotation-form.tsx` |
+| Pending | `useFormStatus` in the filter form; `pending` from `useActionState` on submit | |
 
-SWR follows the same structure (`<SWRConfig fallback>` with an un-awaited promise, key = Route Handler URL).
+While a navigation to new search params is in flight React keeps the old UI on screen (navigations are transitions), which is
+the equivalent of a client library's "keep previous data". Add a pending hint with `useFormStatus` or a `data-pending`
+attribute (`DOCS/02-guides/interactive-apps.md` → Step 3).
 
-### 7.3 Route Handlers
+Measured against a mock backend while building `features/cases` (one run each, 250 ms backend latency, so read as direction):
+the same list, filter, pagination, detail and annotate feature written with TanStack Query took about 555 lines against 394,
+showed data at ~443 ms against 372 ms (the client version fetched experiments, then cases, after hydration; the server version
+streamed the rows in the first response), shipped 206 KB of JS against 167 KB, and moved between pages equally fast (a page
+already visited was ~6–12 ms either way). The one thing it did better, an instant status change after saving, is what
+`useOptimistic` provides here.
+
+### 7.3 When a client data library would be justified
+
+None is installed. For live data try a small Client Component that calls `router.refresh()` on a timer first (it re-renders
+the route's Server Components and keeps client state; it clears the client cache of the route but does not expire server
+`"use cache"` entries, so give those reads a short `cacheLife`; `DOCS/03-api-reference/04-functions/use-router.md`). Not
+exercised in this repo yet. Add a library only for a concrete need that this cannot meet: a browser cache **shared by several
+components** with background revalidation (polling, focus or reconnect refetch, infinite scroll). Then:
+
+- Choose **SWR** first: it is the Vercel-recommended option (`vercel-react-best-practices` rule `client-swr-dedup`), smaller,
+  and `DOCS/02-guides/client-side-data-fetching/swr.md` documents the Cache Components pattern. TanStack Query is the choice
+  only if SWR's mutation or pagination support is not enough.
+- Never write the raw `useEffect` + `fetch` version (no dedup, no cancellation).
+- `fetcher`/`queryFn` calls a **Route Handler** (7.4), never a Server Action (actions run one at a time).
+- Mount its provider in the nearest layout that needs it, not the root. With Cache Components keep client queries behind
+  `<Suspense>`: TanStack reads the clock while creating query state, and `dehydrate()` needs the cached-timestamp helper in
+  `DOCS/02-guides/client-side-data-fetching/tanstack-query.md`.
+- Record the need in this file before adding the dependency.
+
+### 7.4 Route Handlers
 
 `app/**/route.ts` are public HTTP endpoints: authenticate, validate, rate-limit, and never forward incoming headers to the
-response. Use them for browser fetches (client libraries), webhooks (`revalidateTag(tag, "max")` or `{ expire: 0 }`), OAuth
-callbacks and non-UI responses. With Cache Components a `GET` handler prerenders like a page unless it reads the request,
-uncached data or `Math.random()`; `"use cache"` must go on a helper, not on the handler.
+response. Use them for webhooks (`revalidateTag(tag, "max")` or `{ expire: 0 }`), OAuth callbacks and non-UI responses, not
+for this app's own UI reads (Server Components call `queries.ts` directly). With Cache Components a `GET` handler prerenders
+like a page unless it reads the request, uncached data or `Math.random()`; `"use cache"` must go on a helper.
+
+`proxy.ts` excludes `/api` from its matcher, so a handler that reads the session does not get the token refresh that page
+requests get: an expiring access token would be rejected although the refresh token is valid. A handler that serves the UI
+must be added to the matcher (found while porting a client-fetching feature; verified by a plain `fetch` to such a handler
+triggering `auth/refresh`).
 
 ## 8. Mutations
 
@@ -329,6 +363,8 @@ export async function updateThingAction(_prev: State, formData: FormData): Promi
   encrypted ids, unused actions removed. Self-hosting on several instances needs a stable `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`;
   after a deploy old clients can hit "Failed to find Server Action", so offer a retry.
 - Extra arguments: `action.bind(null, id)` (works without JS) rather than hidden inputs.
+- The `FormData` an action receives also carries React's `$ACTION_*` bookkeeping fields (some with empty values). Read named
+  fields, or skip keys starting with `$`, before validating "every field is non-empty" (`features/cases/actions.ts`).
 - Do not mutate during render (no cookie writes or revalidation in Server Components).
 
 ### 8.2 Refreshing data after a write
@@ -381,13 +417,14 @@ Summary only; tuning is a separate task.
 - [ ] Every action: `verifySession`, Zod, ownership check, minimal return, expected errors as values, others rethrown.
 - [ ] Every write invalidates what it changed (`updateTag` for the user's own change).
 - [ ] Clock and random values are cached or behind `io()`.
-- [ ] Client data: promise + `use()` first; TanStack only for real browser-cache needs, with Route Handlers as `queryFn`.
+- [ ] Filters and pagination live in URL search params and render on the server; no client data library (rule in 7.3).
+- [ ] Client data: promise + `use()`; instant feedback with `useOptimistic` / `useTransition` / `useActionState`.
 
 ## 11. Sources
 
 All under `DOCS/` (Next.js 16.4.0): `01-getting-started/` 05 server and client components, 06 fetching data, 07 mutating data,
 08 caching, 09 revalidating, 10 error handling, 15 route handlers; `02-guides/` client-side-data-fetching (index, swr,
-tanstack-query), backend-for-frontend, server-actions, forms, interactive-apps, single-page-applications, data-security,
+tanstack-query; read, not adopted), backend-for-frontend, server-actions, forms, interactive-apps, single-page-applications, data-security,
 streaming, authentication-with-cache-components, caching-without-cache-components, how-revalidation-works,
 migrating-to-cache-components, optimizing-prefetching, prefetching, instant-navigation, preserving-ui-state;
 `03-api-reference/` directives (use-cache, use-cache-private, use-cache-remote, use-server), functions (cacheLife, cacheTag,
