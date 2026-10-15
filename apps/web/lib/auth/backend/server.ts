@@ -1,6 +1,7 @@
 import "server-only"
 
 import { cookies } from "next/headers"
+import { connection } from "next/server"
 import { z } from "zod"
 
 import { ApiError } from "@/lib/errors"
@@ -25,6 +26,8 @@ const meSchema = z.object({ id: z.string() })
 
 export const backendProvider: AuthProvider = {
   async getSession(): Promise<Session | null> {
+    // Opt into request-time rendering before reading the clock (Date.now) below.
+    await connection()
     const tokens = parse((await cookies()).get(cookieName())?.value)
     if (!tokens || tokens.accessExpiresAt <= Date.now()) return null
 
