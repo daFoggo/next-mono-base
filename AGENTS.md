@@ -14,7 +14,25 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Run tasks via `pnpm turbo run <task> [--filter=<pkg>]`; verify with `pnpm check` and `pnpm build`.
 - Dependencies go in the package that uses them; root holds only repo tooling. No root `tsconfig.json`.
 - Turbopack compiles workspace packages automatically; do not add `transpilePackages` for them.
+- Import workspace packages through their `exports` (e.g. `@workspace/ui/components/button`); do not add tsconfig `paths` for them.
+- Cache Components (`cacheComponents` + `partialPrefetching`) are enabled in `apps/web/next.config.ts`. Wrap runtime APIs (`cookies()`, `headers()`, `params`, `searchParams`) in `<Suspense>`; use `"use cache"` + `cacheLife` for cached data.
 - See `CONTRIBUTING.md` for details.
+
+# Read the doc before changing the area
+
+The docs in `docs/` are the single source of truth for `apps/web`. Open the matching one first:
+
+| Working on | Read |
+| :--- | :--- |
+| Folder layout, feature slices, ESLint boundaries, extracting `packages/` | `docs/project-structure.md` (summary: `apps/web/features/README.md`) |
+| Data fetching, caching, mutations, Server Actions | `docs/data-fetching.md` |
+| Routes, layouts, parallel and intercepting routes | `docs/routing-and-layouts.md` |
+| Client-only shared state (Zustand) | `docs/client-state.md` |
+| Auth, sessions, DAL (`AUTH_PROVIDER=backend\|supabase`; env template `apps/web/.env.example`) | `docs/authentication.md` |
+| Performance, code splitting, lazy loading, Core Web Vitals | `docs/performance-optimization.md` |
+| Redis cache, large uploads, SSE, telemetry, instant-navigation tests | `docs/advanced-patterns.md` |
+
+For a fast decision (which pattern applies) use the skill `.agents/skills/next-mono-base/SKILL.md`; it links back to the docs above.
 
 <!-- BEGIN:turborepo-agent-rules -->
 
@@ -26,11 +44,3 @@ Read `docs/README.md` inside that installed package first, then read the relevan
 
 This block is written and re-added by `turbo` before repository-scoped commands when an AI agent is detected. In the Turborepo source repository, its template is defined in `crates/turborepo-cli/src/cli/agent_guidance.rs`. Removing the managed block while updates are enabled means a later qualifying invocation will add it again. Set `"agentGuidance": false` in the root `turbo.json` or `turbo.jsonc` to opt out; this does not remove an existing block. Keep the block committed with your work to avoid an uncommitted change on the next agent invocation.
 <!-- END:turborepo-agent-rules -->
-- Cache Components (`cacheComponents` + `partialPrefetching`) are enabled in `apps/web/next.config.ts`. Wrap runtime APIs (`cookies()`, `headers()`, `params`, `searchParams`) in `<Suspense>`; use `"use cache"` + `cacheLife` for cached data.
-- Import workspace packages through their `exports` (e.g. `@workspace/ui/components/button`); do not add tsconfig `paths` for them.
-- Feature-based layout in `apps/web`: `app/` (routing, composition only), `features/<name>/` (components, server.ts, queries.ts, actions.ts, schemas.ts), `components/` (app shell/providers), `lib/` (env, DAL, http), `config/`. Full guide & packaging rules: `docs/project-structure.md` (summary: `apps/web/features/README.md`).
-- Data fetching, caching and mutation rules: `docs/data-fetching.md`.
-- Routing, layouts, parallel & intercepting routes: `docs/routing-and-layouts.md`.
-- Frontend performance, code splitting, lazy loading, Core Web Vitals: `docs/performance-optimization.md`.
-- Auth: one provider per deployment (`AUTH_PROVIDER=backend|supabase`) behind `lib/auth`; the DAL (`lib/dal.ts`) exposes `getSession`/`verifySession`. Env template: `apps/web/.env.example`. Full design with citations: `docs/authentication.md`.
-- Fast Decision Trees & Agent Skill: `.agents/skills/next-mono-base/SKILL.md`. Consult its decision matrices when implementing features.

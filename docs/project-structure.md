@@ -256,7 +256,7 @@ sequenceDiagram
 ### Client State Rules
 - **URL First**: Filter state, search queries, pagination, and active tabs live in URL `searchParams`. Do not duplicate URL state into React state or client stores.
 - **Component State**: Transient UI state (menu open/close, active hover, input focus) lives in standard React `useState`.
-- **Global Client Store (Zustand)**: Only introduce a store if complex client-only state cannot be represented in the URL or component tree (e.g. multi-step canvas editor, audio player). Place the store inside `features/<name>/store.ts`.
+- **Global Client Store (Zustand)**: Only introduce a store if complex client-only state cannot be represented in the URL or component tree (e.g. multi-step canvas editor, audio player). Place the store factory inside `features/<name>/store.ts`; stores are created per provider, never as module-level globals. Full pattern, API notes and anti-patterns: [client-state.md](client-state.md).
 
 ---
 

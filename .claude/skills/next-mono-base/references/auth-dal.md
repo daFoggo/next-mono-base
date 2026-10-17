@@ -22,10 +22,14 @@ export async function getUserItems() {
 
 In `backendProvider.getSession()`: Call `await io()` before reading `cookies()` so that `Date.now()` is not frozen into the static build shell.
 
-## 4. Never Do
+## 4. Role and Permission Checks
+`Session` is `{ userId, accessToken }` today: there is no `role`. To authorize by role, add the claim to the `Session` type (`lib/auth/types.ts`) and populate it in both providers from verified claims only. Put the check in a DAL helper next to `verifySession()` and call it from every `queries.ts` and `actions.ts` that touches the protected data (Server Actions are public endpoints, so a page-level check does not cover them). Hiding a nav link is a UI hint, not authorization.
+
+## 5. Never Do
+- ❌ **Never treat `proxy.ts` as the authorization boundary**: it is an optimistic redirect for unauthenticated users. The real check is `verifySession()` in the data path.
 - ❌ **Never authorize in `layout.tsx`**: Layouts do not re-render on sub-navigation. Always authorize close to the data in `queries.ts` or `actions.ts`.
 - ❌ **Never attempt to write cookies in Server Components**: Cookies can only be mutated in `proxy.ts`, Server Actions, or Route Handlers.
 
-## 5. Source of Truth (Deep Dive)
+## 6. Source of Truth (Deep Dive)
 - Complete provider design (`backend` vs `supabase`): [docs/authentication.md §1-5](../../../../docs/authentication.md#1-overview)
 - Proxy token refresh flow: [docs/authentication.md §4](../../../../docs/authentication.md#4-provider-backend)

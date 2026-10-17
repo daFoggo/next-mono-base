@@ -2,8 +2,10 @@
 name: next-mono-base
 description: >
   Essential architecture conventions, data fetching, caching ('use cache'), mutations,
-  and DAL rules for next-mono-base (Next.js 16.4 + Turborepo). Use whenever creating or modifying
-  routes, pages, components, queries, server actions, or auth in this repository.
+  DAL rules and client state (Zustand) for next-mono-base (Next.js 16.4 + Turborepo). Use whenever
+  creating or modifying routes, pages, components, queries, server actions, or auth in this repository,
+  and whenever the user mentions Zustand, a client store, global/shared client state, persist, or
+  state that must survive or reset across navigation, even if they do not name the library.
 ---
 
 # next-mono-base Conventions & Decision Router
@@ -30,13 +32,15 @@ All principles derive from and link back to the Single Source of Truth in `docs/
 | **Authenticate / verify session** | `verifySession()` from `@/lib/dal` (inside queries/actions) | [auth-dal.md](references/auth-dal.md) | [authentication.md §2](../../../docs/authentication.md#2-architecture) |
 | **Extract code to `packages/`** | Keep in `apps/web` unless 2+ apps or diff runtime | [project-structure.md](references/project-structure.md) | [project-structure.md §6](../../../docs/project-structure.md#6-monorepo-package-extraction-when-to-extract-to-packages) |
 | **Random, time, sync DB** | `await io()` from `next/cache` inside `<Suspense>` | [reads.md](references/reads.md) | [data-fetching.md §1](../../../docs/data-fetching.md#1-mental-model) |
+| **Client-only shared state (Zustand)** | Per-provider store factory in `features/<name>/store.ts` + provider in `components/`, mounted in `app/` (no global store, never read in Server Components) | [client-state.md](references/client-state.md) | [client-state.md](../../../docs/client-state.md) |
+| **Reset or keep client state across navigation** | Cache Components preserves state (`<Activity>`); reset via handler, data-derived key, or `bfcacheId` key | [client-state.md](references/client-state.md) | [client-state.md §5.3](../../../docs/client-state.md#53-state-outlives-navigation) |
 | **Redis cache / SSE / Uploads** | Distributed CacheHandler, Presigned URLs, `connection()` | [reads.md](references/reads.md) | [advanced-patterns.md](../../../docs/advanced-patterns.md) |
 
 ---
 
 ## 2. Five Golden Rules (Non-Negotiable)
 
-1. **Server-First by Default**: No client data libraries (TanStack Query, SWR). Reads in Server Components, writes in Server Actions ([docs §3](../../../docs/data-fetching.md#3-choosing-how-to-read-data)).
+1. **Server-First by Default**: No client data libraries (TanStack Query, SWR). Reads in Server Components, writes in Server Actions ([docs §3](../../../docs/data-fetching.md#3-choosing-how-to-read-data)). A Zustand store is for client-only UI state shared across distant client components, never for server data ([client-state.md §1](../../../docs/client-state.md#1-mental-model)).
 2. **Never `await` at Top-Level of Page/Layout**: Push `await cookies()`, `headers()`, `params`, `searchParams` into child components wrapped in `<Suspense>` ([docs §4.4](../../../docs/data-fetching.md#44-request-time-data)).
 3. **Always Call `cacheLife()` with `"use cache"`**: Cache keys use plain IDs only (never tokens, emails, or secrets) ([docs §5.1](../../../docs/data-fetching.md#51-use-cache)).
 4. **Prefer `io()` over `connection()`**: `io()` allows prefetching and works inside `"use cache: private"`; `connection()` blocks prefetches ([docs §1](../../../docs/data-fetching.md#1-mental-model)).
@@ -52,4 +56,5 @@ When facing complex edge cases, always consult the full architecture docs:
 - [docs/data-fetching.md](../../../docs/data-fetching.md) — Core reading, caching, streaming, and mutation model.
 - [docs/performance-optimization.md](../../../docs/performance-optimization.md) — Code splitting, lazy loading, package bundling, hydration flash prevention, and Core Web Vitals.
 - [docs/authentication.md](../../../docs/authentication.md) — Session lifecycle, token refresh in proxy, Supabase & backend providers.
+- [docs/client-state.md](../../../docs/client-state.md) — Zustand: per-request store factory, provider placement in the feature layout, selectors, middleware notes.
 - [docs/advanced-patterns.md](../../../docs/advanced-patterns.md) — Distributed Redis cache, large uploads, SSE, OpenTelemetry & Playwright instant tests.

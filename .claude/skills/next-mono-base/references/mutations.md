@@ -5,7 +5,7 @@ Use when writing, updating, or deleting data and revalidating cached UI.
 
 ## 2. Standard 5-Step Action Flow
 1. **Authenticate**: `verifySession()` (Server Actions are public HTTP endpoints).
-2. **Validate**: `Schema.safeParse(Object.fromEntries(formData))`.
+2. **Validate**: `Schema.safeParse(Object.fromEntries(formData))`. Use Zod even when the input is a single id (`z.string().min(1)`): Server Action arguments are untrusted client input, so a `typeof` check is not enough.
 3. **Write**: Call backend via feature `server.ts`.
 4. **Invalidate**: `updateTag(tag)` (expires now, re-renders in the same round trip).
 5. **Return DTO**: Return minimal state `{ success: true }` or expected error.
@@ -13,7 +13,7 @@ Use when writing, updating, or deleting data and revalidating cached UI.
 ## 3. Canonical Pattern
 
 ```ts
-// features/<domain>/actions.ts
+// features/<domain>/actions.ts  ("use server" is the first line of the file; keep it when adding actions)
 "use server"
 export async function updateItemAction(_prev: State, formData: FormData): Promise<State> {
   const session = await verifySession()
