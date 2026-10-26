@@ -1,8 +1,8 @@
 # Data fetching, caching and mutation
 
-How `apps/web` reads data, caches it and changes it. Written against **Next.js 16.4.2** with
-`cacheComponents: true` and `partialPrefetching: true` ([next.config.ts](../apps/web/next.config.ts)).
-Sources are the docs shipped with the package (`apps/web/node_modules/next/dist/docs/01-app/`, written `DOCS/` below);
+How `apps/studio` reads data, caches it and changes it. Written against **Next.js 16.4.2** with
+`cacheComponents: true` and `partialPrefetching: true` ([next.config.ts](../apps/studio/next.config.ts)).
+Sources are the docs shipped with the package (`apps/studio/node_modules/next/dist/docs/01-app/`, written `DOCS/` below);
 re-read them after upgrading Next. Authentication details live in [authentication.md](authentication.md).
 Advanced production extensions (distributed cache, large file uploads, SSE, telemetry and instant-navigation tests) live in [advanced-patterns.md](advanced-patterns.md).
 
@@ -422,7 +422,7 @@ Summary only; tuning is a separate task.
 - Prefetches run layouts and pages: keep render pure (no analytics or writes during render).
 - Default `<Link>` vs `prefetch`: the default is shell-only, and under `instant()` it ignores the per-URL page prefetch. Add `prefetch={true}` to a single link only when a failing instant test or a measured cost shows the destination needs URL data (e.g. the menu link to the `searchParams`-driven listing). Do not set it on grids of links to listings (one runtime render per link). A deliberate exception is the search suggestion list: at most 6 product links that appear only on typing and point at static, cacheable pages (about two prefetch requests per suggestion: 8/10/6 for "sofa"/"ban"/"ke" against 5/5/4 without; see advanced-patterns.md 1.6).
 - Pages in dynamic segments (`[slug]`) read `params` inside `<Suspense>` with a sized fallback; awaited at the top of the page the shell is empty and a locked navigation never commits.
-- The gate is `apps/web/e2e/instant.spec.ts` (`pnpm --filter web test:e2e:instant` (the script pins one worker) against a build with `EXPOSE_TESTING_API=1`). It is a local gate, not a CI job. Runbook, baseline numbers and what was deliberately not adopted: [advanced-patterns.md §1](advanced-patterns.md#1-instant-navigation--regression-testing-nextplaywright).
+- The gate is `apps/studio/e2e/instant.spec.ts` (`pnpm --filter studio test:e2e:instant` (the script pins one worker) against a build with `EXPOSE_TESTING_API=1`). It is a local gate, not a CI job. Runbook, baseline numbers and what was deliberately not adopted: [advanced-patterns.md §1](advanced-patterns.md#1-instant-navigation--regression-testing-nextplaywright).
 
 ## 10. Checklist
 

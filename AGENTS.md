@@ -15,20 +15,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Dependencies go in the package that uses them; root holds only repo tooling. No root `tsconfig.json`.
 - Turbopack compiles workspace packages automatically; do not add `transpilePackages` for them.
 - Import workspace packages through their `exports` (e.g. `@workspace/ui/components/button`); do not add tsconfig `paths` for them.
-- Cache Components (`cacheComponents` + `partialPrefetching`) are enabled in `apps/web/next.config.ts`. Wrap runtime APIs (`cookies()`, `headers()`, `params`, `searchParams`) in `<Suspense>`; use `"use cache"` + `cacheLife` for cached data.
+- Cache Components (`cacheComponents` + `partialPrefetching`) are enabled in `apps/studio/next.config.ts`. Wrap runtime APIs (`cookies()`, `headers()`, `params`, `searchParams`) in `<Suspense>`; use `"use cache"` + `cacheLife` for cached data.
 - See `CONTRIBUTING.md` for details.
 
 # Read the doc before changing the area
 
-The docs in `docs/` are the single source of truth for `apps/web`. Open the matching one first:
+The docs in `docs/` are the single source of truth for `apps/studio` (the dashboard; `apps/web` is only the landing page). Open the matching one first:
 
 | Working on | Read |
 | :--- | :--- |
-| Folder layout, feature slices, ESLint boundaries, extracting `packages/` | `docs/project-structure.md` (summary: `apps/web/features/README.md`) |
+| Folder layout, feature slices, ESLint boundaries, extracting `packages/` | `docs/project-structure.md` (summary: `apps/studio/features/README.md`) |
 | Data fetching, caching, mutations, Server Actions | `docs/data-fetching.md` |
 | Routes, layouts, parallel and intercepting routes | `docs/routing-and-layouts.md` |
 | Client-only shared state (Zustand) | `docs/client-state.md` |
-| Auth, sessions, DAL, roles, per-app cookies, `packages/auth` + `packages/db` (`AUTH_PROVIDER=better-auth\|supabase`; env template `apps/web/.env.example`) | `docs/authentication.md` |
+| Auth, sessions, DAL, roles, per-app cookies, `packages/auth` + `packages/db` (`AUTH_PROVIDER=better-auth\|supabase`; env template `apps/studio/.env.example`) | `docs/authentication.md` |
 | Stacks: Supabase (this project) or Better Auth + FastAPI (kept in the base), starting a project on Supabase, provider seams, per-provider rules, latency | `docs/providers.md` |
 | Performance, code splitting, lazy loading, Core Web Vitals | `docs/performance-optimization.md` |
 | Redis cache, large uploads, SSE, telemetry, instant-navigation tests | `docs/advanced-patterns.md` |

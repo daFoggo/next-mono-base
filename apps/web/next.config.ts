@@ -1,38 +1,23 @@
 import type { NextConfig } from "next"
 
 const isDev = process.env.NODE_ENV === "development"
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL)
-  : null
 
 /**
  * Content-Security-Policy without nonces: nonces force dynamic rendering of every page
  * and are incompatible with Partial Prerendering (docs: guides/content-security-policy).
+ * The landing page makes no API calls and submits no forms.
  */
 function contentSecurityPolicy(): string {
-  const formActions = ["'self'", "https://accounts.google.com"]
-  // Supabase OAuth sends the browser to the project's auth server before Google.
-  if (
-    process.env.AUTH_PROVIDER === "supabase" &&
-    process.env.NEXT_PUBLIC_SUPABASE_URL
-  ) {
-    formActions.push(new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin)
-  }
-
-  const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
-    ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
-    : null
-
   const directives = [
     "default-src 'self'",
     `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' blob: data:${supabaseOrigin ? ` ${supabaseOrigin}` : ""}`,
+    "img-src 'self' blob: data:",
     "font-src 'self'",
-    `connect-src 'self'${supabaseOrigin ? ` ${supabaseOrigin}` : ""}${isDev ? " ws: wss:" : ""}`,
+    `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
     "object-src 'none'",
     "base-uri 'self'",
-    `form-action ${formActions.join(" ")}`,
+    "form-action 'self'",
     "frame-ancestors 'none'",
   ]
   // Upgrading to https would break http://localhost during development.
@@ -46,27 +31,8 @@ const nextConfig: NextConfig = {
   // Recommended for all new apps from Next.js 16.4 (default in create-next-app).
   cacheComponents: true,
   partialPrefetching: true,
-  // Enables forbidden() / forbidden.tsx, used by requirePermission() in lib/dal.ts.
   experimental: {
-    authInterrupts: true,
     optimizePackageImports: ["@tabler/icons-react"],
-    // Ships the instant() testing API only in a dedicated test build (EXPOSE_TESTING_API=1); never set in deploys.
-    exposeTestingApiInProductionBuild: process.env.EXPOSE_TESTING_API === "1",
-  },
-  images: {
-    // The protocol and port follow the Supabase URL (http for the local stack).
-    remotePatterns: supabaseUrl
-      ? [
-          {
-            protocol: supabaseUrl.protocol === "http:" ? "http" : "https",
-            hostname: supabaseUrl.hostname,
-            ...(supabaseUrl.port ? { port: supabaseUrl.port } : {}),
-            pathname: "/storage/v1/object/public/media/**",
-          },
-        ]
-      : [],
-    // The local Supabase stack lives on 127.0.0.1, which the optimizer blocks by default.
-    ...(isDev ? { dangerouslyAllowLocalIP: true } : {}),
   },
   async headers() {
     return [

@@ -1,8 +1,8 @@
 # Advanced Data Fetching, Caching & Production Patterns
 
-Production extensions for `apps/web` running on **Next.js 16.4.2** with `cacheComponents: true` and `partialPrefetching: true`.
+Production extensions for `apps/studio` running on **Next.js 16.4.2** with `cacheComponents: true` and `partialPrefetching: true`.
 Complements [data-fetching.md](data-fetching.md) and [authentication.md](authentication.md).
-Sources resolve from `apps/web/node_modules/next/dist/docs/01-app/` (`DOCS/`).
+Sources resolve from `apps/studio/node_modules/next/dist/docs/01-app/` (`DOCS/`).
 
 ---
 
@@ -10,21 +10,21 @@ Sources resolve from `apps/web/node_modules/next/dist/docs/01-app/` (`DOCS/`).
 
 ### 1.1 Mental Model
 With Cache Components and Partial Prefetching a client navigation should show the **App Shell + Fallback UI immediately**, while dynamic segments stream in. A default `<Link>` (`prefetch="auto"`) prefetches only the route's App Shell. Under `instant()` a default link is restricted to that shell: it ignores the per-URL page prefetch (`__PAGE__` segments), even when the browser already holds one. Content that depends on `params`/`searchParams` therefore reaches the screen only if the link sets `prefetch={true}` (for a listing that reads `searchParams` that is one uncacheable runtime render per link; for a statically prerendered page such as a known product slug it is a cacheable static response). A `[slug]` page that awaits `params` outside `<Suspense>` has an empty shell, so under the lock the navigation does not even commit: every dynamic-segment page must read `params` inside a `<Suspense>` with a sized fallback.
-A developer calling `await cookies()`, `await searchParams`, or uncached I/O at the top level of a shared layout or page causes the same "blocking route" regression. `@next/playwright` provides `instant()` to lock this behavior in E2E tests (`DOCS/02-guides/instant-navigation.md`); the gate is `apps/web/e2e/instant.spec.ts`.
+A developer calling `await cookies()`, `await searchParams`, or uncached I/O at the top level of a shared layout or page causes the same "blocking route" regression. `@next/playwright` provides `instant()` to lock this behavior in E2E tests (`DOCS/02-guides/instant-navigation.md`); the gate is `apps/studio/e2e/instant.spec.ts`.
 
 ### 1.2 Setup
 What exists in the repo:
-- `@next/playwright` is pinned to the exact Next version (`16.4.2`) in the `apps/web` devDependencies (`pnpm --filter=web add -D -E @next/playwright@<next version>`; keep both in step).
-- `apps/web/next.config.ts` sets `experimental.exposeTestingApiInProductionBuild: process.env.EXPOSE_TESTING_API === "1"`. Without the flag the build has no testing API and `instant()` locks nothing.
+- `@next/playwright` is pinned to the exact Next version (`16.4.2`) in the `apps/studio` devDependencies (`pnpm --filter=studio add -D -E @next/playwright@<next version>`; keep both in step).
+- `apps/studio/next.config.ts` sets `experimental.exposeTestingApiInProductionBuild: process.env.EXPOSE_TESTING_API === "1"`. Without the flag the build has no testing API and `instant()` locks nothing.
 - `EXPOSE_TESTING_API` is declared in `turbo.json` `build.env`, so a flagged build never reuses a cached unflagged one.
-- Scripts in `apps/web/package.json`: `test:e2e` (all specs) and `test:e2e:instant` (`playwright test e2e/instant.spec.ts --workers=1`). The instant file skips itself unless `EXPOSE_TESTING_API=1`, so plain `pnpm test:e2e` never runs it.
+- Scripts in `apps/studio/package.json`: `test:e2e` (all specs) and `test:e2e:instant` (`playwright test e2e/instant.spec.ts --workers=1`). The instant file skips itself unless `EXPOSE_TESTING_API=1`, so plain `pnpm test:e2e` never runs it.
 - `next dev` does not prefetch, so only a production build can prove instant navigation.
 
 ### 1.3 Test Implementation Pattern
 Each test starts from a full page load of the source page (visited routes stay mounted in `<Activity>` and would be trivially instant), scrolls the link into view so its viewport prefetch can finish, then clicks inside `instant()`:
 
 ```ts
-// apps/web/e2e/instant.spec.ts (simplified)
+// apps/studio/e2e/instant.spec.ts (simplified)
 import { instant } from "@next/playwright"
 import { expect, test } from "@playwright/test"
 
@@ -60,20 +60,20 @@ The gate is a **local** gate (see 1.8). It needs a production build with the fla
 
 Git Bash:
 ```bash
-EXPOSE_TESTING_API=1 pnpm --filter web build
-EXPOSE_TESTING_API=1 pnpm --filter web exec next start -p 3100
+EXPOSE_TESTING_API=1 pnpm --filter studio build
+EXPOSE_TESTING_API=1 pnpm --filter studio exec next start -p 3100
 # second terminal
-EXPOSE_TESTING_API=1 BASE_URL=http://localhost:3100 pnpm --filter web test:e2e:instant
+EXPOSE_TESTING_API=1 BASE_URL=http://localhost:3100 pnpm --filter studio test:e2e:instant
 ```
 PowerShell:
 ```powershell
-$env:EXPOSE_TESTING_API="1"; pnpm --filter web build
-$env:EXPOSE_TESTING_API="1"; pnpm --filter web exec next start -p 3100
+$env:EXPOSE_TESTING_API="1"; pnpm --filter studio build
+$env:EXPOSE_TESTING_API="1"; pnpm --filter studio exec next start -p 3100
 # second terminal
-$env:EXPOSE_TESTING_API="1"; $env:BASE_URL="http://localhost:3100"; pnpm --filter web test:e2e:instant
+$env:EXPOSE_TESTING_API="1"; $env:BASE_URL="http://localhost:3100"; pnpm --filter studio test:e2e:instant
 ```
 - The script pins `--workers=1` itself. The lock is per browser context, and with 7 workers it timed out (observed, not explained); do not override it.
-- Afterwards rebuild WITHOUT the flag (`pnpm --filter web build`), so `apps/web/.next` is not left with the testing API.
+- Afterwards rebuild WITHOUT the flag (`pnpm --filter studio build`), so `apps/studio/.next` is not left with the testing API.
 - **Never set `EXPOSE_TESTING_API` on Vercel or any deploy/CI build.** The flag ships the testing API in the production bundle.
 - **Canary**: the first test locks a document load of `/danh-muc/sofa` and asserts the header (shell) is visible while the listing cards are absent. It fails on a build or server without the flag, which is the only thing that stops the other six tests from passing vacuously (without the flag they all pass). If the cards do not appear within 5 s of releasing the lock, the test records a `reload-after-release` annotation and reloads; this is a suspected Next / `@next/playwright` quirk that never occurred in the recorded runs, and the reload proves only that the page recovers, not streaming after release.
 - **Home tiles**: `Home -> category shows the listing fallback` asserts what the locked navigation shows today: the URL commits and the sized listing fallback (`.animate-pulse` block) is visible, with no heading and no cards. It guards the `<Suspense>` around `params` in `danh-muc/[slug]` (without it the navigation never commits). The full-content variant (heading + cards, like the other listing flows) is deliberately not asserted: the category page reads `searchParams`, so a tile would need `prefetch={true}`, one uncacheable runtime render per tile (12 on the home page); tiles stay on the default prefetch (see 1.7). Separately, unlocked clicks on this navigation show a bimodal ~340 ms slow mode (see 1.5) whose cause is unexplained.
@@ -146,7 +146,7 @@ A custom cache handler must implement the 5 required methods from `next/cache`:
 > - Never store tokens, passwords, or PII in `cacheKey` or tags.
 
 ```ts
-// apps/web/cache-handlers/redis-handler.js
+// apps/studio/cache-handlers/redis-handler.js
 const { createClient } = require('redis')
 
 const client = createClient({ url: process.env.REDIS_URL })
@@ -244,7 +244,7 @@ module.exports = {
 
 ### 2.3 Configuration in `next.config.ts`
 ```ts
-// apps/web/next.config.ts
+// apps/studio/next.config.ts
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -325,7 +325,7 @@ When a feature requires live updates without installing heavy client libraries, 
 > However, an SSE Route Handler is one of the rare legitimate use cases for `connection()` from `next/server`: you **must wait for a real user request** and **deliberately block prefetching** (`DOCS/03-api-reference/04-functions/io.md`). You never want a `<Link>` hover or prefetch to trigger an open, persistent event stream and leak server connections.
 
 ```ts
-// apps/web/app/api/live-events/route.ts
+// apps/studio/app/api/live-events/route.ts
 import { connection } from 'next/server'
 import { verifySession } from '@/lib/dal'
 
@@ -411,7 +411,7 @@ export async function updateItemAction(itemId: string, note: string) {
 Next.js 16 provides the `onRequestError` export in `instrumentation.ts` to capture unhandled errors across Server Components, Route Handlers, Server Actions, and Proxy (`DOCS/03-api-reference/03-file-conventions/instrumentation.md`):
 
 ```ts
-// apps/web/instrumentation.ts
+// apps/studio/instrumentation.ts
 import type { Instrumentation } from 'next'
 
 export function register() {

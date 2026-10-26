@@ -1,8 +1,8 @@
 # Routing, Layouts & Route Segments
 
-How `apps/web` organizes routes, handles multi-panel layouts, modals, and segment boundaries.
+How `apps/studio` organizes routes, handles multi-panel layouts, modals, and segment boundaries.
 Written against **Next.js 16.4.2** with React 19, `cacheComponents: true`, and `partialPrefetching: true`.
-Sources are the docs shipped with the package (`apps/web/node_modules/next/dist/docs/01-app/`, written `DOCS/` below).
+Sources are the docs shipped with the package (`apps/studio/node_modules/next/dist/docs/01-app/`, written `DOCS/` below).
 For feature folder layout and component tiers, see [project-structure.md](project-structure.md).
 For data fetching and caching rules, see [data-fetching.md](data-fetching.md).
 
@@ -74,7 +74,7 @@ Parallel routes allow simultaneously or conditionally rendering multiple indepen
 Slots are folders prefixed with `@` (e.g. `@analytics`, `@team`). They are passed as props to the parent layout alongside `children`:
 
 ```
-apps/web/app/(dashboard)/dashboard/
+apps/studio/app/(dashboard)/dashboard/
   layout.tsx
   page.tsx             # Implicit slot: children
   @analytics/
@@ -295,8 +295,11 @@ app/(dashboard)/
   project/[projectRef]/{page,database,settings}
 ```
 
-The scope layout awaits `params` inside `<Suspense>` and is the only place that checks the id, so its pages stay static
-markup. Unknown ids render `not-found.tsx` (the status is 200 because the shell has already streamed). Names for the
+The scope layout renders a gate next to `children`, not around them: the gate awaits `params` inside `<Suspense>` and
+calls `notFound()` for an unknown id, so the existence check runs in parallel with the page's reads instead of delaying
+them (data-fetching.md §4.2). It does not authorize: `queries.ts` calls `requirePermission` next to the data, and every
+read sits in a `<Suspense>` with a sized skeleton (`components/skeletons.tsx`), never `fallback={null}`. Unknown ids
+render `not-found.tsx` (the status is 200 because the shell has already streamed). Names for the
 breadcrumb come from the `features/workspace` slice, a full reference implementation with a mock backend:
 `schemas.ts` (Zod DTOs and form input), `server.ts` (the only backend calls; an in-memory mock today, so replace its bodies
 with `apiFetch` or `createDataClient` and keep the signatures), `queries.ts` (`getWorkspace` as `"use cache: private"`
@@ -343,7 +346,7 @@ export async function generateMetadata({
 Generate search engine sitemaps dynamically (`DOCS/03-api-reference/03-file-conventions/04-metadata-file-conventions/sitemap.md`):
 
 ```ts
-// apps/web/app/sitemap.ts
+// apps/studio/app/sitemap.ts
 import type { MetadataRoute } from 'next'
 import { getPublicCaseSlugs } from '@/features/cases/server'
 
@@ -374,7 +377,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 Control search crawler indexing (`DOCS/03-api-reference/03-file-conventions/04-metadata-file-conventions/robots.md`):
 
 ```ts
-// apps/web/app/robots.ts
+// apps/studio/app/robots.ts
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -397,7 +400,7 @@ export default function robots(): MetadataRoute.Robots {
 Generate dynamic Open Graph cards on the edge using JSX and `@vercel/og` (`DOCS/03-api-reference/03-file-conventions/04-metadata-file-conventions/opengraph-image.md`):
 
 ```tsx
-// apps/web/app/cases/[id]/opengraph-image.tsx
+// apps/studio/app/cases/[id]/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
 import { getCaseDetail } from '@/features/cases/queries'
 

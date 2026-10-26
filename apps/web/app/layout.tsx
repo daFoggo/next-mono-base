@@ -1,10 +1,8 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono, STIX_Two_Text } from "next/font/google"
+import { Geist, Geist_Mono } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { WebVitals } from "@/components/shared/web-vitals"
-import { Toaster } from "@workspace/ui/components/toast"
 import { cn } from "@workspace/ui/lib/utils"
 import { publicEnv } from "@/lib/env.public"
 
@@ -32,14 +30,6 @@ const fontMono = Geist_Mono({
   display: "swap",
 })
 
-// Registered for `font-serif` only; no component uses it by default.
-const fontSerif = STIX_Two_Text({
-  subsets: ["latin", "vietnamese"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
-  preload: false,
-})
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -53,17 +43,11 @@ export default function RootLayout({
         "antialiased",
         fontMono.variable,
         "font-sans",
-        fontSans.variable,
-        fontSerif.variable
+        fontSans.variable
       )}
     >
       <body>
-        <ThemeProvider>
-          <Toaster>
-            {children}
-          </Toaster>
-          <WebVitals />
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )

@@ -6,11 +6,12 @@ Next.js 16 + Turborepo + pnpm monorepo base with shadcn/ui.
 
 ```
 apps/
-  web/                    Next.js web app (runnable)
-  admin/                  Next.js staff app (runnable)
+  web/                    Next.js landing page (runnable, public)
+  studio/                 Next.js dashboard: sign-in, organizations, projects (runnable)
 packages/
   ui/                     @workspace/ui — shared shadcn/ui components, styles
   auth/                   @workspace/auth — Better Auth / Supabase providers behind AUTH_PROVIDER
+  auth-ui/                @workspace/auth-ui — sign-in, sign-up, OAuth and sign-out UI; the app passes the action
   db/                     @workspace/db — Supabase clients, types, migrations
   eslint-config/          @workspace/eslint-config
   typescript-config/      @workspace/typescript-config
@@ -23,8 +24,8 @@ scoped `@workspace/*`, declared with `workspace:*`, and never nested or imported
 
 ```bash
 pnpm install
-pnpm dev                          # all apps: web on :3000, admin on :3001
-pnpm turbo run dev --filter=web   # one app
+pnpm dev                          # all apps: web (landing) on :3000, studio (dashboard) on :3001
+pnpm turbo run dev --filter=studio   # one app
 pnpm build
 pnpm check                        # lint + typecheck
 ```
@@ -32,7 +33,7 @@ pnpm check                        # lint + typecheck
 ## Adding shadcn components
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+pnpm dlx shadcn@latest add button -c apps/studio
 ```
 
 Components land in `packages/ui/src/components`; import with

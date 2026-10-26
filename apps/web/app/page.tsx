@@ -1,35 +1,93 @@
-import Link from "next/link"
+import { IconBrandGithub } from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
 
 import { AppLogo } from "@/components/shared/app-logo"
 import { CONTAINER } from "@/config/layout"
-import { SIGN_IN_PATH, SIGN_UP_PATH } from "@/config/routes"
+import { SIGN_IN_HREF, SIGN_UP_HREF } from "@/config/site"
 
+const FEATURES = [
+  {
+    title: "Monorepo",
+    text: "pnpm workspaces and Turborepo: apps next to shared packages for UI, auth and data.",
+  },
+  {
+    title: "Auth and data",
+    text: "Better Auth or Supabase behind one seam, a data access layer and per-user caching.",
+  },
+  {
+    title: "Design system",
+    text: "shadcn base-nova on a zinc theme, no shadows, ready-made dashboard shell and detail sheets.",
+  },
+] as const
+
+/** Landing page. The product itself lives in apps/studio; this app only links to it. */
 export default function HomePage() {
   return (
-    <main className={`${CONTAINER} flex min-h-svh flex-col justify-center gap-6`}>
-      <AppLogo size="lg" />
-      <h1 className="text-5xl leading-tight font-normal tracking-tighter">
-        Build on a solid base
-      </h1>
-      <p className="max-w-xl text-muted-foreground">
-        Next.js, Turborepo, shared auth and data packages, and a design system.
-        Replace this page with your product.
-      </p>
-      <div className="flex gap-3">
-        <Button size="lg" render={<Link href={SIGN_IN_PATH} />} nativeButton={false}>
-          Sign in
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          render={<Link href={SIGN_UP_PATH} />}
-          nativeButton={false}
+    <>
+      <header className="border-b">
+        <div className={`${CONTAINER} flex h-14 items-center gap-4`}>
+          <AppLogo />
+          <nav className="ml-auto flex items-center gap-2">
+            <Button
+              variant="ghost"
+              render={<a href={SIGN_IN_HREF} />}
+              nativeButton={false}
+            >
+              Sign in
+            </Button>
+            <Button render={<a href={SIGN_UP_HREF} />} nativeButton={false}>
+              Get started
+            </Button>
+          </nav>
+        </div>
+      </header>
+      <main className={`${CONTAINER} flex flex-col gap-14 pt-20 pb-14`}>
+        <section className="flex flex-col gap-6">
+          <h1 className="max-w-3xl text-5xl leading-tight font-normal tracking-tighter">
+            Build on a solid base
+          </h1>
+          <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+            Next.js, Turborepo, shared auth and data packages, and a design
+            system. Replace this page with your product.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              size="lg"
+              render={<a href={SIGN_UP_HREF} />}
+              nativeButton={false}
+            >
+              Get started
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              render={<a href={SIGN_IN_HREF} />}
+              nativeButton={false}
+            >
+              Sign in
+            </Button>
+          </div>
+        </section>
+        <section className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          {FEATURES.map((feature) => (
+            <div key={feature.title} className="flex flex-col gap-3">
+              <h2 className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
+                {feature.title}
+              </h2>
+              <p>{feature.text}</p>
+            </div>
+          ))}
+        </section>
+      </main>
+      <footer className="border-t">
+        <div
+          className={`${CONTAINER} flex h-14 items-center gap-2 font-mono text-sm text-muted-foreground`}
         >
-          Sign up
-        </Button>
-      </div>
-    </main>
+          <IconBrandGithub aria-hidden className="size-4" />
+          next-mono-base
+        </div>
+      </footer>
+    </>
   )
 }

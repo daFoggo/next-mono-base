@@ -1,6 +1,6 @@
 # Design system
 
-How `apps/web` looks and behaves: color, type, spacing, responsive layout, components and motion. The theme is
+How `apps/studio` looks and behaves: color, type, spacing, responsive layout, components and motion. The theme is
 shadcn `base-nova` with the stock shadcn tokens, nothing custom. Every value is Tailwind's default scale. Tokens live in
 `packages/ui/src/styles/globals.css`, components in `packages/ui/src/components` (shadcn, style `base-nova`).
 An illustrated, interactive version of this guide lives in [design-system/base-design-system.html](design-system/base-design-system.html)
@@ -190,7 +190,7 @@ Patterns specific to this language:
 
 ## Logo
 
-`AppLogo` (`apps/web/components/shared/app-logo.tsx`): an 8x8 pixel mark, a `>` prompt (`currentColor`, follows
+`AppLogo` (`apps/studio/components/shared/app-logo.tsx`): an 8x8 pixel mark, a `>` prompt (`currentColor`, follows
 the theme), a little spark in `primary` and one muted ember, drawn as `<rect>`s with `shape-rendering="crispEdges"`.
 
 | Prop | Values | Use |
@@ -205,7 +205,7 @@ Rules:
 - Do not redraw or recolor the mark at the call site; wrap it in a `Link` when it navigates. The logo is a block-level
   `flex w-fit` box (an inline box would sit on the text baseline and add a gap below it).
 - `idle` animates only under `motion-safe`; with reduced motion it renders exactly like `static`.
-- The favicon is `apps/web/app/icon.svg`, the same mark with fixed light/dark colors (`prefers-color-scheme`).
+- The favicon is `apps/studio/app/icon.svg`, the same mark with fixed light/dark colors (`prefers-color-scheme`).
 
 ---
 
@@ -286,7 +286,7 @@ hiding it, so every page stays one click away.
   group loses its header and its links show flat (open or closed). The logo shrinks to its mark and the account row to
   a user icon whose menu opens to the right.
 - Icons are named in `config/navigation.ts` (`NavLink.icon: NavIconName`) and resolved to components in
-  `components/layout/nav-icons.tsx` (a `Record`, so a new name without an icon fails typecheck). Names, not components,
+  `components/layout/sidebar/nav-icons.tsx` (a `Record`, so a new name without an icon fails typecheck). Names, not components,
   because `entries` cross from a Server Component to the client `NavTree`.
 - Rows use `group-data-[collapsible=icon]:*` variants of the sidebar's own `group` wrapper; no JS state except the tooltip.
 
@@ -328,23 +328,23 @@ collapse and expand groups, Enter opens.
 Needed components: `pnpm dlx shadcn@latest add sidebar sheet badge tabs` (from `packages/ui`). shadcn's sidebar width
 comes from the `--sidebar-width` variable; change it in the theme rather than with a class.
 
-### Implementation (apps/web)
+### Implementation (apps/studio)
 
 shadcn files in `packages/ui` are **never edited**, so `shadcn add --overwrite` and future migrations stay clean. The
-Next Mono Base look is composed on top in `apps/web/components/layout/`:
+Next Mono Base look is composed on top in `apps/studio/components/layout/`, grouped by area (`sidebar/`, `header/`; `ColumnHeader` and `PageHead` sit at the root). No barrel `index.ts`: import the file you need (`@/components/layout/sidebar/nav-tree`):
 
 
 | Part | File | Built from |
 | :--- | :--- | :--- |
 | `ColumnHeader` | `column-header.tsx` | Plain `div` (`h-14 border-b px-4`) |
-| `AppSidebar`, `AppSidebarBody`, `AppSidebarSection` | `app-sidebar.tsx` | `Sidebar collapsible="offcanvas"`, `SidebarContent` |
-| `NavTree` | `nav-tree.tsx`, `nav-icons.tsx` | `SidebarMenu` / `SidebarMenuItem` for structure; its own `Link` row for the tree look; `Tooltip` names the icon in the rail. One per section |
-| `ThemeToggle` | `theme-toggle.tsx` | Ghost `icon-sm` `Button` + `hooks/use-theme-toggle.ts` (also used by the auth rail footer) |
+| `AppSidebar`, `AppSidebarBody`, `AppSidebarSection` | `sidebar/app-sidebar.tsx` | `Sidebar collapsible="offcanvas"`, `SidebarContent` |
+| `NavTree` | `sidebar/nav-tree.tsx`, `sidebar/nav-icons.tsx` | `SidebarMenu` / `SidebarMenuItem` for structure; its own `Link` row for the tree look; `Tooltip` names the icon in the rail. One per section |
+| `ThemeToggle` | `header/theme-toggle.tsx` | Ghost `icon-sm` `Button` + `hooks/use-theme-toggle.ts` (also used by the auth rail footer) |
 | `DetailSheet*` | `components/shared/detail-sheet.tsx` | Compound parts over shadcn `Sheet` (see Detail sheets) |
 | `CopyButton` | `components/shared/copy-button.tsx` | Ghost `icon-sm` `Button`; the icon turns into a check after copying |
-| `UserMenu` | `user-menu.tsx` | `DropdownMenu`; items are passed as children (sign out comes from `features/auth`) |
-| `DashboardBreadcrumb`, `CrumbMenu` | `dashboard-breadcrumb.tsx`, `crumb-menu.tsx` | `Breadcrumb`; global pages read like the path, scoped pages start with organization / project menus (`Crumb.options`, a `DropdownMenu`) then the page title from the nav |
-| `ScopedNav` | `scoped-nav.tsx` | Client; the sidebar sections of the current scope, over `NavTree` |
+| `UserMenu` | `sidebar/user-menu.tsx` | `DropdownMenu`; items are passed as children (sign out comes from `features/auth`) |
+| `DashboardBreadcrumb`, `CrumbMenu` | `header/dashboard-breadcrumb.tsx`, `header/crumb-menu.tsx` | `Breadcrumb`; global pages read like the path, scoped pages start with organization / project menus (`Crumb.options`, a `DropdownMenu`) then the page title from the nav |
+| `ScopedNav` | `sidebar/scoped-nav.tsx` | Client; the sidebar sections of the current scope, over `NavTree` |
 | `PageHead`, `Metrics`, `SpecList` | `page-head.tsx`, `components/shared/` | Plain markup |
 | `InfoHint` | `components/shared/info-hint.tsx` | `Popover` + ghost `icon-xs` `Button`; copy comes from `config/help.ts` (also read by the Guide page). `PageHead`, `Metric` and section titles take a `hint` key |
 | `ResponsiveDialog` | `components/shared/responsive-dialog.tsx` | `Dialog` from `md` up, bottom `Drawer` below (shadcn "Responsive Dialog"); `size` `md` or `lg`; `DialogActions` for the button row. Use it for every form that opens over a page; `AlertDialog` stays for confirmations |
@@ -442,14 +442,14 @@ Tailwind durations and easings only: `ease-out` to enter, `ease-in-out` to leave
 
 Everything must respect `prefers-reduced-motion` (`motion-safe:` / `motion-reduce:`).
 
-Applied in `apps/web`:
+Applied in `apps/studio`:
 
 | Pattern | Where | Implementation |
 | :--- | :--- | :--- |
 | Stagger on enter (slide up 8px, `duration-500`, `delay-75` steps) | Dashboard body, auth form column | `components/shared/stagger.tsx` (direct children, `*:nth-N:delay-*`). Plays once per element: Cache Components hides visited routes with `display: none` and a CSS animation restarts when its element is shown again, so each child switches its animation off when it ends (`onAnimationEnd`) and going back is instant |
 | Stack logos reveal in order | Auth rail | `app/(auth)/_components/stack-showcase.tsx` (`Stagger`) |
 | Glyph background (WebGL characters, cursor glow, click waves; pauses off screen, static under reduced motion) | Auth rail | `GlyphBackground` from [Animate UI](https://animate-ui.com/docs/backgrounds/glyph), installed in `packages/ui` via the `@animate-ui` registry in `components.json` |
-| Sun and moon swap with a spin and zoom (`duration-300 ease-out`) | Theme toggle | `components/layout/theme-toggle.tsx` |
+| Sun and moon swap with a spin and zoom (`duration-300 ease-out`) | Theme toggle | `components/layout/header/theme-toggle.tsx` |
 | TOC nudge (`translate-x-1`, `duration-200`) | Sidebar nav rows | `NavTree` `RowLabel` |
 | Arrow slides on hover (`translate-x-1`) | Auth switch link, 403 CTA | `group-hover` on the icon |
 | Caret rotates (`duration-300`) | Collapsible nav group | `NavTree` `TreeGroup` |

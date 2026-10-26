@@ -1,7 +1,7 @@
 # Client State (Zustand)
 
 ## 1. When to Use
-Use when a feature needs client-only state shared by several distant client components (multi-step editor, audio player, canvas tool), or when asked to add Zustand, a store, `persist`, `devtools` or `immer`. Zustand is not installed by default: `pnpm --filter web add zustand` (+ `immer` if used).
+Use when a feature needs client-only state shared by several distant client components (multi-step editor, audio player, canvas tool), or when asked to add Zustand, a store, `persist`, `devtools` or `immer`. Zustand is not installed by default: `pnpm --filter studio add zustand` (+ `immer` if used).
 
 ## 2. Decision Matrix
 

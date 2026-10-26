@@ -1,7 +1,7 @@
 # Project Structure and Monorepo Architecture
 
 Comprehensive architectural guide for **next-mono-base** running on **Next.js 16.4.2** and **Turborepo**.
-This document defines how code is organized across the monorepo, the feature-based layout inside `apps/web`, boundary rules enforced by ESLint, and strict criteria for extracting shared packages.
+This document defines how code is organized across the monorepo, the feature-based layout inside `apps/studio`, boundary rules enforced by ESLint, and strict criteria for extracting shared packages.
 
 ---
 
@@ -11,7 +11,7 @@ This document defines how code is organized across the monorepo, the feature-bas
 2. **`app/` is Routing & Composition Only**: Pages and layouts contain zero business logic and zero direct database/backend calls. They authenticate, invoke feature queries, assemble feature components, and pass down data via props.
 3. **Route-Agnostic Features**: Features know nothing about URLs, route params, or Next.js route structures. This allows feature components to be reused across pages, dialogs, or embedded panes without changes.
 4. **RSC-First & Explicit Server/Client Boundaries**: Data reading happens in async Server Components; data writing happens in Server Actions. Any file touching external data sources or secrets is marked `import "server-only"`.
-5. **Enforced by ESLint, Not Good Intentions**: Architectural boundaries (e.g. features cannot import other features or `app/`, client components cannot import server code) are hard-enforced in `apps/web/eslint.config.js` and fail CI via `eslint --max-warnings 0`.
+5. **Enforced by ESLint, Not Good Intentions**: Architectural boundaries (e.g. features cannot import other features or `app/`, client components cannot import server code) are hard-enforced in `apps/studio/eslint.config.js` and fail CI via `eslint --max-warnings 0`.
 
 ---
 
@@ -54,6 +54,7 @@ next-mono-base/
 ├── packages/
 │   ├── ui/                                 # Primitive shadcn/ui components (@workspace/ui)
 │   ├── auth/                               # Auth providers (Better Auth, Supabase), roles, proxy refresh (@workspace/auth)
+│   ├── auth-ui/                            # Presentational auth forms and buttons; the app passes the Server Action (@workspace/auth-ui)
 │   ├── db/                                 # Supabase clients, errors, formatters, types + supabase/ CLI dir (@workspace/db)
 │   ├── eslint-config/                      # Shared ESLint flat configurations
 │   └── typescript-config/                  # Shared tsconfig base files
@@ -62,9 +63,9 @@ next-mono-base/
 └── package.json                            # Monorepo root (pnpm workspace)
 ```
 
-### Why No `src/` Directory in `apps/web`?
+### Why No `src/` Directory in `apps/studio`?
 - **Matches shadcn/ui Standard**: Scaffolding with `components.json` directly targets `@/components`, `@/lib`, and `@/hooks`.
-- **Flatter Navigation**: Avoids redundant nesting (`apps/web/src/app/...` vs `apps/web/app/...`).
+- **Flatter Navigation**: Avoids redundant nesting (`apps/studio/src/app/...` vs `apps/studio/app/...`).
 - **Path Mapping**: `@/*` in `tsconfig.json` maps cleanly to `./*`.
 
 ---
@@ -108,9 +109,9 @@ When creating a new component, choose its location based on **reusability scope*
 | Scope | Location | When to Use | Example |
 | :--- | :--- | :--- | :--- |
 | **Page-Local** | `app/**/_components/` | Used on **only one page** or route. Next.js ignores `_` folders from routing. | `app/(dashboard)/<name>/_components/<name>-hero.tsx` |
-| **Feature-Domain** | `features/<name>/components/` | Used across **multiple pages within the same feature/domain**. | `features/auth/components/sign-in-form.tsx` |
-| **App-Wide Shell** | `components/layout/` | App shell, navigation, global header, sidebar. | `components/layout/sidebar.tsx` |
-| **App-Wide Shared** | `components/shared/` | Reusable across **multiple features**, but specific to `apps/web` (pure presentational UI). | `components/shared/empty-state.tsx`, `components/shared/confirm-dialog.tsx` |
+| **Feature-Domain** | `features/<name>/components/` | Used across **multiple pages within the same feature/domain**. | `features/workspace/components/create-dialogs.tsx` |
+| **App-Wide Shell** | `components/layout/` | App shell, navigation, global header, sidebar. | `components/layout/sidebar/nav-tree.tsx` |
+| **App-Wide Shared** | `components/shared/` | Reusable across **multiple features**, but specific to `apps/studio` (pure presentational UI). | `components/shared/empty-state.tsx`, `components/shared/confirm-dialog.tsx` |
 | **Primitive UI** | `packages/ui/src/components/` | Generic, **zero-business-logic** primitives from shadcn/ui. | `@workspace/ui/components/button` |
 
 #### How to Share UI Across Features Without Violating ESLint (`features/A` cannot import `features/B`)
@@ -120,7 +121,7 @@ When Feature A needs to render a component owned by Feature B (for example, a `D
 1. **Composition via Slots / Children in `app/**/page.tsx` (Recommended)**:
    Keep features completely decoupled. Let the page compose them together:
    ```tsx
-   // apps/web/app/(dashboard)/projects/page.tsx
+   // apps/studio/app/(dashboard)/projects/page.tsx
    import { ProjectTable } from "@/features/projects/components/project-table"
    import { UserAvatar } from "@/features/users/components/user-avatar"
 
@@ -134,8 +135,8 @@ When Feature A needs to render a component owned by Feature B (for example, a `D
      )
    }
    ```
-2. **Promote to `apps/web/components/shared/` (If Ubiquitous)**:
-   If a component is a pure presentational UI element used everywhere (e.g. `UserAvatar` or `StatusBadge`), place it in `apps/web/components/shared/`.
+2. **Promote to `apps/studio/components/shared/` (If Ubiquitous)**:
+   If a component is a pure presentational UI element used everywhere (e.g. `UserAvatar` or `StatusBadge`), place it in `apps/studio/components/shared/`.
    *Requirement*: It must only accept pure props and must **never** import `server.ts`, `queries.ts`, `@/lib/dal`, or `@/lib/http`.
 
 ---
@@ -194,7 +195,7 @@ flowchart TD
     class App,Features,Components,Lib,UI allowed;
 ```
 
-### Boundary Rules Enforced in `apps/web/eslint.config.js`
+### Boundary Rules Enforced in `apps/studio/eslint.config.js`
 
 1. **Features Never Import `app/`**:
    - `features/**` must never import from `@/app/**`.
@@ -280,15 +281,17 @@ A major failure mode in Turborepo projects is **premature package extraction** (
 Extract code into `packages/<name>` **ONLY** when at least one of these 4 conditions is met:
 
 1. **Multiple Real Consumers (2+ Apps)**:
-   - Example: Both `apps/web` and `apps/mobile` (or `apps/admin`) need the exact same business schemas or client API.
+   - Example: Both `apps/studio` and `apps/mobile` (or a second dashboard) need the exact same business schemas or client API.
 2. **Different Runtime or Deployment Target**:
    - Example: A background worker running on Node.js/Cloudflare Workers (`apps/worker`), or a Chrome extension requiring isolated bundling.
 3. **Independent Release / Publishing Unit**:
    - Example: A public SDK or npm package shipped to third parties.
 4. **Zero-Business-Logic Infrastructure**:
    - Example: Design system components (`packages/ui`), ESLint configs (`packages/eslint-config`), TypeScript configs (`packages/typescript-config`).
-   - In this repo: `packages/auth` and `packages/db` exist because `apps/web` and `apps/admin` both need them
-     (condition 1). They are Just-in-Time packages: TypeScript source behind `exports`, compiled by each app's
+   - In this repo: `packages/auth` and `packages/db` exist so a second app (a back office, a mobile client) can reuse them without copying
+     (condition 1); today `apps/studio` is the only consumer.
+     `packages/auth-ui` is the deliberate exception: pure UI (sign-in, sign-up, OAuth, sign-out) that every project
+     repeats, with the logic passed in as a Server Action prop, so it is extracted ahead of a second consumer. They are Just-in-Time packages: TypeScript source behind `exports`, compiled by each app's
      Turbopack, relative imports inside the package (no `@/`), no tsconfig `paths`.
 
 ### Anti-Patterns: When NOT to Extract a Package
@@ -305,11 +308,11 @@ Extract code into `packages/<name>` **ONLY** when at least one of these 4 condit
 
 | Question | Correct Location |
 | :--- | :--- |
-| Where do I put a new page or route? | `apps/web/app/(group)/<route>/page.tsx` |
-| Where do I put page-specific UI only used on that one page? | `apps/web/app/(group)/<route>/_components/` |
-| Where do I put domain-specific UI, queries, or actions? | `apps/web/features/<name>/` |
-| Where do I put the App Header, Sidebar, or Global Nav? | `apps/web/components/layout/` |
-| Where do I put app-wide providers (Theme, Toaster)? | `apps/web/components/providers/` |
-| Where do I put backend HTTP clients, auth providers, or DAL? | `apps/web/lib/` |
+| Where do I put a new page or route? | `apps/studio/app/(group)/<route>/page.tsx` |
+| Where do I put page-specific UI only used on that one page? | `apps/studio/app/(group)/<route>/_components/` |
+| Where do I put domain-specific UI, queries, or actions? | `apps/studio/features/<name>/` |
+| Where do I put the App Header, Sidebar, or Global Nav? | `apps/studio/components/layout/` |
+| Where do I put app-wide providers (Theme, Toaster)? | `apps/studio/components/providers/` |
+| Where do I put backend HTTP clients, auth providers, or DAL? | `apps/studio/lib/` |
 | Where do I put primitive UI components (Button, Dialog, Input)? | `packages/ui/src/components/` |
 | Where do I put shared Zod schemas if needed by 2+ apps? | `packages/<name>/src/schemas.ts` (Only when 2nd app exists) |

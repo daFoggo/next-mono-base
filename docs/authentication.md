@@ -1,6 +1,6 @@
 # Authentication
 
-How authentication works in the apps (`apps/web`, and `apps/admin` from phase 1b) and why. The code lives in
+How authentication works in the dashboard app (`apps/studio`; `apps/web` is a public landing page with no session) and why. The code lives in
 `packages/auth` (`@workspace/auth`) and `packages/db` (`@workspace/db`) so every app shares it.
 Applies to Next.js 16.4 with Cache Components enabled.
 
@@ -41,7 +41,7 @@ Browser ─cookie─▶ proxy.ts ─▶ updateSession (Better Auth): decrypt/ref
                               JWKS (EdDSA) verification at backend
 ```
 
-Paths in `apps/web/` unless they start with `packages/`:
+Paths in `apps/studio/` unless they start with `packages/`:
 - `proxy.ts`: calls `updateSession(request, AUTH_OPTIONS)` from `@workspace/auth/proxy`, which refreshes the active
   provider's session; `redirectWithSession` keeps the refreshed cookies on redirects.
 - `config/auth.ts`: `AUTH_OPTIONS` (this app's cookie name); `lib/auth.ts`: `getAuthProvider()` bound to it.
@@ -66,6 +66,13 @@ FastAPI (`your FastAPI backend`) verifies JWTs using PyJWKClient / PyJWT:
 
 ## Shared packages, per-app cookies and roles
 
+**Auth UI (`@workspace/auth-ui`).** The forms are reusable because they hold no logic: `SignInForm`, `SignUpForm`,
+`DemoSignInButton`, `OAuthButton`, `SignOutButton`, `SignOutMenuItem`, `PasswordInput` and `FormError` take the Server
+Action as an `action` prop (`<SignInForm action={signInAction} />`) and share the state types in
+`@workspace/auth-ui/types`. Only the app writes `features/auth/actions.ts` (provider, cookie, redirects), so a new
+provider or a second app reuses the forms and swaps the action. Import each file (`@workspace/auth-ui/sign-in-form`), no
+barrel. The page frame (`app/(auth)/_components`, the stack showcase) stays in the app: it is the product's look.
+
 | Export | What it gives |
 | :--- | :--- |
 | `@workspace/auth/config` | `authConfig`: the `AUTH_PROVIDER` union and each stack's env (not `server-only`; the proxy reads it) |
@@ -77,12 +84,12 @@ FastAPI (`your FastAPI backend`) verifies JWTs using PyJWKClient / PyJWT:
 | `@workspace/db/{public,server,errors,format,types}` | Supabase clients (`createPublicClient` for `"use cache"`, `createDataClient(token)` for RLS as the user), `unwrap`, `DataError`, `formatVnd`, `slugify`, generated `Database` |
 
 **One cookie per app.** `AuthOptions.cookieName` becomes the Supabase cookie name (`cookieOptions.name`) and the Better
-Auth cookie prefix (`advanced.cookiePrefix`). The web app uses `nmb-web-auth`, the admin `nmb-admin-auth`: in dev both
-run on `localhost` (ports do not separate cookies), and in production they sit on different domains anyway, so signing
-in or out of one never touches the other.
+Auth cookie prefix (`advanced.cookiePrefix`). The studio uses `nmb-studio-auth`. A second app (a back office) would pick its own name:
+in dev apps share `localhost` (ports do not separate cookies), and in production they sit on different domains anyway,
+so signing in or out of one never touches the other.
 
 **Roles.** `customer` (default, and the fallback for any missing or unknown value), `editor` (content and records,
-may open the admin), `admin` (editor plus settings and staff). Supabase stores the role in `app_metadata.role`, which
+may open a staff area), `admin` (editor plus settings and staff). Supabase stores the role in `app_metadata.role`, which
 only an admin path can write; never authorize from `user_metadata`. RLS reads the same claim from the JWT, so a role
 change applies after the user's token refreshes (sign out and back in to see it at once).
 
@@ -94,4 +101,4 @@ set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}'
 where email = '<email>';
 ```
 
-Then sign out and back in. Later staff sign up on the admin and an admin grants `editor` or `admin` there.
+Then sign out and back in. Later an admin grants `editor` or `admin` the same way.

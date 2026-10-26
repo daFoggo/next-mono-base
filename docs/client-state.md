@@ -1,15 +1,15 @@
 # Client state with Zustand
 
-How `apps/web` keeps client-only state that several client components share. Written against **Next.js 16.4.2**,
+How `apps/studio` keeps client-only state that several client components share. Written against **Next.js 16.4.2**,
 React 19.3, `cacheComponents: true`, `partialPrefetching: true` and **Zustand v5** (checked against `zustand@5.0.15`).
-Sources are the Next.js docs shipped with the package (`apps/web/node_modules/next/dist/docs/01-app/`, written `DOCS/` below)
+Sources are the Next.js docs shipped with the package (`apps/studio/node_modules/next/dist/docs/01-app/`, written `DOCS/` below)
 and the official Zustand docs (`https://zustand.docs.pmnd.rs`, written `ZDOCS/` below, plus the docs source on GitHub).
 Statements marked **(verified)** were exercised in this repository's stack (dev server, production build or Vitest);
 section 10 lists what was and was not verified. For data fetching see [data-fetching.md](data-fetching.md), for the
 folder layout see [project-structure.md](project-structure.md), for navigation and layouts see
 [routing-and-layouts.md](routing-and-layouts.md).
 
-Zustand is **not installed by default**. Add it only when a feature needs it: `pnpm --filter web add zustand`
+Zustand is **not installed by default**. Add it only when a feature needs it: `pnpm --filter studio add zustand`
 (plus `immer` if you use the `immer` middleware).
 
 ---
@@ -309,7 +309,7 @@ Test the factory, not a global store. Each test creates its own store (`createXS
 
 - Store logic: actions, immer nested updates, `reset()` returning to the props-based initial state, isolation between two instances.
 - Server render: `renderToString(<Provider initState={...}><Consumer /></Provider>)` shows the props-based state, shows the **initial** state (not the persisted one) when a synchronous `persist` store hydrates at creation, and throws `useXStore must be used within XStoreProvider` outside the provider.
-- TSX needs one line in `apps/web/vitest.config.ts`, because `tsconfig` uses `jsx: "preserve"`: add `oxc: { jsx: { runtime: "automatic" } }` inside `defineConfig`.
+- TSX needs one line in `apps/studio/vitest.config.ts`, because `tsconfig` uses `jsx: "preserve"`: add `oxc: { jsx: { runtime: "automatic" } }` inside `defineConfig`.
 
 DOM interaction tests need extra dependencies (jsdom, Testing Library) that the repository does not have.
 

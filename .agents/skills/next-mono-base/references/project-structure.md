@@ -9,15 +9,15 @@ Use when creating new files, adding pages/features, structuring components, or d
 
 | File / Artifact | Location | Responsibility |
 | :--- | :--- | :--- |
-| **New Page / Route** | `apps/web/app/**/page.tsx` | Routing & composition only. Awaits zero data at top level. Calls `queries.ts`. |
-| **Page-Only UI** | `apps/web/app/**/_components/` | Sub-components used exclusively on that single page (Next.js ignores `_` folders). |
-| **Domain Feature** | `apps/web/features/<name>/` | Vertical domain slice (UI, queries, actions, schemas). Route-agnostic. |
+| **New Page / Route** | `apps/studio/app/**/page.tsx` | Routing & composition only. Awaits zero data at top level. Calls `queries.ts`. |
+| **Page-Only UI** | `apps/studio/app/**/_components/` | Sub-components used exclusively on that single page (Next.js ignores `_` folders). |
+| **Domain Feature** | `apps/studio/features/<name>/` | Vertical domain slice (UI, queries, actions, schemas). Route-agnostic. |
 | **Cross-Feature UI (Generic)** | `packages/ui/src/components/` | Primitive shadcn/ui components (`@workspace/ui`). Generic, no business logic. |
-| **Cross-Feature UI (App-Shared)**| `apps/web/components/shared/` | Presentational UI used across features (empty-state, confirm-dialog). Pure props only. |
+| **Cross-Feature UI (App-Shared)**| `apps/studio/components/shared/` | Presentational UI used across features (empty-state, confirm-dialog). Pure props only. |
 | **Cross-Feature UI (Domain)** | `features/<owner>/components/` | Owned by primary feature; compose in `app/` via props/slots (never cross-import). |
-| **App Shell / Layout** | `apps/web/components/layout/` | Global Header, Sidebar, Nav, Shell. |
-| **Global Providers** | `apps/web/components/providers/` | `ThemeProvider`, `Toaster`, client context providers. |
-| **App Infrastructure** | `apps/web/lib/` | `dal.ts`, `env.ts`, `http.ts`, `errors.ts`, `utils.ts`. |
+| **App Shell / Layout** | `apps/studio/components/layout/` | Global Header, Sidebar, Nav, Shell. |
+| **Global Providers** | `apps/studio/components/providers/` | `ThemeProvider`, `Toaster`, client context providers. |
+| **App Infrastructure** | `apps/studio/lib/` | `dal.ts`, `env.ts`, `http.ts`, `errors.ts`, `utils.ts`. |
 
 ---
 
@@ -41,7 +41,7 @@ Only create files that are needed:
 - ❌ **Features never import `app/`**: Features are route-agnostic.
 - ❌ **No cross-feature imports**: `features/A` never imports `features/B`. Compose them together in `app/`.
 - ❌ **Client components never import server code**: `features/*/components/` and `components/` never import `server.ts`, `queries.ts`, `@/lib/dal`, `@/lib/http`, or `@/lib/auth`.
-- ❌ **No barrel files (`index.ts`)**: Always deep-import (e.g. `@/features/auth/components/sign-in-form`).
+- ❌ **No barrel files (`index.ts`)**: Always deep-import (e.g. `@/features/workspace/components/create-dialogs`).
 
 ---
 
@@ -54,7 +54,7 @@ Only create files that are needed:
 
 ## 6. Monorepo Packaging Rule
 
-Keep features in `apps/web/features/`. Extract to `packages/<name>` **ONLY** if:
+Keep features in `apps/studio/features/`. Extract to `packages/<name>` **ONLY** if:
 1. There are **2+ real apps** consuming the code (e.g. `web` and `mobile` or `admin`).
 2. Code runs on a **different runtime** (Cloudflare Worker, CLI binary, browser extension).
 3. Code is an **independent publishing unit** (public npm package / SDK).
@@ -66,4 +66,4 @@ Keep features in `apps/web/features/`. Extract to `packages/<name>` **ONLY** if:
 
 ## 7. Source of Truth (Deep Dive)
 - Full architectural design & empirical monorepo analysis: [docs/project-structure.md](../../../../docs/project-structure.md)
-- ESLint boundaries configuration: [apps/web/eslint.config.js](../../../../apps/web/eslint.config.js)
+- ESLint boundaries configuration: [apps/studio/eslint.config.js](../../../../apps/studio/eslint.config.js)

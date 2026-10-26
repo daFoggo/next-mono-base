@@ -1,8 +1,8 @@
 # Frontend Performance, Bundle Optimization & Hydration UX
 
-Comprehensive performance optimization guide for `apps/web` on **Next.js 16.4.2** with React 19.
+Comprehensive performance optimization guide for `apps/studio` on **Next.js 16.4.2** with React 19.
 Covers code splitting, bundle trimming, state preservation (`<Activity>`), hydration flash prevention, View Transitions, and Core Web Vitals.
-Sources are the docs shipped with the package (`apps/web/node_modules/next/dist/docs/01-app/`, written `DOCS/` below) and Vercel Engineering best practices (`vercel-react-best-practices`).
+Sources are the docs shipped with the package (`apps/studio/node_modules/next/dist/docs/01-app/`, written `DOCS/` below) and Vercel Engineering best practices (`vercel-react-best-practices`).
 For server data fetching waterfalls and cache directives, see [data-fetching.md](data-fetching.md).
 For Playwright `instant()` regression testing, see [advanced-patterns.md](advanced-patterns.md).
 
@@ -90,7 +90,7 @@ In Next.js 16+, major packages (`lucide-react`, `date-fns`, `lodash-es`, `react-
 For any additional heavy third-party packages not in the default list, configure `experimental.optimizePackageImports` in `next.config.ts` to automatically rewrite imports into direct module paths:
 
 ```ts
-// apps/web/next.config.ts
+// apps/studio/next.config.ts
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -109,7 +109,7 @@ export default nextConfig
 Opt server-only binary dependencies (e.g. `sharp`, `sqlite3`, database drivers) out of bundling via `serverExternalPackages`:
 
 ```ts
-// apps/web/next.config.ts
+// apps/studio/next.config.ts
 const nextConfig: NextConfig = {
   serverExternalPackages: ['pino', 'sharp'],
 }
@@ -120,10 +120,10 @@ Analyze client and server bundle graphs with Turbopack's native analyzer:
 
 ```bash
 # Run interactive visualizer
-pnpm --filter=web next analyze
+pnpm --filter=studio next analyze
 
 # Output diagnostics report to .next/diagnostics/analyze
-pnpm --filter=web next analyze --output
+pnpm --filter=studio next analyze --output
 ```
 
 ---
@@ -272,7 +272,7 @@ Fonts configured via `next/font/google` or `next/font/local` are automatically s
 `unicode-range`. List only the subsets the UI renders on first paint (`latin` here): a preloaded subset the page never
 uses triggers "preloaded but not used" warnings (Vietnamese user content still renders in the right font).
 ```ts
-// apps/web/app/fonts.ts
+// apps/studio/app/fonts.ts
 import { Inter, JetBrains_Mono } from 'next/font/google'
 
 export const fontSans = Inter({

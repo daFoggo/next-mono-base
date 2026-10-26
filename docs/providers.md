@@ -1,6 +1,6 @@
 # Providers: Better Auth + FastAPI, or Supabase
 
-`apps/web` is built to run on one of two **stacks**, chosen by a single env var. Pages, queries, actions, cache,
+`apps/studio` is built to run on one of two **stacks**, chosen by a single env var. Pages, queries, actions, cache,
 components and the DAL do not know which one is active.
 
 | `AUTH_PROVIDER` | Identity | Data and business rules | Schema lives in |
@@ -8,8 +8,8 @@ components and the DAL do not know which one is active.
 | `better-auth` | Better Auth inside Next (`/api/auth/*`), EdDSA JWT | FastAPI (`your FastAPI backend`) through `apiFetch` | `your FastAPI backend/migrations` (Alembic) |
 | `supabase` | Supabase Auth (GoTrue), ES256 JWT, cookies via `@supabase/ssr` | PostgREST + RLS + SQL functions through `createDataClient` | `packages/db/supabase/migrations` (Supabase CLI) |
 
-**Current state.** A project built on the base can run on `supabase` (hosted project, foundation schema only; web and admin
-share it through `packages/auth` and `packages/db`). Both stacks stay in the base: switching `AUTH_PROVIDER` still works
+**Current state.** A project built on the base can run on `supabase` (hosted project, foundation schema only; the studio
+uses it through `packages/auth` and `packages/db`). Both stacks stay in the base: switching `AUTH_PROVIDER` still works
 for a project that wants Better Auth + FastAPI. History below is the base's: the Supabase **foundation**
 stays in the base (§1) so a new project can start on Supabase without setup work. The original Supabase data path (schema, RLS, SQL functions, pgTAP tests, the
 `server.supabase.ts` files, the calendar hook) was built, passed parity on both stacks, then removed; it is kept in
@@ -21,7 +21,7 @@ identity with the other data path without the backend work in §8.
 
 ## 1. The Supabase foundation (kept in the base)
 
-Paths relative to `apps/web/`.
+Paths relative to `apps/studio/`.
 
 | Piece | Files | What it gives a new project |
 | :--- | :--- | :--- |
@@ -38,9 +38,9 @@ Paths relative to `apps/web/`.
 ## 2. Running each stack
 
 ### 2.1 Better Auth + FastAPI
-1. `apps/web/.env.local`: the `better-auth` block of `.env.example`.
+1. `apps/studio/.env.local`: the `better-auth` block of `.env.example`.
 2. `docker compose up -d` in `your FastAPI backend` (Postgres on host port 5433, API on 8000).
-3. `pnpm --filter web dev`.
+3. `pnpm --filter studio dev`.
 
 ### 2.2 A new project on Supabase (from this base)
 Commands run from `packages/db` with `pnpm exec` (the Supabase CLI and `supabase/` live there).
@@ -52,12 +52,12 @@ Commands run from `packages/db` with `pnpm exec` (the Supabase CLI and `supabase
    `supabase db advisors --linked`, then `supabase gen types typescript --linked > packages/db/src/database.types.ts`.
 4. Feature data: a project with one stack writes `features/<x>/server.ts` directly with `createDataClient` + `unwrap`.
    A repo that keeps both stacks uses the selector: `server.ts` picks `server.api.ts` or `server.supabase.ts` and types
-   the second as `typeof api`, so `tsc` fails when they drift (example: `git show 91c11f0:apps/web/features/goals/server.ts`).
+   the second as `typeof api`, so `tsc` fails when they drift (example: `git show 91c11f0:apps/studio/features/goals/server.ts`).
 5. Auth settings: site URL and `<app>/auth/callback` as a redirect URL, in the dashboard or with `supabase config push`.
    `config push` writes **every** property `config.toml` declares, including local-only ones (email rate limit, MFA
    off): to push one block, run it with `--workdir <dir>` whose `supabase/config.toml` declares only that block, and
    preview with `supabase config diff`.
-6. `pnpm --filter web dev`; then the parity checklist (§7) for the flows the project has.
+6. `pnpm --filter studio dev`; then the parity checklist (§7) for the flows the project has.
 
 ### 2.3 Back on Supabase
 Everything is in commit `91c11f0`:
@@ -137,7 +137,7 @@ Rules:
 
 ## 7. Parity checklist
 
-Automated in `apps/web/e2e/parity.spec.ts`: switch `AUTH_PROVIDER`, restart `next dev`, run it again.
+Automated in `apps/studio/e2e/parity.spec.ts`: switch `AUTH_PROVIDER`, restart `next dev`, run it again.
 
 - Sign up → Today, timezone synced from the browser; sign out → sign in; wrong password keeps the email.
 - Goal → habit from the goal page → full / minimum / undo → reload keeps it; streak updates.
