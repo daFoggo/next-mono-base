@@ -9,7 +9,7 @@ import { Spinner } from "@workspace/ui/components/spinner"
 
 import { FormError } from "./form-error"
 import { PasswordInput } from "./password-input"
-import type { FormAction, SignInState } from "./types"
+import type { FormAction, SignInState } from "../types"
 
 /** Email and password form. The app owns the logic: pass the Server Action that signs the user in. */
 export function SignInForm({ action }: { action: FormAction<SignInState> }) {

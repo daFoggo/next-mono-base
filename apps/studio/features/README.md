@@ -20,7 +20,7 @@ Create only the files a feature needs.
 
 ## Reference Implementation
 
-- **`features/auth`**: Complete vertical slice implementation demonstrating authentication actions (`signInAction`, `signUpAction`, `signOutAction`), schema validation and session handling. Its forms live in `packages/auth-ui` and receive these actions as props.
+- **`features/auth`**: Complete vertical slice implementation demonstrating authentication actions (`signInAction`, `signUpAction`, `signOutAction`), schema validation and session handling. Its forms in `components/` hold no logic: each takes the Server Action as an `action` prop. Its forms live in `packages/auth-ui` and receive these actions as props.
 
 - **`features/workspace`**: organizations and projects (the `/org/<slug>` and `/project/<ref>` scopes). A read + write slice
   over a mock `server.ts`: `queries.ts` with a per-user `"use cache: private"` read, `actions.ts` creating records with

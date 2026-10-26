@@ -3,9 +3,9 @@ import { IconArrowRight } from "@tabler/icons-react"
 
 import { GlyphBackground } from "@workspace/ui/components/animate-ui/backgrounds/glyph"
 
-import { ThemeToggle } from "@/components/layout/header/theme-toggle"
+import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
 import { Stagger } from "@/components/shared/stagger"
-import { AppLogo } from "@/components/shared/app-logo"
+import { AppLogo } from "@workspace/ui-patterns/app-logo"
 import { publicEnv } from "@/lib/env.public"
 
 /** The landing page lives in apps/web, another origin: a plain `<a>`, not `next/link`. */

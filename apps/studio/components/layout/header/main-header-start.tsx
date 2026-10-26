@@ -2,7 +2,7 @@ import Link from "next/link"
 
 import { SidebarTrigger } from "@workspace/ui/components/sidebar"
 
-import { AppLogo } from "@/components/shared/app-logo"
+import { AppLogo } from "@workspace/ui-patterns/app-logo"
 import { DASHBOARD_PATH } from "@/config/routes"
 
 /**

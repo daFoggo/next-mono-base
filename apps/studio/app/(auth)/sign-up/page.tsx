@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { SignUpForm } from "@workspace/auth-ui/sign-up-form"
+import { SignUpForm } from "@/features/auth/components/sign-up-form"
 
 import { SIGN_IN_PATH } from "@/config/routes"
 import { signUpAction } from "@/features/auth/actions"

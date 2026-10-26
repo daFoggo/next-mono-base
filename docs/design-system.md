@@ -190,7 +190,7 @@ Patterns specific to this language:
 
 ## Logo
 
-`AppLogo` (`apps/studio/components/shared/app-logo.tsx`): an 8x8 pixel mark, a `>` prompt (`currentColor`, follows
+`AppLogo` (`packages/ui-patterns/src/app-logo.tsx`, shared by `apps/web` and `apps/studio`): an 8x8 pixel mark, a `>` prompt (`currentColor`, follows
 the theme), a little spark in `primary` and one muted ember, drawn as `<rect>`s with `shape-rendering="crispEdges"`.
 
 | Prop | Values | Use |
@@ -339,7 +339,7 @@ Next Mono Base look is composed on top in `apps/studio/components/layout/`, grou
 | `ColumnHeader` | `column-header.tsx` | Plain `div` (`h-14 border-b px-4`) |
 | `AppSidebar`, `AppSidebarBody`, `AppSidebarSection` | `sidebar/app-sidebar.tsx` | `Sidebar collapsible="offcanvas"`, `SidebarContent` |
 | `NavTree` | `sidebar/nav-tree.tsx`, `sidebar/nav-icons.tsx` | `SidebarMenu` / `SidebarMenuItem` for structure; its own `Link` row for the tree look; `Tooltip` names the icon in the rail. One per section |
-| `ThemeToggle` | `header/theme-toggle.tsx` | Ghost `icon-sm` `Button` + `hooks/use-theme-toggle.ts` (also used by the auth rail footer) |
+| `ThemeToggle` | `packages/ui-patterns/src/theme-toggle.tsx` | Ghost `icon-sm` `Button`; also in the landing header and the auth rail footer |
 | `DetailSheet*` | `components/shared/detail-sheet.tsx` | Compound parts over shadcn `Sheet` (see Detail sheets) |
 | `CopyButton` | `components/shared/copy-button.tsx` | Ghost `icon-sm` `Button`; the icon turns into a check after copying |
 | `UserMenu` | `sidebar/user-menu.tsx` | `DropdownMenu`; items are passed as children (sign out comes from `features/auth`) |
@@ -449,7 +449,7 @@ Applied in `apps/studio`:
 | Stagger on enter (slide up 8px, `duration-500`, `delay-75` steps) | Dashboard body, auth form column | `components/shared/stagger.tsx` (direct children, `*:nth-N:delay-*`). Plays once per element: Cache Components hides visited routes with `display: none` and a CSS animation restarts when its element is shown again, so each child switches its animation off when it ends (`onAnimationEnd`) and going back is instant |
 | Stack logos reveal in order | Auth rail | `app/(auth)/_components/stack-showcase.tsx` (`Stagger`) |
 | Glyph background (WebGL characters, cursor glow, click waves; pauses off screen, static under reduced motion) | Auth rail | `GlyphBackground` from [Animate UI](https://animate-ui.com/docs/backgrounds/glyph), installed in `packages/ui` via the `@animate-ui` registry in `components.json` |
-| Sun and moon swap with a spin and zoom (`duration-300 ease-out`) | Theme toggle | `components/layout/header/theme-toggle.tsx` |
+| Sun and moon swap with a spin and zoom (`duration-300 ease-out`) | Theme toggle | `packages/ui-patterns/src/theme-toggle.tsx` |
 | TOC nudge (`translate-x-1`, `duration-200`) | Sidebar nav rows | `NavTree` `RowLabel` |
 | Arrow slides on hover (`translate-x-1`) | Auth switch link, 403 CTA | `group-hover` on the icon |
 | Caret rotates (`duration-300`) | Collapsible nav group | `NavTree` `TreeGroup` |

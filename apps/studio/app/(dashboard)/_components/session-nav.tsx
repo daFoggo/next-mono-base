@@ -1,5 +1,5 @@
 import { hasPermission } from "@workspace/auth/permissions"
-import { SignOutMenuItem } from "@workspace/auth-ui/sign-out-menu-item"
+import { SignOutMenuItem } from "@/features/auth/components/sign-out-menu-item"
 
 import { ScopedNav } from "@/components/layout/sidebar/scoped-nav"
 import { UserMenu } from "@/components/layout/sidebar/user-menu"

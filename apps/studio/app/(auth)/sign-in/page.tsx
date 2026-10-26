@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { DemoSignInButton } from "@workspace/auth-ui/demo-sign-in-button"
-import { FormError } from "@workspace/auth-ui/form-error"
-import { SignInForm } from "@workspace/auth-ui/sign-in-form"
+import { DemoSignInButton } from "@/features/auth/components/demo-sign-in-button"
+import { FormError } from "@/features/auth/components/form-error"
+import { SignInForm } from "@/features/auth/components/sign-in-form"
 
 import { SIGN_UP_PATH } from "@/config/routes"
 import { demoSignInAction, signInAction } from "@/features/auth/actions"
@@ -65,7 +65,7 @@ export default function SignInPage({
             {demoAuthSecret() !== null ? (
               <DemoSignInButton action={demoSignInAction} />
             ) : null}
-            {/* Google is disabled; enable the provider in Supabase, then render `<OAuthButton action={signInWithGoogleAction}>Continue with Google</OAuthButton>` from @workspace/auth-ui/oauth-button. */}
+            {/* Google is disabled; enable the provider in Supabase, then render `<OAuthButton action={signInWithGoogleAction}>Continue with Google</OAuthButton>` from @/features/auth/components/oauth-button. */}
           </div>
         </AuthBody>
       </AuthMain>

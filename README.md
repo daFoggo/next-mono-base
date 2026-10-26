@@ -11,7 +11,7 @@ apps/
 packages/
   ui/                     @workspace/ui — shared shadcn/ui components, styles
   auth/                   @workspace/auth — Better Auth / Supabase providers behind AUTH_PROVIDER
-  auth-ui/                @workspace/auth-ui — sign-in, sign-up, OAuth and sign-out UI; the app passes the action
+  ui-patterns/            @workspace/ui-patterns — pieces both apps share: ThemeProvider, ThemeToggle, AppLogo
   db/                     @workspace/db — Supabase clients, types, migrations
   eslint-config/          @workspace/eslint-config
   typescript-config/      @workspace/typescript-config

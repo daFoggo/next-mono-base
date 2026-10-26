@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "@workspace/ui/globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@workspace/ui-patterns/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import { publicEnv } from "@/lib/env.public"
 

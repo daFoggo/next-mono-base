@@ -40,12 +40,16 @@ describe("updateSession", () => {
 
   it("reports the role of a signed-in user", async () => {
     ssr.claims = { sub: "u1", app_metadata: { role: "editor" } }
-    const result = await updateSession(request(), { cookieName: "nmb-web-auth" })
+    const result = await updateSession(request(), {
+      cookieName: "nmb-web-auth",
+    })
     expect(result).toMatchObject({ isAuthenticated: true, role: "editor" })
   })
 
   it("reports no session and no role when signed out", async () => {
-    const result = await updateSession(request(), { cookieName: "nmb-web-auth" })
+    const result = await updateSession(request(), {
+      cookieName: "nmb-web-auth",
+    })
     expect(result).toMatchObject({ isAuthenticated: false, role: null })
   })
 })

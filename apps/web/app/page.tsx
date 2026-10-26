@@ -2,9 +2,11 @@ import { IconBrandGithub } from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
 
-import { AppLogo } from "@/components/shared/app-logo"
+import { AppLogo } from "@workspace/ui-patterns/app-logo"
+import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
+
 import { CONTAINER } from "@/config/layout"
-import { SIGN_IN_HREF, SIGN_UP_HREF } from "@/config/site"
+import { REPO_URL, SIGN_IN_HREF, SIGN_UP_HREF } from "@/config/site"
 
 const FEATURES = [
   {
@@ -29,6 +31,7 @@ export default function HomePage() {
         <div className={`${CONTAINER} flex h-14 items-center gap-4`}>
           <AppLogo />
           <nav className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <Button
               variant="ghost"
               render={<a href={SIGN_IN_HREF} />}
@@ -51,21 +54,21 @@ export default function HomePage() {
             Next.js, Turborepo, shared auth and data packages, and a design
             system. Replace this page with your product.
           </p>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-2">
+            <Button
+              size="lg"
+              variant="ghost"
+              render={<a href={SIGN_IN_HREF} />}
+              nativeButton={false}
+            >
+              Sign in
+            </Button>
             <Button
               size="lg"
               render={<a href={SIGN_UP_HREF} />}
               nativeButton={false}
             >
               Get started
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              render={<a href={SIGN_IN_HREF} />}
-              nativeButton={false}
-            >
-              Sign in
             </Button>
           </div>
         </section>
@@ -81,11 +84,16 @@ export default function HomePage() {
         </section>
       </main>
       <footer className="border-t">
-        <div
-          className={`${CONTAINER} flex h-14 items-center gap-2 font-mono text-sm text-muted-foreground`}
-        >
-          <IconBrandGithub aria-hidden className="size-4" />
-          next-mono-base
+        <div className={`${CONTAINER} flex h-14 items-center`}>
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 font-mono text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
+          >
+            <IconBrandGithub aria-hidden className="size-4" />
+            daFoggo/next-mono-base
+          </a>
         </div>
       </footer>
     </>

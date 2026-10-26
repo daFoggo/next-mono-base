@@ -11,9 +11,9 @@ import {
 } from "@/components/layout/sidebar/app-sidebar"
 import { ColumnHeader } from "@/components/layout/column-header"
 import { MainHeaderStart } from "@/components/layout/header/main-header-start"
-import { ThemeToggle } from "@/components/layout/header/theme-toggle"
+import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
 import { Stagger } from "@/components/shared/stagger"
-import { AppLogo } from "@/components/shared/app-logo"
+import { AppLogo } from "@workspace/ui-patterns/app-logo"
 import { DASHBOARD_PATH } from "@/config/routes"
 
 import { DashboardCrumbs } from "./_components/crumbs"

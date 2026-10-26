@@ -15,7 +15,7 @@ import { Spinner } from "@workspace/ui/components/spinner"
 
 import { FormError } from "./form-error"
 import { PasswordInput } from "./password-input"
-import type { FormAction, SignUpState } from "./types"
+import type { FormAction, SignUpState } from "../types"
 
 /** Name, email and password form. Pass the Server Action that creates the account. */
 export function SignUpForm({ action }: { action: FormAction<SignUpState> }) {

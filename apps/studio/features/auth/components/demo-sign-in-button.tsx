@@ -6,7 +6,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Spinner } from "@workspace/ui/components/spinner"
 
 import { FormError } from "./form-error"
-import type { DemoSignInState, FormAction } from "./types"
+import type { DemoSignInState, FormAction } from "../types"
 
 export function DemoSignInButton({
   action,

@@ -4,7 +4,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { SignInSchema, SignUpSchema } from "@workspace/auth/schemas"
-import type { SignInState, SignUpState } from "@workspace/auth-ui/types"
+import type { SignInState, SignUpState } from "./types"
 
 import {
   DASHBOARD_PATH,

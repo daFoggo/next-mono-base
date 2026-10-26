@@ -10,7 +10,7 @@ description: >
 
 # next-mono-base Conventions & Decision Router
 
-Fast decision guide for `apps/studio` running on **Next.js 16.4.2** with `cacheComponents: true` and `partialPrefetching: true`.
+Fast decision guide for `apps/studio` (the dashboard; `apps/web` is only the public landing page) running on **Next.js 16.4.2** with `cacheComponents: true` and `partialPrefetching: true`.
 All principles derive from and link back to the Single Source of Truth in `docs/`.
 
 ---
@@ -32,7 +32,7 @@ All principles derive from and link back to the Single Source of Truth in `docs/
 | **Authenticate / verify session** | `verifySession()` from `@/lib/dal` (inside queries/actions) | [auth-dal.md](references/auth-dal.md) | [authentication.md §2](../../../docs/authentication.md#2-architecture) |
 | **Start on Supabase / switch stack / add a provider** | `AUTH_PROVIDER` + the kept foundation; feature data in `server.ts` | [auth-dal.md](references/auth-dal.md) | [providers.md](../../../docs/providers.md) |
 | **Page feels slow (data)** | Count sequential network awaits; start reads before the first `await`; values needed first from the session (`getCalendar()`) | [reads.md](references/reads.md) | [providers.md §5](../../../docs/providers.md#5-latency-what-was-measured-and-what-to-do) |
-| **Extract code to `packages/`** | Keep in `apps/studio` unless 2+ apps or diff runtime | [project-structure.md](references/project-structure.md) | [project-structure.md §6](../../../docs/project-structure.md#6-monorepo-package-extraction-when-to-extract-to-packages) |
+| **Extract code to `packages/`** | Keep in `apps/studio` unless 2+ apps or diff runtime; what both apps render goes in `packages/ui-patterns` | [project-structure.md](references/project-structure.md) | [project-structure.md §6](../../../docs/project-structure.md#6-monorepo-package-extraction-when-to-extract-to-packages) |
 | **Random, time, sync DB** | Today's date: `getToday()` (`lib/clock.ts`, `"use cache: private"`); other: `await io()` inside `<Suspense>` | [reads.md](references/reads.md) | [data-fetching.md §1](../../../docs/data-fetching.md#1-mental-model) |
 | **Client-only shared state (Zustand)** | Per-provider store factory in `features/<name>/store.ts` + provider in `components/`, mounted in `app/` (no global store, never read in Server Components) | [client-state.md](references/client-state.md) | [client-state.md](../../../docs/client-state.md) |
 | **Reset or keep client state across navigation** | Cache Components preserves state (`<Activity>`); reset via handler, data-derived key, or `bfcacheId` key | [client-state.md](references/client-state.md) | [client-state.md §5.3](../../../docs/client-state.md#53-state-outlives-navigation) |

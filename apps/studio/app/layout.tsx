@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono, STIX_Two_Text } from "next/font/google"
 
 import "@workspace/ui/globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@workspace/ui-patterns/theme-provider"
 import { WebVitals } from "@/components/shared/web-vitals"
 import { Toaster } from "@workspace/ui/components/toast"
 import { cn } from "@workspace/ui/lib/utils"

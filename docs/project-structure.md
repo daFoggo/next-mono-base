@@ -20,7 +20,8 @@ This document defines how code is organized across the monorepo, the feature-bas
 ```
 next-mono-base/
 ├── apps/
-│   └── web/                                # The primary Next.js 16.4 application
+│   ├── web/                                # Public landing page (no auth, links to studio)
+│   └── studio/                             # The dashboard: auth, org/project scopes, everything signed-in
 │       ├── app/                            # Routing & composition only (page.tsx, layout.tsx)
 │       │   ├── (auth)/                     # Route group: sign-in, sign-up
 │       │   ├── (dashboard)/                # Route group: authenticated application shell
@@ -54,7 +55,7 @@ next-mono-base/
 ├── packages/
 │   ├── ui/                                 # Primitive shadcn/ui components (@workspace/ui)
 │   ├── auth/                               # Auth providers (Better Auth, Supabase), roles, proxy refresh (@workspace/auth)
-│   ├── auth-ui/                            # Presentational auth forms and buttons; the app passes the Server Action (@workspace/auth-ui)
+│   ├── ui-patterns/                        # Composed UI both apps share: ThemeProvider, ThemeToggle, AppLogo (@workspace/ui-patterns)
 │   ├── db/                                 # Supabase clients, errors, formatters, types + supabase/ CLI dir (@workspace/db)
 │   ├── eslint-config/                      # Shared ESLint flat configurations
 │   └── typescript-config/                  # Shared tsconfig base files
@@ -289,9 +290,11 @@ Extract code into `packages/<name>` **ONLY** when at least one of these 4 condit
 4. **Zero-Business-Logic Infrastructure**:
    - Example: Design system components (`packages/ui`), ESLint configs (`packages/eslint-config`), TypeScript configs (`packages/typescript-config`).
    - In this repo: `packages/auth` and `packages/db` exist so a second app (a back office, a mobile client) can reuse them without copying
-     (condition 1); today `apps/studio` is the only consumer.
-     `packages/auth-ui` is the deliberate exception: pure UI (sign-in, sign-up, OAuth, sign-out) that every project
-     repeats, with the logic passed in as a Server Action prop, so it is extracted ahead of a second consumer. They are Just-in-Time packages: TypeScript source behind `exports`, compiled by each app's
+     (condition 1); today `apps/studio` is the only consumer of `packages/auth`.
+     `packages/ui-patterns` has two consumers already (`apps/web` and `apps/studio` both render `ThemeProvider`,
+     `ThemeToggle` and `AppLogo`). The split follows Supabase: `ui` holds primitives (shadcn, never edited),
+     `ui-patterns` holds generic pieces composed from them, and anything with business meaning (the sign-in form)
+     stays in the app. They are Just-in-Time packages: TypeScript source behind `exports`, compiled by each app's
      Turbopack, relative imports inside the package (no `@/`), no tsconfig `paths`.
 
 ### Anti-Patterns: When NOT to Extract a Package

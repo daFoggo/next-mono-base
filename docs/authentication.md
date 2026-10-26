@@ -66,12 +66,13 @@ FastAPI (`your FastAPI backend`) verifies JWTs using PyJWKClient / PyJWT:
 
 ## Shared packages, per-app cookies and roles
 
-**Auth UI (`@workspace/auth-ui`).** The forms are reusable because they hold no logic: `SignInForm`, `SignUpForm`,
-`DemoSignInButton`, `OAuthButton`, `SignOutButton`, `SignOutMenuItem`, `PasswordInput` and `FormError` take the Server
-Action as an `action` prop (`<SignInForm action={signInAction} />`) and share the state types in
-`@workspace/auth-ui/types`. Only the app writes `features/auth/actions.ts` (provider, cookie, redirects), so a new
-provider or a second app reuses the forms and swaps the action. Import each file (`@workspace/auth-ui/sign-in-form`), no
-barrel. The page frame (`app/(auth)/_components`, the stack showcase) stays in the app: it is the product's look.
+**Auth UI (`apps/studio/features/auth/components`).** The forms hold no logic, so they copy cleanly into another
+project: `SignInForm`, `SignUpForm`, `DemoSignInButton`, `OAuthButton`, `SignOutButton`, `SignOutMenuItem`,
+`PasswordInput` and `FormError` take the Server Action as an `action` prop (`<SignInForm action={signInAction} />`) and
+share the state types in `features/auth/types.ts`. `features/auth/actions.ts` owns the provider, cookie and redirects.
+Like Supabase (its sign-in form lives in `apps/studio/components/interfaces/SignIn`, not in a package), the forms stay
+in the app that owns the login; they become a package only when a second app needs them. The page frame
+(`app/(auth)/_components`, the stack showcase) is the product's look and stays in the app too.
 
 | Export | What it gives |
 | :--- | :--- |
