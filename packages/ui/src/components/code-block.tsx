@@ -121,7 +121,13 @@ function CodeBlockCopyButton({
         }}
         {...props}
       >
-        {copied ? <IconCheck /> : <IconCopy />}
+        {copied ? (
+          <IconCheck
+          />
+        ) : (
+          <IconCopy
+          />
+        )}
       </Button>
       <span aria-live="polite" className="sr-only">
         {copied ? "Copied" : ""}
