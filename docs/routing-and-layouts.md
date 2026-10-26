@@ -281,6 +281,29 @@ export default function GlobalError({
 - `unauthorized()` $\rightarrow$ triggers `unauthorized.tsx` (HTTP 401).
 - `forbidden()` $\rightarrow$ triggers `forbidden.tsx` (HTTP 403).
 
+### 6.1 Scoped areas: `/org/<slug>` and `/project/<ref>`
+
+The dashboard has Supabase-style scopes. `config/routes.ts` lists `/org` and `/project` in `PROTECTED_PREFIXES`, and each
+scope has one entry in `NAV_SCOPES` (`config/navigation.ts`) that drives both the sidebar menu and the breadcrumb:
+
+```
+app/(dashboard)/
+  dashboard/                  global menu
+  org/[orgSlug]/layout.tsx    gate: requirePermission + notFound() for an unknown slug
+  org/[orgSlug]/{page,projects,settings}
+  project/[projectRef]/layout.tsx
+  project/[projectRef]/{page,database,settings}
+```
+
+The scope layout awaits `params` inside `<Suspense>` and is the only place that checks the id, so its pages stay static
+markup. Unknown ids render `not-found.tsx` (the status is 200 because the shell has already streamed). Names for the
+breadcrumb come from the `features/workspace` slice, a full reference implementation with a mock backend:
+`schemas.ts` (Zod DTOs and form input), `server.ts` (the only backend calls; an in-memory mock today, so replace its bodies
+with `apiFetch` or `createDataClient` and keep the signatures), `queries.ts` (`getWorkspace` as `"use cache: private"`
+tagged `workspace:<userId>`, plus `getOrg` / `getProject` / `getProjectsOf` derived from it), `actions.ts`
+(`createOrgAction`, `createProjectAction`: authorize, Zod, write, `updateTag`, `redirect`) and `components/` (cards, create
+dialogs). Pages call `queries.ts` only.
+
 ---
 
 ## 7. Metadata, SEO & OpenGraph

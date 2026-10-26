@@ -13,25 +13,30 @@ import {
   BreadcrumbSeparator,
 } from "@workspace/ui/components/breadcrumb"
 
-import { breadcrumbTrail, type NavSection } from "@/config/navigation"
+import {
+  breadcrumbTrail,
+  type NavScope,
+  type Workspace,
+} from "@/config/navigation"
+
+import { CrumbMenu } from "./crumb-menu"
+import { NavIcon } from "./nav-icons"
 
 /** Renders `breadcrumbTrail`; below sm only the current page stays visible. */
 export function DashboardBreadcrumb({
-  sections,
-  labels,
+  scopes,
+  workspace,
 }: {
-  sections: NavSection[]
-  /** Names for record ids in the URL. */
-  labels?: Record<string, string>
+  scopes: NavScope[]
+  workspace: Workspace
 }) {
   const pathname = usePathname()
-  const crumbs = breadcrumbTrail(pathname, sections, labels)
+  const crumbs = breadcrumbTrail(pathname, scopes, workspace)
   return (
     <Breadcrumb className="min-w-0 font-mono">
       <BreadcrumbList className="flex-nowrap">
         {crumbs.map((crumb, index) => {
-          const last = index === crumbs.length - 1
-          if (last) {
+          if (index === crumbs.length - 1) {
             return (
               <BreadcrumbItem key={index} className="min-w-0">
                 <BreadcrumbPage className="truncate">
@@ -43,8 +48,11 @@ export function DashboardBreadcrumb({
           return (
             <Fragment key={index}>
               <BreadcrumbItem className="max-sm:hidden">
-                {crumb.href ? (
+                {crumb.options ? (
+                  <CrumbMenu crumb={crumb} />
+                ) : crumb.href ? (
                   <BreadcrumbLink render={<Link href={crumb.href} />}>
+                    {crumb.icon ? <NavIcon name={crumb.icon} /> : null}
                     {crumb.label}
                   </BreadcrumbLink>
                 ) : (

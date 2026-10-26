@@ -22,6 +22,10 @@ Create only the files a feature needs.
 
 - **`features/auth`**: Complete vertical slice implementation demonstrating authentication actions (`signInAction`, `signUpAction`, `signOutAction`), client form components, schema validation, and session handling.
 
+- **`features/workspace`**: organizations and projects (the `/org/<slug>` and `/project/<ref>` scopes). A read + write slice
+  over a mock `server.ts`: `queries.ts` with a per-user `"use cache: private"` read, `actions.ts` creating records with
+  `updateTag` + `redirect`, create dialogs using `useActionState`, and tests of the mock backend. Swap `server.ts` to go live.
+
 ## Rules (enforced in `eslint.config.js`)
 
 - `features/*` never imports `app/` and never imports another feature (compose in `app/`).
