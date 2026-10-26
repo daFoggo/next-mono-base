@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { IconArrowRight } from "@tabler/icons-react"
 
+import { GlyphBackground } from "@workspace/ui/components/animate-ui/backgrounds/glyph"
+
 import { ThemeCommand } from "@/components/layout/header-commands"
 import { Stagger } from "@/components/shared/stagger"
 import { AppLogo } from "@/components/shared/app-logo"
@@ -8,20 +10,22 @@ import { AppLogo } from "@/components/shared/app-logo"
 /** Left rail from lg: wordmark, page-specific showcase centered, footer. Hidden below lg. */
 export function AuthAside({ children }: { children: React.ReactNode }) {
   return (
-    <aside className="hidden border-r px-9 lg:sticky lg:top-0 lg:col-span-6 lg:flex lg:h-svh lg:flex-col xl:col-span-7">
-      <div className="flex h-24 shrink-0 items-center">
-        <Link href="/">
-          <AppLogo size="lg" />
-        </Link>
-      </div>
-      <div className="flex flex-1 flex-col justify-center">
-        <div className="flex flex-col gap-8">{children}</div>
-      </div>
-      {/* Same height as the header so the showcase stays vertically centered. */}
-      <div className="flex h-24 shrink-0 items-center justify-between font-mono text-xs text-ink-3">
-        <span>© 2026 Next Mono Base</span>
-        <ThemeCommand />
-      </div>
+    <aside className="hidden border-r lg:sticky lg:top-0 lg:col-span-6 lg:flex lg:h-svh lg:flex-col xl:col-span-7">
+      <GlyphBackground className="flex flex-1 flex-col px-9 text-foreground">
+        <div className="relative flex h-24 shrink-0 items-center">
+          <Link href="/">
+            <AppLogo size="lg" />
+          </Link>
+        </div>
+        <div className="relative flex flex-1 flex-col justify-center">
+          <div className="flex flex-col gap-8 text-foreground">{children}</div>
+        </div>
+        {/* Same height as the header so the showcase stays vertically centered. */}
+        <div className="relative flex h-24 shrink-0 items-center justify-between font-mono text-xs text-muted-foreground">
+          <span>© 2026 Next Mono Base</span>
+          <ThemeCommand />
+        </div>
+      </GlyphBackground>
     </aside>
   )
 }
@@ -39,7 +43,7 @@ export function AuthPitch({
       <p className="text-3xl leading-tight font-medium text-balance md:text-4xl">
         {title}
       </p>
-      <p className="text-lg leading-relaxed text-ink-2">{children}</p>
+      <p className="text-lg leading-relaxed text-muted-foreground">{children}</p>
     </div>
   )
 }
@@ -49,7 +53,7 @@ export function AuthMain({ children }: { children: React.ReactNode }) {
   return (
     <main className="flex min-h-svh flex-col px-9 max-sm:px-6 lg:col-span-6 xl:col-span-5">
       {children}
-      <p className="py-8 text-center font-mono text-xs text-balance text-ink-3">
+      <p className="py-8 text-center font-mono text-xs text-balance text-muted-foreground">
         By continuing, you agree to the Terms of Service and Privacy Policy.
       </p>
     </main>
@@ -79,11 +83,11 @@ export function AuthSwitch({
   children: React.ReactNode
 }) {
   return (
-    <p className="flex items-center gap-2 font-mono text-sm text-ink-3">
+    <p className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
       <span className="max-sm:hidden">{prompt}</span>
       <Link
         href={href}
-        className="group flex items-center gap-1.5 text-foreground transition-colors duration-150 hover:text-ink-2"
+        className="group flex items-center gap-1.5 text-foreground transition-colors duration-150 hover:text-muted-foreground"
       >
         {children}
         <IconArrowRight
@@ -117,13 +121,13 @@ export function AuthHeading({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <span className="font-mono text-xs tracking-wider text-ink-3 uppercase">
+      <span className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
         {eyebrow}
       </span>
       <h1 className="text-3xl leading-tight font-medium md:text-4xl">
         {title}
       </h1>
-      <p className="text-ink-2">{children}</p>
+      <p className="text-muted-foreground">{children}</p>
     </div>
   )
 }

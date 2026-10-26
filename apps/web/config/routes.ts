@@ -13,4 +13,3 @@ export const OAUTH_CALLBACK_PATH = "/auth/callback"
  * and when the DAL finds no usable session, which also breaks any proxy/DAL redirect loop.
  */
 export const SESSION_EXPIRED_PATH = "/auth/expired"
-export const STATS_PATH = "/dashboard/stats"

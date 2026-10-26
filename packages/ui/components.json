@@ -1,6 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "base-vega",
+  "style": "base-rhea",
   "rsc": true,
   "tsx": true,
   "tailwind": {
@@ -19,5 +19,8 @@
   },
   "rtl": false,
   "menuColor": "default",
-  "menuAccent": "subtle"
+  "menuAccent": "subtle",
+  "registries": {
+    "@animate-ui": "https://animate-ui.com/r/{name}.json"
+  }
 }

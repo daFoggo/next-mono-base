@@ -58,7 +58,7 @@ export function AdminSidebar({
       <SidebarContent className="no-scrollbar gap-2 py-2">
         {sections.map((section) => (
           <SidebarGroup key={section.title}>
-            <SidebarGroupLabel className="text-xs font-medium tracking-widest text-ink-3 uppercase">
+            <SidebarGroupLabel className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
               {section.title}
             </SidebarGroupLabel>
             <SidebarMenu>

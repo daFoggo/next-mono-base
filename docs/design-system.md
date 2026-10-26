@@ -1,21 +1,21 @@
 # Design system
 
-How `apps/web` looks and behaves: color, type, spacing, responsive layout, components and motion. The visual language
-follows [claude.dev](https://claude.dev) (measured on 2026-10-19 at 1440px, 1024px, 768px and 375px). Every value below
-was snapped to Tailwind's default scale. Tokens live in `packages/ui/src/styles/globals.css`, components in
-`packages/ui/src/components` (shadcn, style `base-lyra`). An illustrated, interactive version of this guide (live
-components, logo, motion demos, dashboard demo with the icon rail) lives in [design-system/design-system.html](design-system/design-system.html)
-and is published as the "Next Mono Base Design System" artifact (https://claude.ai/artifact/3HTHeDuJCvVQbNCRHM37mC).
-When the two disagree, this file wins.
+How `apps/web` looks and behaves: color, type, spacing, responsive layout, components and motion. The theme is
+shadcn `base-rhea` with the stock shadcn tokens, nothing custom. Every value is Tailwind's default scale. Tokens live in
+`packages/ui/src/styles/globals.css`, components in `packages/ui/src/components` (shadcn, style `base-rhea`).
+An illustrated, interactive version of this guide lives in [design-system/base-design-system.html](design-system/base-design-system.html)
+(it still shows the previous theme). When the two disagree, this file wins.
 
 ---
 
 ## 1. Rules that never bend
 
-1. **Only colors are custom.** Font size, weight, leading, tracking, spacing, border width, radius, duration, easing and
+1. **Nothing is custom.** Colors are the stock shadcn tokens. Font size, weight, leading, tracking, spacing, border width, radius, duration, easing and
    breakpoints come from Tailwind's default scale. No arbitrary values (`mt-[54px]`, `text-[13px]`, `grid-cols-[auto_1fr]`).
-   If no step fits, use the nearest one.
-   **One exception: `app/global-error.tsx`.** It uses inline system-color styles (`Canvas`, `CanvasText`) because
+   If no step fits, use the nearest one. **One exception: the logo.** Its frame-by-frame keyframes live as
+   `--animate-logo-*` tokens in `globals.css` and are used only by `AppLogo` (see [Logo](#logo)).
+   **Flat by default:** every `shadow-*` utility is neutralised in `globals.css` (`--shadow-*` tokens). Do not add shadows.
+   **Second exception: `app/global-error.tsx`.** It uses inline system-color styles (`Canvas`, `CanvasText`) because
    `global-error` replaces the root layout, so global CSS and the theme tokens are not loaded there.
 2. **Smallest text is `text-xs`.** Weights are `font-normal` and `font-medium` only.
 3. **Components keep their own sizes.** Pick a `size` / `variant` prop (`<Button size="sm">`). Never override height,
@@ -29,10 +29,184 @@ When the two disagree, this file wins.
 
 ## 2. Color
 
-Defined in `globals.css` and exposed as utilities (`bg-background`, `text-ink-3`, `bg-brand`, ...).
+Defined in `globals.css` (oklch, neutral zinc) and exposed as utilities (`bg-background`, `text-muted-foreground`, ...).
+Only the stock shadcn tokens exist: `background`, `foreground`, `card`, `popover`, `primary`, `secondary`, `muted`,
+`accent`, `destructive`, `border`, `input`, `ring`, `chart-1..5`, `sidebar-*` (each with its `-foreground`), plus `--radius`
+(`0.625rem`). Both `:root` and `.dark` define every token.
 
-| Token | Light | Dark | Use |
-| :---
+| Need | Use |
+| :--- | :--- |
+| Page and body text | `bg-background` / `text-foreground` |
+| Descriptions, meta, labels, dates | `text-muted-foreground` |
+| Decoration only (`└`, dots) | `text-muted-foreground/50`. Never readable text |
+| Raised surfaces, menus | `bg-card`, `bg-popover` |
+| CTA fill, selected row | `bg-primary text-primary-foreground` |
+| Hover surface | `bg-accent` |
+| Errors, blocked | `text-destructive`, `<Alert variant="destructive">` |
+| Hairlines, field outlines | `border-border`, `border-input` |
+
+To add a semantic color (success, warning), add a token to both `:root` and `.dark` and map it in `@theme inline`.
+
+---
+
+## 3. Typography
+
+| Family | Class | Use |
+| :--- | :--- | :--- |
+| Geist | `font-sans` | UI, headings, body, prose |
+| Geist Mono | `font-mono` | Nav, tabs, labels, dates, durations, code, in-article section headings |
+| STIX Two Text | `font-serif` | Registered only. No component uses it by default |
+
+| Role | Classes |
+| :--- | :--- |
+| Article / featured title | `text-3xl md:text-4xl font-medium leading-tight` |
+| Page name in the rail | `font-mono text-3xl leading-none` |
+| Section title in the rail | `font-mono text-2xl leading-tight` |
+| Standfirst, prose | `text-lg leading-relaxed text-muted-foreground` (`max-sm:text-base`) |
+| Row title, UI body | `text-base` |
+| In-article H2/H3 | `font-mono text-sm font-medium uppercase tracking-wide` |
+| Nav, tabs, dates, durations | `font-mono text-sm text-muted-foreground` |
+| Labels, table headers, chips | `font-mono text-xs uppercase tracking-wider` |
+
+---
+
+## 4. Spacing
+
+Related things sit close, unrelated things sit far apart, and each tier is roughly 1.5 to 2.5 times the one below it.
+That ratio is what makes the pages feel open yet clearly sectioned. Use the tier's class; do not invent new tokens.
+
+| Tier | Tailwind | Measured | Use |
+| :--- | :--- | :--- | :--- |
+| T1 Glyph | `gap-1.5`, `gap-2` | 6-7px | List items, `dt` to `dd`, icon to text |
+| T2 Group | `gap-3`, `gap-3.5` | 12-14px | Consecutive paragraphs; chip, title and author in one block; footer links |
+| T3 Heading | `gap-5` | 18-20px | A heading to its first content |
+| T4 Block | `gap-8` / `my-8`; `mt-9` before an H3 | 30-36px | Figures, tables, article meta, blocks inside one section |
+| T5 Section | `gap-14` | 54px | Between sections of an article or doc page |
+| T6 Page region | `pt-20` / `mt-20` | 72-80px | Nav to content, header to body, content to footer |
+| T7 Major break | `mt-28` | 110px | End of main content to a different block (related posts, CTA) |
+
+Rules:
+
+- **A heading belongs to what follows.** Space above a heading is always larger than below (H3: `mt-9` above, `gap-5`
+  below). Wrap heading and content in `flex flex-col gap-5` rather than giving each a margin.
+- **Space first, hairline second, box last.** Sections are separated by space only. Lists use `border-b`. A full border
+  box is reserved for media objects: figure, card.
+- **Containers own spacing.** Use `gap` / `space-y` on the parent; avoid one-off margins on children.
+- **One left axis.** Header, prose, lists and related posts all start at the content column; the rail never crosses it.
+- **List rows carry their own padding.** `py-4 border-b` with `gap-0` between rows, so the hover fill covers the row.
+
+Horizontal: page gutter `px-9` (`max-sm:px-6`), 12-column grid with no column gap, rail `col-span-4 pr-10`, content
+`col-span-8 pl-8`, prose `max-w-2xl`.
+
+Component padding: list row `py-4`; featured row `py-4` with `gap-3` inside; media item (mod) `py-9`; figure `my-8 p-4`,
+caption `py-2.5 px-4`; footer `pt-11 pb-14`, links `gap-3`.
+
+- `ItemGroup` whose children are not real list items must pass `role="none"` (upstream `ItemGroup` ships `role="list"`).
+
+---
+
+## 5. Responsive
+
+Pages use Tailwind's four default breakpoints and are written mobile-first; only one of them changes the layout.
+
+| Breakpoint | Kind | What changes |
+| :--- | :--- | :--- |
+| `xl` 1280 | Tuning | Widest: rail at full 4 columns, rows on one line (date, title, duration) |
+| `lg` 1024 | **Layout** | Below lg: nav becomes a burger, rail stacks above content and stops being sticky, TOC hides, rows split into two lines, featured post stacks, media items put media on top |
+| `md` 768 | Hide extras | Below md: keyboard hint and category column hide, tabs wrap, newsletter goes one column |
+| `sm` 640 | Margins and rhythm | Below sm: gutter `px-6`, nav `h-18`, prose `text-base`, footer two columns, outer spacing tiers shrink |
+
+| Component | < sm | sm to lg | >= lg |
+| :--- | :--- | :--- | :--- |
+| Nav | `h-18`, burger | `h-24`, burger | `h-24`, full links with `[X]` keys |
+| Rail / content | Stacked: rail becomes a static header block | Stacked | 4 / 8 columns, rail sticky |
+| Article TOC | Hidden (share links only) | Hidden | Sticky in the rail |
+| Post row | Two lines, date hidden | Two lines: title / date + duration | One line |
+| Article meta | `grid-cols-2` | `grid-cols-3` | `grid-cols-3`, aligned to grid columns |
+| Footer | `grid-cols-2`, brand and newsletter full width | `grid-cols-3` | Brand, two link columns, newsletter |
+| Spacing T5 / T6 / T7 | `gap-10` / `pt-12` / `mt-16` | `gap-14` / `pt-20` / `mt-28` | same |
+
+Principles:
+
+- **One layout breakpoint.** Only `lg` may restructure a page; `sm`, `md` and `xl` adjust margins, hide extras or tune
+  column ratios.
+- **Reflow, don't shrink.** Type sizes barely change; rows split into two lines instead of truncating. The title always
+  gets the first line.
+- **Hide from least to most important:** keyboard hint, category, tile and TOC, then date. Titles, durations and CTAs
+  never hide.
+- **Hover effects need a mouse.** Tailwind v4's `hover:` already applies only under `(hover: hover)`; on touch, the
+  tapped row takes the hover's role.
+- **Shrink the outer tiers, keep the inner ones.** Only the gutter and T5-T7 change below `sm`.
+
+```tsx
+{/* Shell: rail stacked on mobile, 4/8 from lg */}
+<div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-0">
+  <aside className="lg:sticky lg:top-24 lg:col-span-4 lg:self-start lg:pr-10" />
+  <main className="min-w-0 lg:col-span-8" />
+</div>
+
+{/* Post row: title on line 1, date + duration on line 2; one line from lg */}
+<a className="flex items-start gap-4 border-b py-4 lg:items-center">
+  <PixelIcon className="size-8 shrink-0" />
+  <div className="flex min-w-0 flex-1 flex-col gap-2 lg:grid lg:grid-cols-8 lg:items-center lg:gap-0">
+    <span className="text-base lg:order-2 lg:col-span-5">{title}</span>
+    <span className="flex gap-4 font-mono text-sm text-muted-foreground lg:contents">
+      <time className="max-sm:hidden lg:order-1 lg:col-span-2" />
+      <span className="lg:order-3 lg:col-span-1 lg:text-right">{minutes}</span>
+    </span>
+  </div>
+</a>
+```
+
+---
+
+## 6. Components
+
+shadcn `base-rhea`: rounded corners (`--radius: 0.625rem`), compact sizes, no shadows.
+
+| Need | Use |
+| :--- | :--- |
+| Primary CTA | `<Button size="lg">` (h-9) |
+| Button in a form or toolbar | `<Button>` (h-8) or `size="sm"` (h-7) |
+| Secondary action | `variant="outline"` |
+| "Featured" chip | `<Badge variant="default">` |
+| Category chip | `<Badge variant="outline">` |
+| Filter tabs | `<Tabs>`, `<TabsList variant="line">` |
+| Form error / success notice | `<Alert variant="destructive">` / `<Alert>` |
+
+Installed today: alert, button, input, input-group, label, skeleton, spinner, textarea. Badge and Tabs are not installed
+yet; add them before use. Install new components from `packages/ui` (`pnpm dlx shadcn@latest add <name>`). Its `components.json` is the only one
+in the repo and sets the `style` (`base-rhea`).
+
+Patterns specific to this language:
+
+- **Inverted hover** on list rows: `hover:bg-primary hover:text-primary-foreground`, other rows dim to `opacity-35`.
+- **`└` marks hierarchy** in the TOC, article meta and spec lists, in `text-muted-foreground/50`.
+- **Bracketed keys** `[H]` before primary nav items, with matching keyboard shortcuts.
+- **Mono uppercase labels** for metadata, never for body text.
+
+---
+
+## Logo
+
+`AppLogo` (`apps/web/components/shared/app-logo.tsx`): an 8x8 pixel mark, a `>` prompt (`currentColor`, follows
+the theme), a little spark in `primary` and one muted ember, drawn as `<rect>`s with `shape-rendering="crispEdges"`.
+
+| Prop | Values | Use |
+| :--- | :--- | :--- |
+| `variant` | `full` (default) · `mark` · `wordmark` | `mark` where space is tight or for icons; `wordmark` when the mark already shows nearby |
+| `size` | `sm` 16px · `md` 24px (default) · `lg` 32px | Mark and wordmark scale together; the wordmark is mono `font-medium tracking-tight` (`text-sm/none` / `text-lg/none` / `text-2xl/none`) |
+| `motion` | `idle` (default) · `static` | The logo is always alive: `idle` everywhere in the app (sidebar, headers, auth). `static` only where the mark must stay still (print, dense lists) |
+
+Rules:
+
+- Sizes are whole multiples of the 8x8 grid (16, 24, 32px) so every pixel stays crisp. Never scale the mark freely.
+- Do not redraw or recolor the mark at the call site; wrap it in a `Link` when it navigates. The logo is a block-level
+  `flex w-fit` box (an inline box would sit on the text baseline and add a gap below it).
+- `idle` animates only under `motion-safe`; with reduced motion it renders exactly like `static`.
+- The favicon is `apps/web/app/icon.svg`, the same mark with fixed light/dark colors (`prefers-color-scheme`).
+
+---
 
 ## 7. Navigation
 
@@ -84,7 +258,7 @@ The sidebar holds any number of **sections**, each a mono `text-xs` uppercase la
 `Projects`), never after the widget ("Tree", "Menu"). A section whose links the role cannot open is hidden. Inside a
 section an entry is a link or a collapsible group of links (two levels max).
 
-Header commands are `[X] LABEL` buttons: mono `text-xs` uppercase, key in `ink-3`, label in `ink-2`, `aria-pressed` for
+Header commands are `[X] LABEL` buttons: mono `text-xs` uppercase, key and label in `text-muted-foreground`, `aria-pressed` for
 toggles. Every command has its bare-key shortcut (ignored while typing): `[B]` sidebar (shadcn's Cmd/Ctrl+B also works),
 `[D]` theme. The account row shows `└`, a user icon, name and role. Icons are functional only: one per navigable page (and the
 account row), never on group headers or menu items; the `└` glyph stays next to them as the hierarchy mark.
@@ -98,10 +272,10 @@ The sidebar uses `collapsible="icon"`: `[B]` (or a click on the rail edge) shrin
 hiding it, so every page stays one click away.
 
 - Every nav link carries `└`, its icon and its label. In the rail only the icon shows (the glyph and label hide; the
-  current page's icon turns brand orange there) and a right-side tooltip names it (`SidebarMenuButton`'s rule: only
+  current page's icon is `text-foreground` there) and a right-side tooltip names it (`SidebarMenuButton`'s rule: only
   while collapsed on desktop).
 - The rail lists individual pages only, never groups: a section label becomes a hairline between sections, a collapsible
-  group loses its header and its links show flat (open or closed). The logo is hidden and the account row to
+  group loses its header and its links show flat (open or closed). The logo shrinks to its mark and the account row to
   a user icon whose menu opens to the right.
 - Icons are named in `config/navigation.ts` (`NavLink.icon: NavIconName`) and resolved to components in
   `components/layout/nav-icons.tsx` (a `Record`, so a new name without an icon fails typecheck). Names, not components,
@@ -112,24 +286,23 @@ hiding it, so every page stays one click away.
 
 | State | Look | Classes |
 | :--- | :--- | :--- |
-| Default | `└` in ink-4, Tabler icon `size-4` in ink-3, label ink-2 | `font-mono text-sm py-1.5 text-ink-2` |
-| Hover | Label ink and nudged 4px right, icon ink-2, hover surface | `hover:bg-accent hover:text-foreground` |
-| Current | `└` turns brand orange, icon and label ink, medium | `aria-current="page"`, glyph `text-brand` |
+| Default | `└` muted at 50%, Tabler icon `size-4` and label `text-muted-foreground` | `font-mono text-sm py-1.5 text-muted-foreground` |
+| Hover | Label `text-foreground` and nudged 4px right, hover surface | `hover:bg-accent hover:text-foreground` |
+| Current | `└`, icon and label `text-foreground`, medium | `aria-current="page"`, glyph `text-foreground` |
 | Group | `└`, label and a caret that rotates when collapsed (no icon); children indent | `aria-expanded`, children `pl-4` |
-| Count | Mono, right aligned | `ml-auto text-xs text-ink-3 tabular-nums` |
+| Count | Mono, right aligned | `ml-auto text-xs text-muted-foreground tabular-nums` |
 
 Keep the tree at most two levels deep; deeper structure belongs on its own page. Keyboard: arrows move, left/right
 collapse and expand groups, Enter opens.
 
 ### Content conventions
 
-- **Orange appears once per screen**: the current tree glyph (plus at most one focal chart mark).
-  identity and does not count. Status uses small
-  square dots: ink for "needs review", `diff-del` for blocked, ink-4 for done.
+- **One focal accent per screen**: the current tree item. Status uses small square dots: `bg-foreground` for "needs
+  review", `bg-destructive` for blocked, `bg-muted-foreground/50` for done.
 - **No big-number tiles.** Metrics are one `dl` row: mono `text-xs` label, `text-2xl font-medium` value, separated by space.
 - **Selected list row is inverted** (`bg-primary text-primary-foreground`); hover is only `bg-accent`.
 - **The inspector is context, not a route.** Selecting a row updates it in place.
-- **Usage meters are dithered**: solid ink fill over a 2px checker of ink-4.
+- **Usage meters are flat**: a `bg-primary` fill over a `bg-muted` track (shadcn `Progress`).
 - One tier denser than marketing pages on the outside only: page top `pt-10` instead of `pt-20`, sections `gap-10`
   instead of `gap-14`; T1 to T4 unchanged.
 
@@ -144,7 +317,7 @@ collapse and expand groups, Enter opens.
 | Metrics | `grid-cols-2` | `grid-cols-4` | `grid-cols-4` |
 | Header commands | Keys only (`[D]`; `[B]` hidden below `md`, the burger takes over) | Keys and labels from `lg` | Keys and labels |
 
-Needed components: `pnpm dlx shadcn@latest add sidebar sheet badge tabs` (from `apps/web`). shadcn's sidebar width
+Needed components: `pnpm dlx shadcn@latest add sidebar sheet badge tabs` (from `packages/ui`). shadcn's sidebar width
 comes from the `--sidebar-width` variable; change it in the theme rather than with a class.
 
 ### Implementation (apps/web)
@@ -193,14 +366,16 @@ Applied in `apps/web`:
 | Pattern | Where | Implementation |
 | :--- | :--- | :--- |
 | Stagger on enter (slide up 8px, `duration-500`, `delay-75` steps) | Dashboard body, auth form column | `components/shared/stagger.tsx` (direct children, `*:nth-N:delay-*`). Plays once per element: Cache Components hides visited routes with `display: none` and a CSS animation restarts when its element is shown again, so each child switches its animation off when it ends (`onAnimationEnd`) and going back is instant |
-| Terminal lines reveal in order | Auth rail | `app/(auth)/_components/terminal.tsx` (`step` prop) |
+| Stack logos reveal in order | Auth rail | `app/(auth)/_components/stack-showcase.tsx` (`Stagger`) |
+| Glyph background (WebGL characters, cursor glow, click waves; pauses off screen, static under reduced motion) | Auth rail | `GlyphBackground` from [Animate UI](https://animate-ui.com/docs/backgrounds/glyph), installed in `packages/ui` via the `@animate-ui` registry in `components.json` |
 | Burger bars turn into an X (`duration-300 ease-out`) | Dashboard header below `md` | `components/layout/burger.tsx` |
 | TOC nudge (`translate-x-1`, `duration-200`) | Sidebar nav rows | `NavTree` `RowLabel` |
 | Arrow slides on hover (`translate-x-1`) | Auth switch link, 403 CTA | `group-hover` on the icon |
 | Caret rotates (`duration-300`) | Collapsible nav group | `NavTree` `TreeGroup` |
 
+| Next Mono Base twinkles (`+` → `×`), embers rise, `steps()` frames | Every logo (sidebar, headers, auth) | `AppLogo` (`motion="idle"` by default), `--animate-logo-*` |
 
-Not used: the typing intro and ambient float (no custom keyframes), and the theme switch
+Not used: the typing intro and ambient float (custom keyframes are allowed for the logo only), and the theme switch
 stays instant.
 
 ---
@@ -208,6 +383,6 @@ stays instant.
 ## 10. Accessibility
 
 - Focus: visible `outline` with `outline-offset-2`; never remove it without a replacement.
-- `ink-4` is decorative; readable text uses `ink-3` or stronger. Orange text uses `brand-ink`.
+- `text-muted-foreground/50` is decorative; readable text uses `text-muted-foreground` or stronger.
 - Anchor targets sit below the sticky nav: give them `scroll-mt-24` (`max-sm:scroll-mt-18`).
-- `::selection` uses `bg-brand text-background`.
+- `::selection` uses `bg-primary text-primary-foreground`.

@@ -57,7 +57,7 @@ export function UserMenu({
           <span className="truncate text-sm font-medium text-foreground">
             {name}
           </span>
-          <span className="text-xs text-ink-3">{ROLE_LABEL[role]}</span>
+          <span className="text-xs text-muted-foreground">{ROLE_LABEL[role]}</span>
         </span>
         <IconDots aria-hidden className="ml-auto" />
       </DropdownMenuTrigger>

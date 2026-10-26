@@ -26,8 +26,8 @@ export async function getAuthProvider(): Promise<AuthProvider> {
     userId: demo.sub,
     accessToken: "",
     role: "customer",
-    name: "Sinh viên demo",
-    email: "demo@mini-library.local",
+    name: "Demo user",
+    email: "demo@next-mono-base.local",
   }
   return {
     getSession: async () => session,

@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Pending access" }
 async function Account() {
   const session = await verifySession()
   return (
-    <p className="text-ink-2">
+    <p className="text-muted-foreground">
       You are signed in as{" "}
       <span className="font-medium text-foreground">{session.email}</span>.
     </p>

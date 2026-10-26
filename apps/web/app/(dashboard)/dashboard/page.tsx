@@ -1,10 +1,10 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { LibraryView } from "@/features/library/components/library-view"
+import { PageHead } from "@/components/layout/page-head"
 import { requirePermission } from "@/lib/dal"
 
-export const metadata: Metadata = { title: "Thư viện" }
+export const metadata: Metadata = { title: "Overview" }
 
 async function Guard() {
   await requirePermission("account:view")
@@ -17,9 +17,10 @@ export default function DashboardPage() {
       <Suspense fallback={null}>
         <Guard />
       </Suspense>
-      <Suspense fallback={<p role="status">Đang tải...</p>}>
-        <LibraryView />
-      </Suspense>
+      <PageHead label="Workspace" title="Overview">
+        This is your dashboard. Add sections in config/navigation.ts and pages
+        under app/(dashboard).
+      </PageHead>
     </>
   )
 }

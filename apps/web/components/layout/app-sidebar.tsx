@@ -49,7 +49,7 @@ export function AppSidebarSection({
       )}
     >
       {/* The label gives way to a hairline between sections in the icon rail. */}
-      <h2 className="px-2 font-mono text-xs tracking-wider text-ink-3 uppercase group-data-[collapsible=icon]:hidden">
+      <h2 className="px-2 font-mono text-xs tracking-wider text-muted-foreground uppercase group-data-[collapsible=icon]:hidden">
         {label}
       </h2>
       {children}

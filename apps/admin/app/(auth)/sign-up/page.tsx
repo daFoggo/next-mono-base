@@ -12,12 +12,7 @@ import {
   AuthPitch,
   AuthSwitch,
 } from "../_components/auth-frame"
-import {
-  Terminal,
-  TerminalCommand,
-  TerminalOutput,
-  TerminalPrompt,
-} from "../_components/terminal"
+import { StackShowcase } from "../_components/stack-showcase"
 
 export const metadata: Metadata = { title: "Sign up" }
 
@@ -28,19 +23,7 @@ export default function SignUpPage() {
         <AuthPitch title="Join the staff.">
           Create an account, then an administrator grants you access.
         </AuthPitch>
-        <Terminal title="base staff">
-          <TerminalCommand step={0}>invite</TerminalCommand>
-          <TerminalOutput step={1} label="account" tone="muted">
-            create
-          </TerminalOutput>
-          <TerminalOutput step={2} label="access" tone="muted">
-            granted by an admin
-          </TerminalOutput>
-          <TerminalOutput step={3} label="workspace" tone="focus">
-            ready
-          </TerminalOutput>
-          <TerminalPrompt step={4} />
-        </Terminal>
+        <StackShowcase />
       </AuthAside>
       <AuthMain>
       <AuthHeader>

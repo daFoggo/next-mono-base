@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" shape-rendering="crispEdges">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 10 10" shape-rendering="crispEdges">
   <style>
-    .ink { fill: #141413 } .brand { fill: #c15f3c } .ember { fill: #a8a69d }
+    .ink { fill: #18181b } .brand { fill: #52525b } .ember { fill: #a1a1aa }
     @media (prefers-color-scheme: dark) {
-      .ink { fill: #faf9f5 } .brand { fill: #d97757 } .ember { fill: #5e5d59 }
+      .ink { fill: #fafafa } .brand { fill: #a1a1aa } .ember { fill: #52525b }
     }
   </style>
   <g class="ink">

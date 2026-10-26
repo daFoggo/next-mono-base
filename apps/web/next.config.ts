@@ -68,11 +68,6 @@ const nextConfig: NextConfig = {
     // The local Supabase stack lives on 127.0.0.1, which the optimizer blocks by default.
     ...(isDev ? { dangerouslyAllowLocalIP: true } : {}),
   },
-  async redirects() {
-    return [
-      { source: "/stats", destination: "/dashboard/stats", permanent: false },
-    ]
-  },
   async headers() {
     return [
       {

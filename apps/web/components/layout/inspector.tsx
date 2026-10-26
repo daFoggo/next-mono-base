@@ -61,19 +61,13 @@ export function InspectorProvider({ children }: { children: React.ReactNode }) {
 }
 
 /** `[I] INSPECTOR` in the main header. */
-export function InspectorCommand({
-  className,
-  label = "Inspector",
-}: {
-  className?: string
-  label?: string
-}) {
+export function InspectorCommand({ className }: { className?: string }) {
   const { open, sheetOpen, wide, toggle } = useInspector()
   useHotkey("i", toggle)
   return (
     <HeaderCommand
       hotkey="i"
-      label={label}
+      label="Inspector"
       pressed={wide ? open : sheetOpen}
       onClick={toggle}
       className={className}
@@ -100,14 +94,14 @@ export function InspectorPanel({
           className="hidden h-svh w-80 shrink-0 flex-col border-l xl:flex"
         >
           <ColumnHeader className="justify-between">
-            <span className="font-mono text-xs tracking-wider text-ink-3 uppercase">
+            <span className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
               {title}
             </span>
             <button
               type="button"
               onClick={close}
               aria-label="Close inspector [ESC]"
-              className="font-mono text-xs text-ink-3 transition-colors duration-150 hover:text-foreground"
+              className="font-mono text-xs text-muted-foreground transition-colors duration-150 hover:text-foreground"
             >
               [ESC]
             </button>
@@ -127,7 +121,7 @@ export function InspectorPanel({
             Context for the current page
           </SheetDescription>
           <ColumnHeader>
-            <span className="font-mono text-xs tracking-wider text-ink-3 uppercase">
+            <span className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
               {title}
             </span>
           </ColumnHeader>

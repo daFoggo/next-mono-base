@@ -1,8 +1,8 @@
 ---
 name: design-system
 description: >
-  Visual rules for apps/web and packages/ui (claude.dev-style design system): colors, typography, the 7-tier spacing
-  scale, responsive breakpoints, shadcn base-lyra component sizes and motion. Use whenever writing or changing JSX
+  Visual rules for apps/web and packages/ui (shadcn base-rhea theme): colors, typography, the 7-tier spacing
+  scale, responsive breakpoints, shadcn base-rhea component sizes and motion. Use whenever writing or changing JSX
   classNames, layouts, pages, sections, lists, cards, navigation, footers, theme tokens in globals.css, or adding a
   shadcn component, and whenever the user mentions spacing, padding, margin, responsive, mobile, breakpoint, dark or
   light theme, font, color, or "looks off", even if they do not name the design system.
@@ -15,14 +15,15 @@ section when a case is not covered here.
 
 ## Hard rules (check every className you write)
 
-1. Only colors are custom. Everything numeric uses Tailwind's default scale. **No arbitrary values**
-   (`mt-[54px]`, `text-[13px]`, `grid-cols-[auto_1fr]`, `rounded-[10px]`). No custom keyframes.
+1. Nothing is custom. Everything numeric uses Tailwind's default scale. **No arbitrary values**
+   (`mt-[54px]`, `text-[13px]`, `grid-cols-[auto_1fr]`, `rounded-[10px]`). Only exception: the logo's
+   `--animate-logo-*` keyframes, used by `AppLogo` alone.
 2. Smallest text is `text-xs`. Weights: `font-normal`, `font-medium`.
 3. shadcn components: choose a `size` / `variant` prop. Never set `h-*`, `px-*`, `py-*`, `text-*` on them via
    `className`; layout classes (`w-full`, `mt-*`, `self-*`) are fine.
-4. Style through tokens (`bg-background`, `text-ink-3`, `border-border`, `bg-brand`), never hex or `dark:` color pairs.
-   Both themes must work; dark is the default. Status: `text-diff-add` (ok) / `text-diff-del` (blocked); code:
-   `text-syn-*`. Orange (`brand`, `brand-ink`) once per screen.
+4. Style through the stock shadcn tokens (`bg-background`, `text-muted-foreground`, `border-border`, `bg-primary`), never
+   hex or `dark:` color pairs. Both themes must work; dark is the default. Errors: `text-destructive`. No custom color
+   tokens and no shadows (`shadow-*` is neutralised in `globals.css`).
 5. `font-serif` exists but is opt-in; do not apply it unless asked.
 6. CSS that comes from `vercel-react-view-transitions` (`::view-transition-*`) or `web-design-guidelines`
    (`content-visibility`, `transition`, etc.) must snap to the Tailwind scale and color tokens too; see
@@ -63,10 +64,10 @@ children. Separate with space first, `border-b` second, a bordered box only for 
 | Secondary | `variant="outline"` |
 | Chips | `<Badge variant="default">` / `variant="outline"` (install first) |
 | Filter tabs | `<TabsList variant="line">` (install first) |
-| Form error / success | `<Alert variant="destructive">` / `variant="success"` |
+| Form error / success | `<Alert variant="destructive">` / `<Alert>` |
 
-Add components from `apps/web`: `pnpm dlx shadcn@latest add <name>`. Keep `style: "base-lyra"` identical in
-`apps/web/components.json` and `packages/ui/components.json`.
+Add components from `packages/ui`: `pnpm dlx shadcn@latest add <name>`. Its `components.json` is the only one
+(`style: "base-rhea"`).
 
 ## Navigation
 
@@ -83,16 +84,16 @@ anchors use `scroll-mt-24`; the logo scrolls to `0`.
   Header = path breadcrumb (no project name) + `[X] LABEL` commands with bare-key shortcuts (`[B]` sidebar, `[D]` theme).
   The sidebar collapses to a 48px icon rail (doc § Icon rail): every `NavLink` needs an `icon` name; icons are functional, never decorative.
 - Never edit shadcn files in `packages/ui`; compose in `apps/web/components/layout/`.
-- Each section is the big TOC: mono `text-sm`, `└` + an icon per link (current glyph `text-brand`; in the icon rail the current icon is brand), max two levels, counts
+- Each section is the big TOC: mono `text-sm`, `└` + an icon per link (current glyph `text-foreground`), max two levels, counts
   `ml-auto text-xs tabular-nums`.
 - Inspector below `xl` becomes `<Sheet side="right">`. Selected row `bg-primary text-primary-foreground`.
-- Metrics are a `dl` row, no stat cards. Orange appears once per screen.
-- Logo: always `<AppLogo size />` (doc § Logo), text only, no motion.
+- Metrics are a `dl` row, no stat cards. One focal accent per screen.
+- Logo: always `<AppLogo variant size motion />` (doc § Logo), sizes 16/24/32 only, animated (`idle`) by default everywhere.
 
 ## Type and motion
 
-- Titles `text-3xl md:text-4xl font-medium leading-tight`; prose `text-lg leading-relaxed text-ink-2`; labels
-  `font-mono text-xs uppercase tracking-wider`; nav/dates `font-mono text-sm text-ink-3`.
+- Titles `text-3xl md:text-4xl font-medium leading-tight`; prose `text-lg leading-relaxed text-muted-foreground`; labels
+  `font-mono text-xs uppercase tracking-wider`; nav/dates `font-mono text-sm text-muted-foreground`.
 - Transitions: colors `duration-150`, movement `duration-200 ease-out`; guard with `motion-safe:`.
 
 ## Before you finish

@@ -16,12 +16,7 @@ import {
   AuthPitch,
   AuthSwitch,
 } from "../_components/auth-frame"
-import {
-  Terminal,
-  TerminalCommand,
-  TerminalOutput,
-  TerminalPrompt,
-} from "../_components/terminal"
+import { StackShowcase } from "../_components/stack-showcase"
 
 export const metadata: Metadata = { title: "Sign in" }
 
@@ -48,19 +43,7 @@ export default function SignInPage({
         <AuthPitch title="Pick up where you left off.">
           Your workspace is one sign-in away.
         </AuthPitch>
-        <Terminal title="base status">
-          <TerminalCommand step={0}>status</TerminalCommand>
-          <TerminalOutput step={1} label="auth" tone="ok">
-            provider ready
-          </TerminalOutput>
-          <TerminalOutput step={2} label="data" tone="muted">
-            connected
-          </TerminalOutput>
-          <TerminalOutput step={3} label="session" tone="focus">
-            waiting for you
-          </TerminalOutput>
-          <TerminalPrompt step={4} />
-        </Terminal>
+        <StackShowcase />
       </AuthAside>
       <AuthMain>
         <AuthHeader>

@@ -19,8 +19,8 @@ export function AdminBreadcrumb() {
         >
           {section.title !== link.title ? (
             <>
-              <span className="text-ink-3 max-sm:hidden">{section.title}</span>
-              <span className="text-ink-4 max-sm:hidden" aria-hidden>
+              <span className="text-muted-foreground max-sm:hidden">{section.title}</span>
+              <span className="text-muted-foreground/50 max-sm:hidden" aria-hidden>
                 /
               </span>
             </>

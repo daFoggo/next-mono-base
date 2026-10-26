@@ -8,7 +8,7 @@ export default function NotFound() {
       <h1 className="text-5xl leading-tight font-normal tracking-tighter">
         Page not found
       </h1>
-      <p className="text-ink-2">
+      <p className="text-muted-foreground">
         The page you are looking for does not exist or has moved.
       </p>
       <Button size="lg" render={<Link href="/" />} nativeButton={false}>

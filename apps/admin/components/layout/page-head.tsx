@@ -14,7 +14,7 @@ export function PageHead({
         <h1 className="text-3xl leading-tight font-normal tracking-tight text-foreground max-sm:text-2xl">
           {title}
         </h1>
-        {description ? <p className="text-ink-2">{description}</p> : null}
+        {description ? <p className="text-muted-foreground">{description}</p> : null}
       </div>
       {action ? <div className="max-sm:hidden">{action}</div> : null}
     </div>

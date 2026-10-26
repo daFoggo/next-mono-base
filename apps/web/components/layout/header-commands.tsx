@@ -28,11 +28,11 @@ export function HeaderCommand({
       aria-keyshortcuts={hotkey}
       onClick={onClick}
       className={cn(
-        "group/cmd font-mono text-xs tracking-wide whitespace-nowrap text-ink-2 uppercase transition-colors duration-150 hover:text-foreground aria-pressed:text-foreground",
+        "group/cmd font-mono text-xs tracking-wide whitespace-nowrap text-muted-foreground uppercase transition-colors duration-150 hover:text-foreground aria-pressed:text-foreground",
         className
       )}
     >
-      <span className="text-ink-3 transition-colors duration-150 group-hover/cmd:text-ink-2">
+      <span className="text-muted-foreground transition-colors duration-150 group-hover/cmd:text-muted-foreground">
         [{hotkey.toUpperCase()}]
       </span>
       <span className="ml-1.5 max-lg:hidden">{label}</span>

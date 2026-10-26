@@ -51,7 +51,7 @@ export function DashboardBreadcrumb({
                   crumb.label
                 )}
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="text-ink-4 max-sm:hidden">
+              <BreadcrumbSeparator className="text-muted-foreground/50 max-sm:hidden">
                 /
               </BreadcrumbSeparator>
             </Fragment>

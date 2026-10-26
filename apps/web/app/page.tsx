@@ -13,7 +13,7 @@ export default function HomePage() {
       <h1 className="text-5xl leading-tight font-normal tracking-tighter">
         Build on a solid base
       </h1>
-      <p className="max-w-xl text-ink-2">
+      <p className="max-w-xl text-muted-foreground">
         Next.js, Turborepo, shared auth and data packages, and a design system.
         Replace this page with your product.
       </p>

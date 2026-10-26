@@ -21,7 +21,7 @@ export default function AuthError({
       <h1 className="text-3xl leading-tight font-normal tracking-tight">
         Something went wrong
       </h1>
-      <p className="max-w-sm text-sm text-ink-2">
+      <p className="max-w-sm text-sm text-muted-foreground">
         We could not process your sign-in request right now. Please try again.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-3">

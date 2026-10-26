@@ -10,7 +10,7 @@ export function PageHead({
 }) {
   return (
     <header className="flex flex-col gap-3">
-      <span className="font-mono text-xs tracking-wider text-ink-3 uppercase">
+      <span className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
         {label}
       </span>
       <div className="flex items-center gap-2">
@@ -18,7 +18,7 @@ export function PageHead({
           {title}
         </h1>
       </div>
-      {children ? <p className="max-w-2xl text-ink-2">{children}</p> : null}
+      {children ? <p className="max-w-2xl text-muted-foreground">{children}</p> : null}
     </header>
   )
 }

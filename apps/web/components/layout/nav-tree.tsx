@@ -23,7 +23,7 @@ import { NavIcon } from "./nav-icons"
 
 // `group-data-[collapsible=icon]` is the sidebar's 48px icon rail: rows keep only their icon.
 const row =
-  "group/row flex w-full items-center gap-2 px-2 py-1.5 font-mono text-sm text-ink-2 transition-colors duration-150 hover:bg-accent hover:text-foreground group-data-[collapsible=icon]:justify-center"
+  "group/row flex w-full items-center gap-2 rounded-xl px-2 py-1.5 font-mono text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground group-data-[collapsible=icon]:justify-center"
 
 /** Label nudges right on hover, like the claude.dev TOC (`translate-x-1`, `duration-200 ease-out`). */
 function RowLabel({ children }: { children: React.ReactNode }) {
@@ -35,7 +35,7 @@ function RowLabel({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The large TOC of design system §8: `└` glyph, icon and label per link, the glyph in brand orange
+ * The large TOC of design system §8: `└` glyph, icon and label per link, the glyph highlighted
  * for the current page; groups indent, two levels max. Only the icon stays when the sidebar
  * collapses to its icon rail (and then it carries the orange instead).
  */
@@ -79,16 +79,16 @@ function TreeLink({ link }: { link: NavLink }) {
       >
         <span
           aria-hidden
-          className="text-ink-4 group-data-current/tree:text-brand group-data-[collapsible=icon]:hidden"
+          className="text-muted-foreground/50 group-data-current/tree:text-foreground group-data-[collapsible=icon]:hidden"
         >
           └
         </span>
-        <span className="flex text-ink-3 transition-colors duration-150 group-hover/row:text-ink-2 group-data-current/tree:text-foreground group-data-current/tree:group-data-[collapsible=icon]:text-brand">
+        <span className="flex text-muted-foreground transition-colors duration-150 group-hover/row:text-muted-foreground group-data-current/tree:text-foreground group-data-current/tree:group-data-[collapsible=icon]:text-foreground">
           <NavIcon name={link.icon} />
         </span>
         <RowLabel>{link.title}</RowLabel>
         {link.badge ? (
-          <span className="ml-auto font-mono text-xs text-ink-3 tabular-nums group-data-[collapsible=icon]:hidden">
+          <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums group-data-[collapsible=icon]:hidden">
             {link.badge}
           </span>
         ) : null}
@@ -124,14 +124,14 @@ function TreeGroup({ group }: { group: NavGroup }) {
           containsCurrent && "text-foreground"
         )}
       >
-        <span aria-hidden className="text-ink-4">
+        <span aria-hidden className="text-muted-foreground/50">
           └
         </span>
         <RowLabel>{group.title}</RowLabel>
         <IconChevronDown
           aria-hidden
           className={cn(
-            "ml-auto size-4 text-ink-3 motion-safe:transition-transform motion-safe:duration-300",
+            "ml-auto size-4 text-muted-foreground motion-safe:transition-transform motion-safe:duration-300",
             !open && "-rotate-90"
           )}
         />

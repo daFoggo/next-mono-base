@@ -1,12 +1,12 @@
 import type { Permission } from "@workspace/auth/permissions"
 
-import { DASHBOARD_PATH, STATS_PATH } from "@/config/routes"
+import { DASHBOARD_PATH } from "@/config/routes"
 
 /**
  * Semantic icon names, resolved to Tabler icons in `components/layout/nav-icons.tsx`. Names (not
  * components) because `entries` cross from a Server Component to the client `NavTree`.
  */
-export type NavIconName = "library" | "stats"
+export type NavIconName = "overview"
 
 export type NavLink = {
   title: string
@@ -39,15 +39,9 @@ export const DASHBOARD_NAV: NavSection[] = [
     label: "Workspace",
     entries: [
       {
-        title: "Thư viện",
+        title: "Overview",
         href: DASHBOARD_PATH,
-        icon: "library",
-        permission: "account:view",
-      },
-      {
-        title: "Thống kê",
-        href: STATS_PATH,
-        icon: "stats",
+        icon: "overview",
         permission: "account:view",
       },
     ],
@@ -82,8 +76,7 @@ export function navLinks(sections: NavSection[]): NavLink[] {
 
 /**
  * Path-style trail from the URL: `dashboard / section / page`. A segment links when it is a
- * page in the nav; an index page (`/dashboard`, nav links under it) appends its own title
- * (`dashboard / overview`); a leaf page (`/dashboard/stats`) is already named by its segment.
+ * page in the nav; an index page (`/dashboard`) appends its own title (`dashboard / overview`).
  */
 export function breadcrumbTrail(
   pathname: string,
@@ -104,8 +97,6 @@ export function breadcrumbTrail(
   const title = links
     .find((link) => link.href === pathname)
     ?.title.toLowerCase()
-  const isIndex = links.some((link) => link.href.startsWith(`${pathname}/`))
-  if (title && isIndex && title !== segments.at(-1))
-    crumbs.push({ label: title })
+  if (title && title !== segments.at(-1)) crumbs.push({ label: title })
   return crumbs
 }

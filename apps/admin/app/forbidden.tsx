@@ -18,7 +18,7 @@ export default function Forbidden() {
       <h1 className="text-5xl leading-tight font-normal tracking-tighter max-sm:text-4xl">
         You do not have access to this page.
       </h1>
-      <p className="max-w-2xl text-ink-2">
+      <p className="max-w-2xl text-muted-foreground">
         Your account has not been granted access to this page. Contact an
         administrator if you think this is a mistake.
       </p>

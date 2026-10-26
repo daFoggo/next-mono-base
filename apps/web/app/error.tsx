@@ -22,7 +22,7 @@ export default function Error({
       <h1 className="text-4xl leading-tight font-normal tracking-tight max-sm:text-3xl">
         Something went wrong
       </h1>
-      <p className="max-w-md text-ink-2">
+      <p className="max-w-md text-muted-foreground">
         The system hit an unexpected problem. Please try again later.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-3">

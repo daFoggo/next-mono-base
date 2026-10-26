@@ -16,7 +16,7 @@ export function MainHeaderStart({ children }: { children: React.ReactNode }) {
       <Link href={DASHBOARD_PATH} className="shrink-0 md:hidden">
         <AppLogo />
       </Link>
-      <span aria-hidden className="font-mono text-sm text-ink-4 md:hidden">
+      <span aria-hidden className="font-mono text-sm text-muted-foreground/50 md:hidden">
         /
       </span>
       {children}
