@@ -193,6 +193,14 @@
   overflow: hidden;
 }
 
+/*
+ * Overlays dim the page, they do not blur it. shadcn's `backdrop-blur-sm` repaints the whole screen
+ * behind a sliding sheet or dialog on every frame, which is the main cause of laggy overlays.
+ */
+[data-slot$="overlay"] {
+  backdrop-filter: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
