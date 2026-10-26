@@ -14,7 +14,7 @@ const cfg = authConfig.AUTH_PROVIDER === "better-auth" ? authConfig : undefined
 
 function create(options: AuthOptions) {
   return betterAuth({
-    baseURL: cfg?.BETTER_AUTH_URL ?? "http://localhost:3000",
+    baseURL: cfg?.BETTER_AUTH_URL ?? "http://localhost:3001",
     secret:
       cfg?.BETTER_AUTH_SECRET ??
       "placeholder-secret-at-least-32-characters-long",
@@ -30,7 +30,7 @@ function create(options: AuthOptions) {
     },
     trustedOrigins: cfg?.BETTER_AUTH_URL
       ? [cfg.BETTER_AUTH_URL]
-      : ["http://localhost:3000"],
+      : ["http://localhost:3001"],
     emailAndPassword: {
       enabled: true,
       autoSignIn: true,
@@ -64,7 +64,7 @@ function create(options: AuthOptions) {
     plugins: [
       jwt({
         jwt: {
-          issuer: cfg?.BETTER_AUTH_URL ?? "http://localhost:3000",
+          issuer: cfg?.BETTER_AUTH_URL ?? "http://localhost:3001",
           audience: cfg?.API_AUDIENCE ?? "http://localhost:8000",
           definePayload: ({ user }) =>
             jwtPayload(user as { role?: string; name: string; email: string }),

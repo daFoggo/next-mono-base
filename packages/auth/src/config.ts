@@ -9,7 +9,7 @@ import { z } from "zod"
 const authSchema = z.discriminatedUnion("AUTH_PROVIDER", [
   z.object({
     AUTH_PROVIDER: z.literal("better-auth"),
-    BETTER_AUTH_URL: z.url().default("http://localhost:3000"),
+    BETTER_AUTH_URL: z.url().default("http://localhost:3001"),
     BETTER_AUTH_SECRET: z.string().min(32),
     DATABASE_URL: z.string().min(1),
     API_AUDIENCE: z.string().min(1).default("http://localhost:8000"),
