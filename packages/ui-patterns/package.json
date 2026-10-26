@@ -1,5 +1,5 @@
 {
-  "name": "@workspace/auth-ui",
+  "name": "@workspace/ui-patterns",
   "version": "0.0.0",
   "type": "module",
   "private": true,
@@ -11,6 +11,7 @@
   "dependencies": {
     "@tabler/icons-react": "^3.49.0",
     "@workspace/ui": "workspace:*",
+    "next-themes": "^0.4.6",
     "react": "19.3.0"
   },
   "devDependencies": {
@@ -21,7 +22,6 @@
     "typescript": "^5"
   },
   "exports": {
-    "./types": "./src/types.ts",
     "./*": "./src/*.tsx"
   }
 }
