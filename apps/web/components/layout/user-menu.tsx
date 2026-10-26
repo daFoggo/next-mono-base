@@ -34,7 +34,7 @@ export function UserMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Account: ${name} [${role}]`}
-        className="flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left font-mono text-sm text-muted-foreground transition-colors duration-150 group-data-[collapsible=icon]:justify-center hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground"
+        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left font-mono text-sm text-muted-foreground transition-colors duration-150 group-data-[collapsible=icon]:justify-center hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground"
       >
         <span
           aria-hidden
@@ -42,7 +42,10 @@ export function UserMenu({
         >
           └
         </span>
-        <IconUser aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+        <IconUser
+          aria-hidden
+          className="size-4 shrink-0 text-muted-foreground"
+        />
         <span className="min-w-0 truncate group-data-[collapsible=icon]:hidden">
           {name}
         </span>

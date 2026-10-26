@@ -3,7 +3,7 @@ import { IconArrowRight } from "@tabler/icons-react"
 
 import { GlyphBackground } from "@workspace/ui/components/animate-ui/backgrounds/glyph"
 
-import { ThemeCommand } from "@/components/layout/header-commands"
+import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { Stagger } from "@/components/shared/stagger"
 import { AppLogo } from "@/components/shared/app-logo"
 
@@ -23,7 +23,7 @@ export function AuthAside({ children }: { children: React.ReactNode }) {
         {/* Same height as the header so the showcase stays vertically centered. */}
         <div className="relative flex h-24 shrink-0 items-center justify-between font-mono text-xs text-muted-foreground">
           <span>© 2026 Next Mono Base</span>
-          <ThemeCommand />
+          <ThemeToggle />
         </div>
       </GlyphBackground>
     </aside>

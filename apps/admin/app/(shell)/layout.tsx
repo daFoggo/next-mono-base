@@ -27,7 +27,7 @@ async function SessionSidebar() {
   )
 }
 
-/** Three-column shell (docs/design-system.md A1): sidebar · main (· inspector, added by pages that need it). */
+/** Three-column shell (docs/design-system.md A1): sidebar · main (· right panel, added by pages that need it). */
 export default function ShellLayout({
   children,
 }: {

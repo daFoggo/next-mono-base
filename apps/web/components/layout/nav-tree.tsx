@@ -23,7 +23,7 @@ import { NavIcon } from "./nav-icons"
 
 // `group-data-[collapsible=icon]` is the sidebar's 48px icon rail: rows keep only their icon.
 const row =
-  "group/row flex w-full items-center gap-2 rounded-xl px-2 py-1.5 font-mono text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground group-data-[collapsible=icon]:justify-center"
+  "group/row flex w-full items-center gap-2 rounded-md px-2 py-1.5 font-mono text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground group-data-[collapsible=icon]:justify-center"
 
 /** Label nudges right on hover, like the claude.dev TOC (`translate-x-1`, `duration-200 ease-out`). */
 function RowLabel({ children }: { children: React.ReactNode }) {

@@ -34,7 +34,9 @@ function LogoMark({ size, motion }: { size: Size; motion: Motion }) {
         <rect x="1" y="5" width="1" height="1" />
         <rect x="0" y="6" width="1" height="1" />
       </g>
-      <g className={cn("fill-primary", idle && "motion-safe:animate-logo-plus")}>
+      <g
+        className={cn("fill-primary", idle && "motion-safe:animate-logo-plus")}
+      >
         <rect x="5" y="2" width="1" height="1" />
         <rect x="4" y="3" width="3" height="1" />
         <rect x="5" y="4" width="1" height="1" />

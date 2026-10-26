@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils"
 
-/** Header cell shared by every column (sidebar, main, inspector) so their hairlines line up (A1). */
+/** Header cell shared by every column (sidebar, main, right panel) so their hairlines line up (A1). */
 export function ColumnHeader({
   className,
   children,

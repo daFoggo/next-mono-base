@@ -1,8 +1,8 @@
 # Design system
 
 How `apps/web` looks and behaves: color, type, spacing, responsive layout, components and motion. The theme is
-shadcn `base-rhea` with the stock shadcn tokens, nothing custom. Every value is Tailwind's default scale. Tokens live in
-`packages/ui/src/styles/globals.css`, components in `packages/ui/src/components` (shadcn, style `base-rhea`).
+shadcn `base-nova` with the stock shadcn tokens, nothing custom. Every value is Tailwind's default scale. Tokens live in
+`packages/ui/src/styles/globals.css`, components in `packages/ui/src/components` (shadcn, style `base-nova`).
 An illustrated, interactive version of this guide lives in [design-system/base-design-system.html](design-system/base-design-system.html)
 (it still shows the previous theme). When the two disagree, this file wins.
 
@@ -14,7 +14,8 @@ An illustrated, interactive version of this guide lives in [design-system/base-d
    breakpoints come from Tailwind's default scale. No arbitrary values (`mt-[54px]`, `text-[13px]`, `grid-cols-[auto_1fr]`).
    If no step fits, use the nearest one. **One exception: the logo.** Its frame-by-frame keyframes live as
    `--animate-logo-*` tokens in `globals.css` and are used only by `AppLogo` (see [Logo](#logo)).
-   **Flat by default:** every `shadow-*` utility is neutralised in `globals.css` (`--shadow-*` tokens). Do not add shadows.
+   **Flat by default:** every `shadow-*` utility is neutralised in `globals.css` (`--shadow-*` tokens) and overlays do not blur
+   (`backdrop-filter: none` on `[data-slot$="overlay"]`). Do not add shadows or blur.
    **Second exception: `app/global-error.tsx`.** It uses inline system-color styles (`Canvas`, `CanvasText`) because
    `global-error` replaces the root layout, so global CSS and the theme tokens are not loaded there.
 2. **Smallest text is `text-xs`.** Weights are `font-normal` and `font-medium` only.
@@ -162,7 +163,7 @@ Principles:
 
 ## 6. Components
 
-shadcn `base-rhea`: rounded corners (`--radius: 0.625rem`), compact sizes, no shadows.
+shadcn `base-nova`: rounded corners (`--radius: 0.625rem`: `rounded-lg` fields and buttons, `rounded-md` menu rows, `rounded-xl` cards), compact sizes, no shadows. Every component is installed (`shadcn add --all`), including the chat set (`message`, `bubble`, `code-block`, `trace`, `questionnaire`, `message-scroller`, `attachment`, `marker`) and `carousel`; add what the app needs, delete nothing.
 
 | Need | Use |
 | :--- | :--- |
@@ -176,7 +177,7 @@ shadcn `base-rhea`: rounded corners (`--radius: 0.625rem`), compact sizes, no sh
 
 Installed today: alert, button, input, input-group, label, skeleton, spinner, textarea. Badge and Tabs are not installed
 yet; add them before use. Install new components from `packages/ui` (`pnpm dlx shadcn@latest add <name>`). Its `components.json` is the only one
-in the repo and sets the `style` (`base-rhea`).
+in the repo and sets the `style` (`base-nova`).
 
 Patterns specific to this language:
 
@@ -223,13 +224,14 @@ Rules:
 
 ## 8. Dashboard shell
 
-The app layout extends the same language: the article TOC "tree" becomes the sidebar, the Mods spec list becomes the
-inspector. Reference demo: the "Next Mono Base Design System" artifact, section 06.
+The app layout extends the same language: the article TOC "tree" becomes the sidebar, the Mods spec list becomes a
+detail sheet. Reference demo: the "Next Mono Base Design System" artifact, section 06.
 
 ### Anatomy
 
-Three full-height columns. Each column is a **header cell** plus a scrolling body. All header cells use one shared
-component so they always line up and the hairline runs straight across.
+Two full-height columns. Each column is a **header cell** plus a scrolling body. All header cells use one shared
+component so they always line up and the hairline runs straight across. Anything more (a record, a trace, a file) opens
+as a [detail sheet](#detail-sheets) from the page, never as a third column.
 
 ```tsx
 function ColumnHeader({ children }: { children: React.ReactNode }) {
@@ -239,11 +241,10 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
 
 | Column | Header cell | Body |
 | :--- | :--- | :--- |
-| Sidebar (shadcn `<Sidebar collapsible="offcanvas">`, `w-64`, `xl:w-72`) | Logo + workspace switcher | `px-4 py-6 gap-8`: one labelled **section** per nav group (`WORKSPACE`, `SETTINGS`, ...), then account pinned to the bottom |
-| Main (`flex-1 min-w-0`) | Burger + logo (below `md` only), path breadcrumb (`dashboard / settings / account`, no project name), `[B]` `[D]` commands (`[/]` `[I]` when search and inspector exist), `<Button size="sm">` | `px-4 sm:px-8 pt-10 pb-14 gap-8`: page head, metrics, tabs + list |
-| Inspector (`w-80`, `border-l`) | Record id + `[ESC]` | `p-6 gap-8`: title, `└` spec list, `└` activity, actions |
+| Sidebar (shadcn `<Sidebar collapsible="icon">`, `w-64`) | Logo + workspace switcher | `px-4 py-6 gap-8`: one labelled **section** per nav group (`WORKSPACE`, `SETTINGS`, ...), then account pinned to the bottom |
+| Main (`flex-1 min-w-0`) | `SidebarTrigger`, logo (below `md` only), path breadcrumb (`dashboard / settings / account`, no project name), `ThemeToggle` at the far right | `px-4 sm:px-8 pt-10 pb-14 gap-8`: page head, metrics, tabs + list |
 
-Adding another side panel later means adding another column with a `ColumnHeader`; nothing else moves.
+The header holds no state of its own: shadcn owns the sidebar's open state (`SidebarProvider`), `next-themes` the theme.
 
 Scroll areas hide their scrollbar but stay scrollable (mouse, keys, touch):
 
@@ -258,17 +259,24 @@ The sidebar holds any number of **sections**, each a mono `text-xs` uppercase la
 `Projects`), never after the widget ("Tree", "Menu"). A section whose links the role cannot open is hidden. Inside a
 section an entry is a link or a collapsible group of links (two levels max).
 
-Header commands are `[X] LABEL` buttons: mono `text-xs` uppercase, key and label in `text-muted-foreground`, `aria-pressed` for
-toggles. Every command has its bare-key shortcut (ignored while typing): `[B]` sidebar (shadcn's Cmd/Ctrl+B also works),
-`[D]` theme. The account row shows `└`, a user icon, name and role. Icons are functional only: one per navigable page (and the
+### Scoped menus (organization, project)
+
+The menu depends on the URL, like Supabase's Studio: `/org/<slug>/...` shows the organization menu, `/project/<ref>/...`
+the project menu, everything else the global one. A menu is a `NavScope` in `NAV_SCOPES` (`config/navigation.ts`): plain
+data (`id`, `prefix`, `param`, `sections`) whose hrefs hold `:param` placeholders. To add a scope, add one entry and its
+layout under `app/(dashboard)/<prefix>/[param]/`. `SessionNav` (server) filters every scope by role; the client
+`ScopedNav` picks the scope from `usePathname()` and renders `NavTree`, which knows nothing about scopes.
+
+The header has two icon buttons (`ghost`, `icon-sm`): `SidebarTrigger` (shadcn; Cmd/Ctrl+B also works) and `ThemeToggle`
+(sun and moon swap with a short spin and zoom, `motion-safe`; it is an animation, not a transition, because the theme
+provider disables transitions while the theme flips). The account row shows `└`, a user icon, name and role. Icons are functional only: one per navigable page (and the
 account row), never on group headers or menu items; the `└` glyph stays next to them as the hierarchy mark.
 
-Main header below `md` (or while the sidebar is collapsed): burger, wordmark, `/`, current page in ink, truncated
-with `…` rather than wrapping.
+Main header below `md`: sidebar trigger, wordmark, `/`, current page in ink, truncated with `…` rather than wrapping.
 
 ### Icon rail
 
-The sidebar uses `collapsible="icon"`: `[B]` (or a click on the rail edge) shrinks it from `w-64` to a 48px rail instead of
+The sidebar uses `collapsible="icon"`: the trigger (or a click on the rail edge) shrinks it from `w-64` to a 48px rail instead of
 hiding it, so every page stays one click away.
 
 - Every nav link carries `└`, its icon and its label. In the rail only the icon shows (the glyph and label hide; the
@@ -301,7 +309,7 @@ collapse and expand groups, Enter opens.
   review", `bg-destructive` for blocked, `bg-muted-foreground/50` for done.
 - **No big-number tiles.** Metrics are one `dl` row: mono `text-xs` label, `text-2xl font-medium` value, separated by space.
 - **Selected list row is inverted** (`bg-primary text-primary-foreground`); hover is only `bg-accent`.
-- **The inspector is context, not a route.** Selecting a row updates it in place.
+- **A detail sheet is context, not a route.** It opens from the page that owns the data and keeps its own open state.
 - **Usage meters are flat**: a `bg-primary` fill over a `bg-muted` track (shadcn `Progress`).
 - One tier denser than marketing pages on the outside only: page top `pt-10` instead of `pt-20`, sections `gap-10`
   instead of `gap-14`; T1 to T4 unchanged.
@@ -310,12 +318,12 @@ collapse and expand groups, Enter opens.
 
 | Region | < lg | lg to xl | >= xl |
 | :--- | :--- | :--- | :--- |
-| Sidebar | Hidden below `md` (shadcn's `useIsMobile`, 768px); burger opens it as a left Sheet | `w-64` from `md`; `[B]` collapses it to a 48px icon rail | same |
-| Inspector | Right Sheet, full width below `sm` | Right Sheet `w-80` over a scrim | Fixed column, toggled with `[I]` |
-| Logo | Main header, next to the burger | Sidebar header | Sidebar header |
+| Sidebar | Hidden below `md` (shadcn's `useIsMobile`, 768px); the trigger opens it as a left Sheet | `w-64` from `md`; the trigger collapses it to a 48px icon rail | same |
+| Detail sheet | Full width, panes stacked | `42rem`, draggable wider or narrower, panes side by side from `@xl` | same |
+| Logo | Main header, next to the trigger | Sidebar header | Sidebar header |
 | List row | Two lines: title / id, status, time | One line | One line |
 | Metrics | `grid-cols-2` | `grid-cols-4` | `grid-cols-4` |
-| Header commands | Keys only (`[D]`; `[B]` hidden below `md`, the burger takes over) | Keys and labels from `lg` | Keys and labels |
+| Header buttons | Trigger and theme toggle | same | same |
 
 Needed components: `pnpm dlx shadcn@latest add sidebar sheet badge tabs` (from `packages/ui`). shadcn's sidebar width
 comes from the `--sidebar-width` variable; change it in the theme rather than with a class.
@@ -325,25 +333,98 @@ comes from the `--sidebar-width` variable; change it in the theme rather than wi
 shadcn files in `packages/ui` are **never edited**, so `shadcn add --overwrite` and future migrations stay clean. The
 Next Mono Base look is composed on top in `apps/web/components/layout/`:
 
-**Inspector (implemented):** `components/layout/inspector.tsx` holds `InspectorProvider` (state, `useMediaQuery` for `xl`),
-`InspectorCommand` (`[I]`, header) and `InspectorPanel` (a fixed `w-80 border-l` column from `xl`, a right `Sheet` below it,
-`[ESC]` closes). The layout fills it with page-specific content.
 
 | Part | File | Built from |
 | :--- | :--- | :--- |
 | `ColumnHeader` | `column-header.tsx` | Plain `div` (`h-14 border-b px-4`) |
 | `AppSidebar`, `AppSidebarBody`, `AppSidebarSection` | `app-sidebar.tsx` | `Sidebar collapsible="offcanvas"`, `SidebarContent` |
 | `NavTree` | `nav-tree.tsx`, `nav-icons.tsx` | `SidebarMenu` / `SidebarMenuItem` for structure; its own `Link` row for the tree look; `Tooltip` names the icon in the rail. One per section |
-| `SidebarCommand`, `ThemeCommand` | `header-commands.tsx` | `HeaderCommand` button + `hooks/use-hotkey.ts` |
+| `ThemeToggle` | `theme-toggle.tsx` | Ghost `icon-sm` `Button` + `hooks/use-theme-toggle.ts` (also used by the auth rail footer) |
+| `DetailSheet*` | `components/shared/detail-sheet.tsx` | Compound parts over shadcn `Sheet` (see Detail sheets) |
+| `CopyButton` | `components/shared/copy-button.tsx` | Ghost `icon-sm` `Button`; the icon turns into a check after copying |
 | `UserMenu` | `user-menu.tsx` | `DropdownMenu`; items are passed as children (sign out comes from `features/auth`) |
-| `DashboardBreadcrumb` | `dashboard-breadcrumb.tsx` | `Breadcrumb`; segments from the URL, index pages append their nav title |
+| `DashboardBreadcrumb`, `CrumbMenu` | `dashboard-breadcrumb.tsx`, `crumb-menu.tsx` | `Breadcrumb`; global pages read like the path, scoped pages start with organization / project menus (`Crumb.options`, a `DropdownMenu`) then the page title from the nav |
+| `ScopedNav` | `scoped-nav.tsx` | Client; the sidebar sections of the current scope, over `NavTree` |
 | `PageHead`, `Metrics`, `SpecList` | `page-head.tsx`, `components/shared/` | Plain markup |
 | `InfoHint` | `components/shared/info-hint.tsx` | `Popover` + ghost `icon-xs` `Button`; copy comes from `config/help.ts` (also read by the Guide page). `PageHead`, `Metric` and section titles take a `hint` key |
 | `ResponsiveDialog` | `components/shared/responsive-dialog.tsx` | `Dialog` from `md` up, bottom `Drawer` below (shadcn "Responsive Dialog"); `size` `md` or `lg`; `DialogActions` for the button row. Use it for every form that opens over a page; `AlertDialog` stays for confirmations |
 
 Two consequences of not editing shadcn: the sidebar switches to a Sheet below `md` (768px, hard-coded in shadcn's hook)
-instead of `lg`, and keeps one width (`16rem`); `xl:w-72` would need an arbitrary value. The inspector column is not built
-yet: add it with a `ColumnHeader` when the first list feature needs it.
+instead of `lg`, and keeps one width (`16rem`); `xl:w-72` would need an arbitrary value. A fixed third column
+is not part of the shell: use a detail sheet.
+
+### Detail sheets
+
+A record that needs more room than a row (a trace, an order, a file) opens in a right `Sheet` from the page that owns
+the data. It never takes layout space and the shell keeps no state for it. Built with composition
+(vercel-composition-patterns): compound parts over one `Sheet` instead of boolean props, and the open state and the
+width live inside the sheet, so a page needs no provider and the header no button.
+
+**Size.** The sheet opens fitting its content (`42rem`) and is resized by dragging its left edge (a `role="separator"` handle:
+arrow keys step 32px, double click resets, minimum 384px, maximum the viewport minus 64px). The width is remembered in
+`localStorage` (`storageKey` prop). Below `sm` it is always full width and the handle is hidden. The panes split on the
+sheet's own width (container query `@xl`), not the viewport's.
+
+**Three header tiers**, each a part, so every level reads on its own:
+
+| Tier | Part | Holds |
+| :--- | :--- | :--- |
+| 1 The record | `DetailSheetHeader` (`h-14`) | `DetailSheetClose` (`»`), kind tile, title, copy buttons, then at the right Previous / Next as one `ButtonGroup` of `icon-sm` outline buttons (tooltip with `J` / `K`) |
+| 2 A pane | `DetailSheetPaneHeader` (`h-12`, `bg-card`) | List pane: label with count, expand-all. Detail pane: kind tile, name, copy id, kind badge |
+| 3 Content | `DetailSheetPaneBody` | Meta row (icon + value), tags, `Tabs`, then the tab content |
+
+```tsx
+<Sheet>
+  <SheetTrigger render={<Button size="lg" />}>Open trace</SheetTrigger>
+  <DetailSheetContent>
+    <TraceProvider>
+      <DetailSheetHeader>
+        <DetailSheetClose />
+        …
+      </DetailSheetHeader>
+      <DetailSheetSplit>
+        <DetailSheetList>
+          <DetailSheetPaneHeader>Spans (8)</DetailSheetPaneHeader>
+          <DetailSheetPaneBody><SpanTree /></DetailSheetPaneBody>
+        </DetailSheetList>
+        <DetailSheetMain><SpanDetail /></DetailSheetMain>
+      </DetailSheetSplit>
+    </TraceProvider>
+  </DetailSheetContent>
+</Sheet>
+```
+
+**Interactive tree in the list pane.** Build it the way shadcn's File Tree does (ui.shadcn.com/docs/ai-elements/base/file-tree):
+a node with children is a `Collapsible` whose chevron (`Button variant="ghost" size="icon-xs"`) toggles it, every node is a
+`Button variant="ghost" size="sm"` that selects it, children sit in `CollapsibleContent` indented with `ml-3 border-l pl-1`.
+States: hover `bg-muted` (the ghost default), selected `data-current:bg-primary/10`, selected and hovered
+`data-current:hover:bg-primary/15`. A ghost `Button` paints `aria-expanded` as a hover surface, so the chevron overrides it
+(`aria-expanded:bg-transparent aria-expanded:hover:bg-muted`); otherwise every open node looks hovered. In light mode
+`muted`, `accent` and `secondary` are the same grey, so never tell hover from selected with those.
+
+The selection, the open nodes and the `J` / `K` keys are shared by the tree, the detail pane and the stepper, so they live in a
+provider inside the sheet (`TraceProvider` + `useTrace`), not in the shell. It mounts with the sheet and goes with it.
+Other shadcn parts for similar jobs: `Accordion` (flat expandable list), `SidebarMenuSub` (navigation only), `Tabs`
+(peer views of one record).
+
+**Performance** (what made the first version laggy, and what Opik does instead): Opik's `ResizableSidePanel` writes
+`style.left` straight to the element while dragging, with no React state and with the CSS transition switched off, and saves
+the width on release. In the same spirit here:
+
+- Do not animate a size. Animating `width` / `max-width` re-lays out the whole sheet on every frame (worse with a container
+  query inside). Slide with `transform` and `opacity` only; resize instantly.
+- No `backdrop-filter`. A blurred full-screen overlay repaints under every frame of the sheet's slide.
+- Memoize the provider value and give its actions stable identities (`useMemo`, `useCallback`); attach window listeners
+  once (`useEffectEvent` reads the latest state), never one per render.
+- The resize handle does what Opik's does: during the drag it writes the `--detail-sheet-width` CSS variable on the sheet through
+  a ref (no React state, no transition) and commits to `localStorage` on pointer up.
+- Long lists or trees (hundreds of nodes) need virtualization; the 8-node demo does not.
+
+Rules: always render a `SheetTitle` (and a `SheetDescription`, `sr-only` if needed); never put `w-*` on `SheetContent`
+(use the sheet's own width); a client part that needs `window` (copy link) is its own component, because a server page
+cannot pass functions or icon components to a client one. The Overview page carries a working example in
+`app/(dashboard)/dashboard/_components/` (`trace-sheet.tsx` assembles `span-tree.tsx`, `span-detail.tsx`, `trace-nav.tsx`,
+`trace-context.tsx` and the mock `trace-data.ts`); delete it when you add real data.
 
 ---
 
@@ -368,7 +449,7 @@ Applied in `apps/web`:
 | Stagger on enter (slide up 8px, `duration-500`, `delay-75` steps) | Dashboard body, auth form column | `components/shared/stagger.tsx` (direct children, `*:nth-N:delay-*`). Plays once per element: Cache Components hides visited routes with `display: none` and a CSS animation restarts when its element is shown again, so each child switches its animation off when it ends (`onAnimationEnd`) and going back is instant |
 | Stack logos reveal in order | Auth rail | `app/(auth)/_components/stack-showcase.tsx` (`Stagger`) |
 | Glyph background (WebGL characters, cursor glow, click waves; pauses off screen, static under reduced motion) | Auth rail | `GlyphBackground` from [Animate UI](https://animate-ui.com/docs/backgrounds/glyph), installed in `packages/ui` via the `@animate-ui` registry in `components.json` |
-| Burger bars turn into an X (`duration-300 ease-out`) | Dashboard header below `md` | `components/layout/burger.tsx` |
+| Sun and moon swap with a spin and zoom (`duration-300 ease-out`) | Theme toggle | `components/layout/theme-toggle.tsx` |
 | TOC nudge (`translate-x-1`, `duration-200`) | Sidebar nav rows | `NavTree` `RowLabel` |
 | Arrow slides on hover (`translate-x-1`) | Auth switch link, 403 CTA | `group-hover` on the icon |
 | Caret rotates (`duration-300`) | Collapsible nav group | `NavTree` `TreeGroup` |

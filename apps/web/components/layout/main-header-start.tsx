@@ -1,22 +1,25 @@
 import Link from "next/link"
 
+import { SidebarTrigger } from "@workspace/ui/components/sidebar"
+
 import { AppLogo } from "@/components/shared/app-logo"
 import { DASHBOARD_PATH } from "@/config/routes"
 
-import { Burger } from "./burger"
-
 /**
- * Left of the main header. Below md the sidebar is a Sheet, so the header carries the burger and
- * the logo; from md the sidebar (expanded or its icon rail) always shows the logo itself.
+ * Left of the main header: the sidebar trigger (shadcn; Cmd/Ctrl+B works too). Below md the
+ * sidebar is a Sheet, so the header also carries the logo; from md the sidebar shows it itself.
  */
 export function MainHeaderStart({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <Burger className="-ml-1.5 md:hidden" />
+      <SidebarTrigger className="-ml-1.5" />
       <Link href={DASHBOARD_PATH} className="shrink-0 md:hidden">
         <AppLogo />
       </Link>
-      <span aria-hidden className="font-mono text-sm text-muted-foreground/50 md:hidden">
+      <span
+        aria-hidden
+        className="font-mono text-sm text-muted-foreground/50 md:hidden"
+      >
         /
       </span>
       {children}

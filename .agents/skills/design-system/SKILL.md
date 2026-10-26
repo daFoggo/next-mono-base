@@ -1,8 +1,8 @@
 ---
 name: design-system
 description: >
-  Visual rules for apps/web and packages/ui (shadcn base-rhea theme): colors, typography, the 7-tier spacing
-  scale, responsive breakpoints, shadcn base-rhea component sizes and motion. Use whenever writing or changing JSX
+  Visual rules for apps/web and packages/ui (shadcn base-nova theme): colors, typography, the 7-tier spacing
+  scale, responsive breakpoints, shadcn base-nova component sizes and motion. Use whenever writing or changing JSX
   classNames, layouts, pages, sections, lists, cards, navigation, footers, theme tokens in globals.css, or adding a
   shadcn component, and whenever the user mentions spacing, padding, margin, responsive, mobile, breakpoint, dark or
   light theme, font, color, or "looks off", even if they do not name the design system.
@@ -67,7 +67,7 @@ children. Separate with space first, `border-b` second, a bordered box only for 
 | Form error / success | `<Alert variant="destructive">` / `<Alert>` |
 
 Add components from `packages/ui`: `pnpm dlx shadcn@latest add <name>`. Its `components.json` is the only one
-(`style: "base-rhea"`).
+(`style: "base-nova"`).
 
 ## Navigation
 
@@ -76,17 +76,23 @@ anchors use `scroll-mt-24`; the logo scrolls to `0`.
 
 ## Dashboard shell (doc §8)
 
-- Three full-height columns: shadcn `<Sidebar collapsible="offcanvas">` · main `flex-1 min-w-0` · inspector `w-80
-  border-l`. Each column = `<ColumnHeader>` (`flex h-14 shrink-0 items-center gap-4 border-b px-4`) + a body with
-  `no-scrollbar overflow-y-auto`. Never give one column a different header height; a new panel is a new column.
-- Logo lives in the sidebar header; below `md` (or with the sidebar collapsed) it shows in the main header next to the `Burger`.
+- Two full-height columns: shadcn `<Sidebar collapsible="icon">` · main `flex-1 min-w-0`. Each = `<ColumnHeader>` (`flex h-14
+  shrink-0 items-center gap-4 border-b px-4`) + a body with `no-scrollbar overflow-y-auto`. No third column: a record opens in a
+  detail sheet from the page.
+- Logo lives in the sidebar header; below `md` (or with the sidebar collapsed) it shows in the main header next to the `SidebarTrigger`.
 - Sidebar body = labelled sections (`config/navigation.ts`), named by content (`Workspace`, `Settings`), never "Tree".
-  Header = path breadcrumb (no project name) + `[X] LABEL` commands with bare-key shortcuts (`[B]` sidebar, `[D]` theme).
+  Header = `SidebarTrigger` + path breadcrumb (no project name) + `ThemeToggle`; no header state, no bare-key shortcuts.
+  The menu follows the URL: `NAV_SCOPES` holds one `NavScope` per prefix (global, `/org/<slug>`, `/project/<ref>`); scoped breadcrumbs start with organization / project menus (`Crumb.options`). New scope = one entry, no component edits.
   The sidebar collapses to a 48px icon rail (doc § Icon rail): every `NavLink` needs an `icon` name; icons are functional, never decorative.
 - Never edit shadcn files in `packages/ui`; compose in `apps/web/components/layout/`.
 - Each section is the big TOC: mono `text-sm`, `└` + an icon per link (current glyph `text-foreground`), max two levels, counts
   `ml-auto text-xs tabular-nums`.
-- Inspector below `xl` becomes `<Sheet side="right">`. Selected row `bg-primary text-primary-foreground`.
+- Detail sheet (doc § Detail sheets): `<Sheet>` + `DetailSheetContent` (fits content, drag the left edge to resize) with three header
+  tiers (opens at 42rem, resized by dragging its left edge, width remembered): `DetailSheetHeader` (close, title, copy, Previous/Next as a `ButtonGroup`), `DetailSheetPaneHeader` per pane, then
+  `DetailSheetPaneBody`. Open state, width and selection stay inside the sheet (`TraceProvider`); compound parts, no boolean
+  props (vercel-composition-patterns). Trees follow shadcn File Tree: `Collapsible` per node + ghost `Button` rows; hover
+  `bg-muted`, selected `bg-primary/10`, chevron `aria-expanded:bg-transparent`. Never animate a size (width, max-width): slide with transform/opacity only; no `backdrop-filter`; memoize provider values.
+  List rows elsewhere: selected `bg-primary text-primary-foreground`.
 - Metrics are a `dl` row, no stat cards. One focal accent per screen.
 - Logo: always `<AppLogo variant size motion />` (doc § Logo), sizes 16/24/32 only, animated (`idle`) by default everywhere.
 

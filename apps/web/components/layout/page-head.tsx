@@ -18,7 +18,9 @@ export function PageHead({
           {title}
         </h1>
       </div>
-      {children ? <p className="max-w-2xl text-muted-foreground">{children}</p> : null}
+      {children ? (
+        <p className="max-w-2xl text-muted-foreground">{children}</p>
+      ) : null}
     </header>
   )
 }

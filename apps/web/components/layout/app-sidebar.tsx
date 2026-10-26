@@ -1,23 +1,15 @@
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarRail,
-} from "@workspace/ui/components/sidebar"
+import { Sidebar, SidebarContent } from "@workspace/ui/components/sidebar"
 import { cn } from "@workspace/ui/lib/utils"
 
 /**
  * Sidebar composed from the shadcn primitives, which stay untouched for future upgrades:
  * shadcn provides collapse, the mobile Sheet and the keyboard shortcut; these parts provide the
  * design-system layout. It collapses to a 48px icon rail (`collapsible="icon"`) instead of
- * disappearing, so every page stays one click away; the rail edge also toggles it on click.
+ * disappearing, so every page stays one click away. The header trigger (or Cmd/Ctrl+B) toggles it;
+ * there is no rail edge to click.
  */
 export function AppSidebar({ children }: { children: React.ReactNode }) {
-  return (
-    <Sidebar collapsible="icon">
-      {children}
-      <SidebarRail />
-    </Sidebar>
-  )
+  return <Sidebar collapsible="icon">{children}</Sidebar>
 }
 
 /** Scrolling body under the header cell. */
