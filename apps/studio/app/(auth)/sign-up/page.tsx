@@ -30,8 +30,8 @@ export default function SignUpPage() {
   return (
     <>
       <AuthAside>
-        <AuthPitch title="Start from a solid base.">
-          Create an account and set up your workspace in a minute.
+        <AuthPitch title="Start from a production-grade base.">
+          Turborepo monorepo with tri-stack auth, PostgreSQL, Docker &amp; Claude AI best practices.
         </AuthPitch>
         <StackShowcase />
       </AuthAside>

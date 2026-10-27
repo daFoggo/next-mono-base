@@ -52,7 +52,7 @@ export default function SignInPage({
     <>
       <AuthAside>
         <AuthPitch title="Pick up where you left off.">
-          Your workspace is one sign-in away.
+          Production monorepo with Keycloak, Better Auth &amp; Supabase behind one seam.
         </AuthPitch>
         <StackShowcase />
       </AuthAside>

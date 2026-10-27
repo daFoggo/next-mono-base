@@ -146,7 +146,7 @@ export function SocialAuthButtons({
               </>
             ) : (
               <>
-                <IconSparkles className="size-4 text-amber-500" />
+                <IconSparkles className="size-4" />
                 <span>Demo sign in (instant access)</span>
               </>
             )}
