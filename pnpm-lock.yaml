@@ -150,6 +150,9 @@ importers:
       cn:
         specifier: ^0.4.0
         version: 0.4.0
+      motion:
+        specifier: ^14.4.0
+        version: 14.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       next:
         specifier: 16.4.2
         version: 16.4.2(@babel/core@8.0.6)(@playwright/test@1.64.1)(@types/node@20.19.43)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)

@@ -1,3 +1,3 @@
 "use client"
 
-export * from "@workspace/ui/components/animate-ui/numbers/counting-number"
+export * from "./counting-number.js"

@@ -53,6 +53,8 @@
     "./postcss.config": "./postcss.config.mjs",
     "./lib/highlighter": "./src/lib/highlighter.tsx",
     "./lib/*": "./src/lib/*.ts",
+    "./components/animate-ui/*/*": "./src/components/animate-ui/*/*.tsx",
+    "./components/animate-ui/*": "./src/components/animate-ui/*.tsx",
     "./components/*": "./src/components/*.tsx",
     "./provider": "./src/components/animate-ui/provider.tsx",
     "./hooks/*": "./src/hooks/*.ts"

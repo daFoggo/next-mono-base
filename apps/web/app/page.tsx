@@ -11,6 +11,7 @@ import {
 } from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
+import { CountingNumber } from "@workspace/ui/components/animate-ui/numbers/counting-number"
 import { AppLogo } from "@workspace/ui-patterns/app-logo"
 import { StackGrid } from "@workspace/ui-patterns/stack-grid"
 import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
@@ -101,7 +102,8 @@ const PILLARS = [
 /**
  * Modern developer landing page with high craft inspired by interfaces.dev:
  * - Wide 1336px responsive container with comfortable whitespace
- * - Interactive provider switcher demo (.env.local toggle)
+ * - Animate UI components: spring CopyButton, CountingNumber, spring gliding tabs
+ * - Strict design system compliance: smallest text is text-xs, zero custom -[] values
  * - Monorepo workspace package topology map
  * - Bento tech stack proof grid matching the reference image
  * - Chapter-style architectural breakdown
@@ -140,7 +142,7 @@ export default function HomePage() {
         <section className="flex flex-col gap-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/40 px-2.5 py-0.5 font-mono text-[11px] text-foreground/85">
+              <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/40 px-3 py-1 font-mono text-xs text-foreground/85">
                 v0.1.0 · Next.js 16.4
               </span>
               <span className="font-mono text-xs text-muted-foreground">
@@ -194,9 +196,12 @@ export default function HomePage() {
                 Integrated technologies across 5 tiers
               </h2>
             </div>
-            <p className="font-mono text-xs text-muted-foreground">
-              15 technologies · Pluggable architecture · Zero lock-in
-            </p>
+            <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+              <CountingNumber number={15} />
+              <span>technologies ·</span>
+              <CountingNumber number={3} />
+              <span>auth providers · Zero lock-in</span>
+            </div>
           </div>
 
           <div className="mx-auto w-full max-w-4xl">
@@ -221,13 +226,13 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Bento Card 1: Interactive Auth Switcher */}
+            {/* Bento Card 1: Interactive Auth Switcher with Animate UI */}
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs font-medium text-foreground">
                   Pluggable Authentication Seam
                 </span>
-                <span className="font-mono text-[11px] text-muted-foreground">
+                <span className="font-mono text-xs text-muted-foreground">
                   packages/auth
                 </span>
               </div>
@@ -240,7 +245,7 @@ export default function HomePage() {
                 <span className="font-mono text-xs font-medium text-foreground">
                   Turborepo Package Graph
                 </span>
-                <span className="font-mono text-[11px] text-muted-foreground">
+                <span className="font-mono text-xs text-muted-foreground">
                   pnpm workspaces
                 </span>
               </div>
@@ -264,16 +269,16 @@ export default function HomePage() {
             {PILLARS.map((pillar) => (
               <div
                 key={pillar.title}
-                className="group flex flex-col gap-3 rounded-lg border border-border/50 bg-muted/10 p-6 transition-all duration-150 hover:border-border hover:bg-muted/25"
+                className="group flex flex-col gap-3.5 rounded-lg border border-border/50 bg-muted/10 p-6 transition-all duration-150 hover:border-border hover:bg-muted/25"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <pillar.icon className="size-5 text-muted-foreground transition-colors group-hover:text-foreground" />
+                    <pillar.icon className="size-5 text-muted-foreground transition-colors group-hover:text-foreground shrink-0" />
                     <h3 className="font-medium text-base text-foreground">
                       {pillar.title}
                     </h3>
                   </div>
-                  <span className="inline-flex rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 font-mono text-[11px] text-foreground/80">
+                  <span className="inline-flex rounded-full border border-border/60 bg-muted/40 px-2.5 py-0.5 font-mono text-xs text-foreground/80">
                     {pillar.badge}
                   </span>
                 </div>
@@ -303,25 +308,25 @@ export default function HomePage() {
             {ARCHITECTURE_CHAPTERS.map((item) => (
               <div
                 key={item.number}
-                className="group flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6 py-4.5 transition-colors hover:bg-muted/15 px-3 -mx-3 rounded-sm"
+                className="group flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-6 py-5 transition-colors hover:bg-muted/15 px-3 -mx-3 rounded-sm"
               >
-                <div className="flex items-center gap-2.5 shrink-0 sm:w-36">
+                <div className="flex items-center gap-2.5 shrink-0 sm:min-w-44">
                   <span className="font-mono text-xs text-muted-foreground tabular-nums">
                     {item.number}
                   </span>
-                  <span className="inline-flex rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 font-mono text-[11px] text-foreground/80">
+                  <span className="inline-flex rounded-full border border-border/60 bg-muted/40 px-2.5 py-0.5 font-mono text-xs text-foreground/80">
                     {item.badge}
                   </span>
                 </div>
-                <div className="flex flex-1 flex-col gap-1 min-w-0">
+                <div className="flex flex-1 flex-col gap-1.5 min-w-0">
                   <h4 className="text-sm font-medium text-foreground">
                     {item.title}
                   </h4>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
-                <span className="font-mono text-[11px] text-muted-foreground shrink-0 hidden md:block pt-0.5">
+                <span className="font-mono text-xs text-muted-foreground shrink-0 hidden md:block pt-0.5">
                   {item.meta}
                 </span>
               </div>
@@ -346,51 +351,51 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-5 transition-colors hover:bg-muted/20">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="flex flex-col gap-2.5 rounded-lg border border-border/50 bg-muted/10 p-6 transition-colors hover:bg-muted/20">
               <div className="flex items-center gap-2">
-                <IconShieldCheck className="size-4 text-muted-foreground" />
+                <IconShieldCheck className="size-4 text-muted-foreground shrink-0" />
                 <span className="font-mono text-xs font-medium text-foreground">
                   Deterministic AGENTS.md Rules
                 </span>
               </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">
+              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                 Context-aware rules in AGENTS.md instruct AI assistants on Next.js 16 breaking changes, Turbopack compiling, and monorepo guidelines before writing code.
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-5 transition-colors hover:bg-muted/20">
+            <div className="flex flex-col gap-2.5 rounded-lg border border-border/50 bg-muted/10 p-6 transition-colors hover:bg-muted/20">
               <div className="flex items-center gap-2">
-                <IconLayersLinked className="size-4 text-muted-foreground" />
+                <IconLayersLinked className="size-4 text-muted-foreground shrink-0" />
                 <span className="font-mono text-xs font-medium text-foreground">
                   Single Source of Truth in docs/
                 </span>
               </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">
+              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                 Exhaustive architectural docs cover data fetching, authentication seams, Zustand client state, and design-system tokens so agents never hallucinate patterns.
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-5 transition-colors hover:bg-muted/20">
+            <div className="flex flex-col gap-2.5 rounded-lg border border-border/50 bg-muted/10 p-6 transition-colors hover:bg-muted/20">
               <div className="flex items-center gap-2">
-                <IconLock className="size-4 text-muted-foreground" />
+                <IconLock className="size-4 text-muted-foreground shrink-0" />
                 <span className="font-mono text-xs font-medium text-foreground">
                   Strict ESLint Monorepo Boundaries
                 </span>
               </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">
+              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                 Custom ESLint rules enforce strict architectural boundaries: client components cannot import server-only modules, and workspace packages maintain clean dependency graphs.
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-5 transition-colors hover:bg-muted/20">
+            <div className="flex flex-col gap-2.5 rounded-lg border border-border/50 bg-muted/10 p-6 transition-colors hover:bg-muted/20">
               <div className="flex items-center gap-2">
-                <IconCpu className="size-4 text-muted-foreground" />
+                <IconCpu className="size-4 text-muted-foreground shrink-0" />
                 <span className="font-mono text-xs font-medium text-foreground">
                   One-Command Full Monorepo Check
                 </span>
               </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">
+              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                 Running pnpm check executes lint, typecheck, and Vitest across all 8 packages in parallel via Turborepo, providing instant verification for generated code.
               </p>
             </div>
