@@ -39,6 +39,8 @@ export type SignUpInput = Credentials & { name: string }
 /** `confirm-email`: the account exists but the user must confirm their email first. */
 export type SignUpResult = "signed-in" | "confirm-email"
 
+export type OAuthProvider = "google" | "keycloak" | "keycloak-register"
+
 /** Server-side contract (Server Components, Server Actions, Route Handlers). */
 export interface AuthProvider {
   /** Verified session, or null. Must not refresh tokens (the proxy does that). */

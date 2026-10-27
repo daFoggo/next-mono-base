@@ -10,6 +10,9 @@ export async function getAuthProvider(
   if (authConfig.AUTH_PROVIDER === "supabase") {
     return (await import("./supabase/server")).createSupabaseProvider(options)
   }
+  if (authConfig.AUTH_PROVIDER === "keycloak") {
+    return (await import("./keycloak/server")).createKeycloakProvider(options)
+  }
   return (await import("./better-auth/server")).createBetterAuthProvider(
     options
   )
