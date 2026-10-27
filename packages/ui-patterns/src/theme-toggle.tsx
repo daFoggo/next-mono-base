@@ -1,33 +1,42 @@
 "use client"
 
-import { useCallback } from "react"
-import { IconMoon, IconSun } from "@tabler/icons-react"
 import { useTheme } from "next-themes"
 
-import { Button } from "@workspace/ui/components/button"
+import {
+  ThemeTogglerButton,
+  ThemeTogglerButtonIcon,
+  type Resolved,
+  type ThemeSelection,
+} from "@workspace/ui/components/animate-ui/buttons/theme-toggler"
+import { ThemeToggler } from "@workspace/ui/components/animate-ui/effects/theme-toggler"
 
-// The icon that appears plays a short spin and zoom in. ThemeProvider disables CSS transitions
-// while the theme flips, so this uses an animation: it restarts when `dark:` flips `display`.
-const icon =
-  "motion-safe:animate-in motion-safe:duration-300 motion-safe:ease-out motion-safe:fade-in motion-safe:zoom-in-50 motion-safe:spin-in-90"
-
-/** Icon button that flips between light and dark. Needs `ThemeProvider` above it. */
+/** Icon button that flips between light and dark with a View Transition wipe. Needs `ThemeProvider` above it. */
 export function ThemeToggle({ className }: { className?: string }) {
-  const { resolvedTheme, setTheme } = useTheme()
-  const toggleTheme = useCallback(
-    () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
-    [resolvedTheme, setTheme]
-  )
+  const { theme, resolvedTheme, setTheme } = useTheme()
+  const currentTheme = (theme ?? "light") as ThemeSelection
+  const currentResolved = (resolvedTheme ?? "light") as Resolved
+
   return (
-    <Button
-      variant="ghost"
-      size="icon-sm"
-      onClick={toggleTheme}
-      className={className}
+    <ThemeToggler
+      theme={currentTheme}
+      resolvedTheme={currentResolved}
+      setTheme={setTheme}
     >
-      <IconSun className={`${icon} dark:hidden`} />
-      <IconMoon className={`${icon} hidden dark:block`} />
-      <span className="sr-only">Toggle theme</span>
-    </Button>
+      {({ effective, resolved, toggleTheme }) => (
+        <ThemeTogglerButton
+          variant="ghost"
+          size="icon-sm"
+          modes={["light", "dark"]}
+          theme={effective}
+          resolvedTheme={resolved}
+          setTheme={toggleTheme}
+          aria-label="Toggle theme"
+          className={className}
+        >
+          <ThemeTogglerButtonIcon />
+          <span className="sr-only">Toggle theme</span>
+        </ThemeTogglerButton>
+      )}
+    </ThemeToggler>
   )
 }

@@ -55,19 +55,27 @@ children. Separate with space first, `border-b` second, a bordered box only for 
 - Anchor targets: `scroll-mt-24 max-sm:scroll-mt-18`.
 - `ItemGroup` whose children are not real list items must pass `role="none"` (upstream `ItemGroup` ships `role="list"`).
 
-## Components
+## Components (Animate UI First)
+
+**Always prioritize Animate UI components and primitives over static shadcn components or hand-rolled animations whenever possible.**
+
+- All interactive shadcn components in `@workspace/ui/components/*` (`accordion`, `alert-dialog`, `checkbox`, `collapsible`, `combobox`, `context-menu`, `dialog`, `drawer`, `dropdown-menu`, `hover-card`, `input-otp`, `menubar`, `navigation-menu`, `pagination`, `popover`, `preview-link-card`, `progress`, `questionnaire`, `radio-group`, `select`, `sheet`, `sidebar`, `slider`, `switch`, `tabs`, `toast`, `toggle`, `toggle-group`, `tooltip`) are already animated with **Animate UI v2** (`@animate-ui/react`, Base UI primitives).
+- Dedicated Animate UI primitives and registry components live in `@workspace/ui/components/animate-ui/*` (see `.agents/skills/animate-ui/SKILL.md`).
 
 | Need | Use |
 | :--- | :--- |
-| Primary CTA | `<Button size="lg">` |
+| Primary CTA | `<Button size="lg">` (or `@workspace/ui/components/animate-ui/buttons/button` for spring press) |
 | Form / toolbar button | `<Button>` or `size="sm"` |
 | Secondary | `variant="outline"` |
-| Chips | `<Badge variant="default">` / `variant="outline"` (install first) |
-| Filter tabs | `<TabsList variant="line">` (install first) |
+| Copy / Ripple / Theme switch | `@workspace/ui/components/animate-ui/buttons/{copy,ripple,theme-toggler}` |
+| Animated numbers (stats, odometers, wheels) | `@workspace/ui/components/animate-ui/numbers/{counting-number,sliding-number,scrolling-number}` |
+| Layout & pointer effects | `@workspace/ui/components/animate-ui/effects/{auto-height,scroll-fade,tilt,highlight,effect}` |
+| Overlapping avatars | `@workspace/ui/components/animate-ui/avatar-group` |
+| Chips | `<Badge variant="default">` / `variant="outline"` |
+| Filter tabs | `<TabsList variant="line">` (gliding highlight & sliding panels built in) |
 | Form error / success | `<Alert variant="destructive">` / `<Alert>` |
 
-Add components from `packages/ui`: `pnpm dlx shadcn@latest add <name>`. Its `components.json` is the only one
-(`style: "base-nova"`).
+Add components from `packages/ui`: `pnpm dlx shadcn@latest add <name>`, then **always** run `pnpm --filter @workspace/ui animate` so its primitives are swapped for `@animate-ui/react`. Its `components.json` is the only one (`style: "base-nova"`). Keep `@tabler/icons-react` as the sole icon library.
 
 ## Navigation
 

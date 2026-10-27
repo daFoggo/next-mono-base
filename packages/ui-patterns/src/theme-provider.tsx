@@ -3,6 +3,8 @@
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 
+import { AnimateUIProvider } from "@workspace/ui/provider"
+
 /** Light first (a furniture store reads on white); dark is complete and follows the system. */
 function ThemeProvider({
   children,
@@ -16,7 +18,7 @@ function ThemeProvider({
       disableTransitionOnChange
       {...props}
     >
-      {children}
+      <AnimateUIProvider>{children}</AnimateUIProvider>
     </NextThemesProvider>
   )
 }

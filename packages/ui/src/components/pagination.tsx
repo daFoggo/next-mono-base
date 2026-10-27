@@ -1,12 +1,16 @@
 import * as React from "react"
+import * as PaginationPrimitive from "@animate-ui/react/primitives/pagination"
 import { cn } from "cn"
 
 import { Button } from "@workspace/ui/components/button"
 import { IconChevronLeft, IconChevronRight, IconDots } from "@tabler/icons-react"
 
-function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
+function Pagination({
+  className,
+  ...props
+}: React.ComponentProps<typeof PaginationPrimitive.Root>) {
   return (
-    <nav
+    <PaginationPrimitive.Root
       role="navigation"
       aria-label="pagination"
       data-slot="pagination"
@@ -112,8 +116,7 @@ function PaginationEllipsis({
       )}
       {...props}
     >
-      <IconDots
-      />
+      <IconDots />
       <span className="sr-only">More pages</span>
     </span>
   )

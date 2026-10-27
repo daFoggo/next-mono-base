@@ -63,7 +63,10 @@ function writeWidth(storageKey: string, px: number | null) {
   }
 }
 
-const DetailSheetContext = createContext<{ storageKey: string } | null>(null)
+const DetailSheetContext = createContext<{
+  storageKey: string
+  onWidthCommit: (px: number | null) => void
+} | null>(null)
 
 function useDetailSheet() {
   const state = use(DetailSheetContext)
@@ -82,16 +85,17 @@ export function DetailSheetContent({
   storageKey?: string
 }) {
   // The sheet only mounts once opened, on the client, so storage can be read here.
-  const [initial] = useState(() =>
+  const [committedWidth, setCommittedWidth] = useState(() =>
     typeof window === "undefined" ? null : readWidth(storageKey)
   )
   return (
-    <DetailSheetContext value={{ storageKey }}>
+    <DetailSheetContext value={{ storageKey, onWidthCommit: setCommittedWidth }}>
       <SheetContent
         showCloseButton={false}
         style={
           {
-            [WIDTH_VAR]: initial === null ? DEFAULT_WIDTH : `${initial}px`,
+            [WIDTH_VAR]:
+              committedWidth === null ? DEFAULT_WIDTH : `${committedWidth}px`,
           } as React.CSSProperties
         }
         className={cn(
@@ -109,7 +113,7 @@ export function DetailSheetContent({
 
 /** The grab area on the sheet's left edge. Drives the width of its parent, the sheet popup. */
 function DetailSheetResizeHandle() {
-  const { storageKey } = useDetailSheet()
+  const { storageKey, onWidthCommit } = useDetailSheet()
   const width = useRef<number | null>(null)
   const dragging = useRef(false)
 
@@ -136,7 +140,10 @@ function DetailSheetResizeHandle() {
       onPointerUp={(event) => {
         dragging.current = false
         delete event.currentTarget.dataset.resizing
-        if (width.current !== null) writeWidth(storageKey, width.current)
+        if (width.current !== null) {
+          writeWidth(storageKey, width.current)
+          onWidthCommit(width.current)
+        }
       }}
       onDoubleClick={(event) => {
         width.current = null
@@ -145,6 +152,7 @@ function DetailSheetResizeHandle() {
           DEFAULT_WIDTH
         )
         writeWidth(storageKey, null)
+        onWidthCommit(null)
       }}
       onKeyDown={(event) => {
         const sign =
@@ -154,7 +162,10 @@ function DetailSheetResizeHandle() {
         const current =
           event.currentTarget.parentElement?.getBoundingClientRect().width ?? 0
         apply(event.currentTarget, current + sign * KEY_STEP)
-        if (width.current !== null) writeWidth(storageKey, width.current)
+        if (width.current !== null) {
+          writeWidth(storageKey, width.current)
+          onWidthCommit(width.current)
+        }
       }}
       className="absolute inset-y-0 left-0 z-10 w-1.5 cursor-col-resize touch-none transition-colors duration-150 outline-none hover:bg-primary/20 focus-visible:bg-primary/20 data-resizing:bg-primary/30 max-sm:hidden"
     />

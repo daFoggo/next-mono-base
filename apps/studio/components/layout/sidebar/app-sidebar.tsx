@@ -35,13 +35,17 @@ export function AppSidebarSection({
 }) {
   return (
     <section
+      data-sidebar="group"
       className={cn(
-        "flex flex-col gap-2 group-data-[collapsible=icon]:not-first:border-t group-data-[collapsible=icon]:not-first:pt-4",
+        "relative flex flex-col gap-2 group-data-[collapsible=icon]:not-first:border-t group-data-[collapsible=icon]:not-first:pt-4",
         pinned && "mt-auto"
       )}
     >
       {/* The label gives way to a hairline between sections in the icon rail. */}
-      <h2 className="px-2 font-mono text-xs tracking-wider text-muted-foreground uppercase group-data-[collapsible=icon]:hidden">
+      <h2
+        data-sidebar="group-label"
+        className="px-2 font-mono text-xs tracking-wider text-muted-foreground uppercase group-data-[collapsible=icon]:hidden"
+      >
         {label}
       </h2>
       {children}

@@ -19,6 +19,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible"
+import { SlidingNumber } from "@workspace/ui/components/animate-ui/numbers/sliding-number"
 import {
   Tabs,
   TabsContent,
@@ -50,7 +51,10 @@ export function SpanDetail() {
   const details = [
     ["Kind", selected.kind],
     ["Model", selected.model ?? "none"],
-    ["Tokens", selected.tokens?.toLocaleString("en-US") ?? "none"],
+    [
+      "Tokens",
+      selected.tokens ? <SlidingNumber number={selected.tokens} /> : "none",
+    ],
     ["Duration", selected.time],
     ["Cost", selected.cost],
     ["Started", STARTED_AT],
@@ -72,7 +76,9 @@ export function SpanDetail() {
             <Meta icon={IconCalendar}>{STARTED_AT}</Meta>
             <Meta icon={IconClock}>{selected.time}</Meta>
             {selected.tokens ? (
-              <Meta icon={IconHash}>{selected.tokens}</Meta>
+              <Meta icon={IconHash}>
+                <SlidingNumber number={selected.tokens} />
+              </Meta>
             ) : null}
             <Meta icon={IconCoin}>{selected.cost}</Meta>
           </div>

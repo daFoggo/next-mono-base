@@ -7,11 +7,14 @@
     "lint": "eslint --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "animate": "pnpm dlx @animate-ui/cli@latest animate all",
+    "animate:audit": "pnpm dlx @animate-ui/cli@latest audit"
   },
   "dependencies": {
     "@animate-ui/react": "^2.2.1",
     "@base-ui/react": "^1.9.0",
+    "@floating-ui/react": "^0.27.20",
     "@shadcn/react": "^0.3.1",
     "@tabler/icons-react": "^3.49.0",
     "class-variance-authority": "^0.7.1",
@@ -51,6 +54,7 @@
     "./lib/highlighter": "./src/lib/highlighter.tsx",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
+    "./provider": "./src/components/animate-ui/provider.tsx",
     "./hooks/*": "./src/hooks/*.ts"
   }
 }

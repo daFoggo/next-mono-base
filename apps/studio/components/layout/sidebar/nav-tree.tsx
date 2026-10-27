@@ -6,6 +6,11 @@ import { usePathname } from "next/navigation"
 import { IconChevronDown } from "@tabler/icons-react"
 
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@workspace/ui/components/collapsible"
+import {
   SidebarMenu,
   SidebarMenuItem,
   useSidebar,
@@ -28,7 +33,10 @@ const row =
 /** Label nudges right on hover, like the claude.dev TOC (`translate-x-1`, `duration-200 ease-out`). */
 function RowLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="group-data-[collapsible=icon]:hidden motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out motion-safe:group-hover/row:translate-x-1">
+    <span
+      data-sidebar="menu-label"
+      className="group-data-[collapsible=icon]:hidden motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out motion-safe:group-hover/row:translate-x-1"
+    >
       {children}
     </span>
   )
@@ -66,6 +74,7 @@ function TreeLink({ link }: { link: NavLink }) {
           <Link
             href={link.href}
             prefetch={link.prefetch}
+            data-sidebar="menu-button"
             aria-current={current ? "page" : undefined}
             data-current={current || undefined}
             // The mobile sidebar is a Sheet: close it once the user picks a page.
@@ -77,18 +86,22 @@ function TreeLink({ link }: { link: NavLink }) {
           />
         }
       >
-        <span
-          aria-hidden
-          className="text-muted-foreground/50 group-data-current/tree:text-foreground group-data-[collapsible=icon]:hidden"
-        >
-          └
-        </span>
         <span className="flex text-muted-foreground transition-colors duration-150 group-hover/row:text-muted-foreground group-data-current/tree:text-foreground group-data-current/tree:group-data-[collapsible=icon]:text-foreground">
           <NavIcon name={link.icon} />
         </span>
+        <span
+          aria-hidden
+          data-sidebar="menu-glyph"
+          className="-order-1 text-muted-foreground/50 group-data-current/tree:text-foreground group-data-[collapsible=icon]:hidden"
+        >
+          └
+        </span>
         <RowLabel>{link.title}</RowLabel>
         {link.badge ? (
-          <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums group-data-[collapsible=icon]:hidden">
+          <span
+            data-sidebar="menu-badge"
+            className="ml-auto font-mono text-xs text-muted-foreground tabular-nums group-data-[collapsible=icon]:hidden"
+          >
             {link.badge}
           </span>
         ) : null}
@@ -107,17 +120,19 @@ function TreeLink({ link }: { link: NavLink }) {
 
 function TreeGroup({ group }: { group: NavGroup }) {
   const pathname = usePathname()
+  const { state, isMobile } = useSidebar()
   const [open, setOpen] = useState(true)
-  const id = `nav-${group.title.toLowerCase()}`
+  const iconRail = state === "collapsed" && !isMobile
   const containsCurrent = group.items.some((item) => item.href === pathname)
   return (
-    <>
+    <Collapsible
+      open={iconRail || open}
+      onOpenChange={setOpen}
+      className="relative"
+    >
       {/* The icon rail has no room for a group header: its links show flat instead. */}
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={id}
-        onClick={() => setOpen((value) => !value)}
+      <CollapsibleTrigger
+        data-sidebar="menu-button"
         className={cn(
           row,
           "group-data-[collapsible=icon]:hidden",
@@ -135,20 +150,16 @@ function TreeGroup({ group }: { group: NavGroup }) {
             !open && "-rotate-90"
           )}
         />
-      </button>
-      <SidebarMenu
-        id={id}
-        className={cn(
-          "pl-4 group-data-[collapsible=icon]:pl-0",
-          !open && "hidden group-data-[collapsible=icon]:flex"
-        )}
-      >
-        {group.items.map((item) => (
-          <SidebarMenuItem key={item.href}>
-            <TreeLink link={item} />
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
-    </>
+      </CollapsibleTrigger>
+      <CollapsibleContent keepMounted>
+        <SidebarMenu className="pl-4 group-data-[collapsible=icon]:pl-0">
+          {group.items.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <TreeLink link={item} />
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </CollapsibleContent>
+    </Collapsible>
   )
 }

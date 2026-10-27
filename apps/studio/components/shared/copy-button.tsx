@@ -3,11 +3,14 @@
 import { useState } from "react"
 import { IconCheck, IconCopy } from "@tabler/icons-react"
 
-import { Button } from "@workspace/ui/components/button"
+import {
+  CopyButton as AnimateCopyButton,
+  CopyButtonIcon,
+} from "@workspace/ui/components/animate-ui/buttons/copy"
 
 /**
  * Icon button that copies `value` (a string, or a function run at click time, e.g. the current
- * URL). The icon turns into a check for a moment; the swap zooms in, under `motion-safe`.
+ * URL). Built on Animate UI's `CopyButton` for spring press feedback and blur/scale icon swap.
  */
 export function CopyButton({
   value,
@@ -19,23 +22,30 @@ export function CopyButton({
   icon?: React.ComponentType<{ className?: string }>
 }) {
   const [copied, setCopied] = useState(false)
-
-  async function copy() {
-    await navigator.clipboard.writeText(
-      typeof value === "function" ? value() : value
-    )
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
-  }
+  const staticContent = typeof value === "string" ? value : ""
 
   return (
-    <Button variant="ghost" size="icon-sm" onClick={copy}>
-      {copied ? (
-        <IconCheck className="motion-safe:animate-in motion-safe:duration-200 motion-safe:zoom-in-50" />
-      ) : (
-        <Icon />
-      )}
+    <AnimateCopyButton
+      variant="ghost"
+      size="icon-sm"
+      content={staticContent}
+      copied={typeof value === "function" ? copied : undefined}
+      onCopiedChange={setCopied}
+      delay={1500}
+      aria-label={copied ? "Copied" : label}
+      onClick={
+        typeof value === "function"
+          ? () => {
+              void navigator.clipboard.writeText(value()).then(() => {
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1500)
+              })
+            }
+          : undefined
+      }
+    >
+      <CopyButtonIcon icon={<Icon />} copiedIcon={<IconCheck />} />
       <span className="sr-only">{copied ? "Copied" : label}</span>
-    </Button>
+    </AnimateCopyButton>
   )
 }

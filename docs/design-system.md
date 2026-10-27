@@ -174,10 +174,19 @@ shadcn `base-nova`: rounded corners (`--radius: 0.625rem`: `rounded-lg` fields a
 | Category chip | `<Badge variant="outline">` |
 | Filter tabs | `<Tabs>`, `<TabsList variant="line">` |
 | Form error / success notice | `<Alert variant="destructive">` / `<Alert>` |
+| Animated press button / copy / ripple / theme switch | `@workspace/ui/components/animate-ui/buttons/{button,copy,ripple,theme-toggler}` |
+| Animated numbers (stats, odometers, wheels) | `@workspace/ui/components/animate-ui/numbers/{counting-number,sliding-number,scrolling-number}` |
+| Animated layout & pointer effects | `@workspace/ui/components/animate-ui/effects/{auto-height,scroll-fade,tilt,highlight,effect}` |
+| Overlapping avatars with hover rise | `@workspace/ui/components/animate-ui/avatar-group` |
 
-Installed today: alert, button, input, input-group, label, skeleton, spinner, textarea. Badge and Tabs are not installed
-yet; add them before use. Install new components from `packages/ui` (`pnpm dlx shadcn@latest add <name>`). Its `components.json` is the only one
-in the repo and sets the `style` (`base-nova`).
+**Animate UI first (always prioritized over static shadcn):**
+
+All interactive components in `packages/ui/src/components/*` (`accordion`, `alert-dialog`, `checkbox`, `collapsible`, `combobox`, `context-menu`, `dialog`, `drawer`, `dropdown-menu`, `hover-card`, `input-otp`, `menubar`, `navigation-menu`, `pagination`, `popover`, `preview-link-card`, `progress`, `questionnaire`, `radio-group`, `select`, `sheet`, `sidebar`, `slider`, `switch`, `tabs`, `toast`, `toggle`, `toggle-group`, `tooltip`) are powered by **Animate UI v2** (`@animate-ui/react`, Base UI primitives). Additional Animate UI primitives and registry components live under `packages/ui/src/components/animate-ui/*`.
+
+Rules:
+- **Always prefer Animate UI components and primitives over static shadcn components or hand-rolled CSS/JS animations whenever possible.**
+- After installing or updating any shadcn component in `packages/ui` (`pnpm dlx shadcn@latest add <name>`), always run `pnpm --filter @workspace/ui animate` to swap its Base UI primitives for `@animate-ui/react`'s animated primitives.
+- Keep `@tabler/icons-react` as the sole icon library across the monorepo (do not install Lucide or Hugeicons from `@animate-ui`).
 
 Patterns specific to this language:
 
@@ -267,9 +276,8 @@ data (`id`, `prefix`, `param`, `sections`) whose hrefs hold `:param` placeholder
 layout under `app/(dashboard)/<prefix>/[param]/`. `SessionNav` (server) filters every scope by role; the client
 `ScopedNav` picks the scope from `usePathname()` and renders `NavTree`, which knows nothing about scopes.
 
-The header has two icon buttons (`ghost`, `icon-sm`): `SidebarTrigger` (shadcn; Cmd/Ctrl+B also works) and `ThemeToggle`
-(sun and moon swap with a short spin and zoom, `motion-safe`; it is an animation, not a transition, because the theme
-provider disables transitions while the theme flips). The account row shows `└`, a user icon, name and role. Icons are functional only: one per navigable page (and the
+The header has two icon buttons (`ghost`, `icon-sm`): `SidebarTrigger` (with `SidebarPrimitive.TriggerIcon` swapping between collapse/expand icons; Cmd/Ctrl+B also works) and `ThemeToggle`
+(built on Animate UI's `ThemeToggler` View Transition clip-path wipe + `ThemeTogglerButton` icon spin/blur swap). The account row shows `└`, a user icon, name and role. Icons are functional only: one per navigable page (and the
 account row), never on group headers or menu items; the `└` glyph stays next to them as the hierarchy mark.
 
 Main header below `md`: sidebar trigger, wordmark, `/`, current page in ink, truncated with `…` rather than wrapping.
@@ -337,12 +345,12 @@ Next Mono Base look is composed on top in `apps/studio/components/layout/`, grou
 | Part | File | Built from |
 | :--- | :--- | :--- |
 | `ColumnHeader` | `column-header.tsx` | Plain `div` (`h-14 border-b px-4`) |
-| `AppSidebar`, `AppSidebarBody`, `AppSidebarSection` | `sidebar/app-sidebar.tsx` | `Sidebar collapsible="offcanvas"`, `SidebarContent` |
-| `NavTree` | `sidebar/nav-tree.tsx`, `sidebar/nav-icons.tsx` | `SidebarMenu` / `SidebarMenuItem` for structure; its own `Link` row for the tree look; `Tooltip` names the icon in the rail. One per section |
-| `ThemeToggle` | `packages/ui-patterns/src/theme-toggle.tsx` | Ghost `icon-sm` `Button`; also in the landing header and the auth rail footer |
-| `DetailSheet*` | `components/shared/detail-sheet.tsx` | Compound parts over shadcn `Sheet` (see Detail sheets) |
-| `CopyButton` | `components/shared/copy-button.tsx` | Ghost `icon-sm` `Button`; the icon turns into a check after copying |
-| `UserMenu` | `sidebar/user-menu.tsx` | `DropdownMenu`; items are passed as children (sign out comes from `features/auth`) |
+| `AppSidebar`, `AppSidebarBody`, `AppSidebarSection` | `sidebar/app-sidebar.tsx` | Animated `Sidebar collapsible="icon"` (`@animate-ui/react/primitives/sidebar`), `SidebarContent`, `data-sidebar="group"` / `data-sidebar="group-label"` for FLIP collapse folding |
+| `NavTree` | `sidebar/nav-tree.tsx`, `sidebar/nav-icons.tsx` | `SidebarMenu` / `SidebarMenuItem` + animated `Collapsible` for groups + `data-sidebar="menu-button"` so `SidebarPrimitive.Highlight` shares one gliding spring hover surface and smoothly blurs/folds labels on icon-rail collapse; `Tooltip` names the icon in the rail |
+| `ThemeToggle` | `packages/ui-patterns/src/theme-toggle.tsx` | Animate UI `ThemeToggler` (View Transition page wipe) + `ThemeTogglerButton` (`ghost`, `icon-sm`); also in the landing header and the auth rail footer |
+| `DetailSheet*` | `components/shared/detail-sheet.tsx` | Compound parts over animated `Sheet` (see Detail sheets) |
+| `CopyButton` | `components/shared/copy-button.tsx` | Animate UI `CopyButton` + `CopyButtonIcon` (`ghost`, `icon-sm`) |
+| `UserMenu` | `sidebar/user-menu.tsx` | Animated `DropdownMenu` with `data-sidebar="menu-button"` on the trigger; items are passed as children (sign out comes from `features/auth`) |
 | `DashboardBreadcrumb`, `CrumbMenu` | `header/dashboard-breadcrumb.tsx`, `header/crumb-menu.tsx` | `Breadcrumb`; global pages read like the path, scoped pages start with organization / project menus (`Crumb.options`, a `DropdownMenu`) then the page title from the nav |
 | `ScopedNav` | `sidebar/scoped-nav.tsx` | Client; the sidebar sections of the current scope, over `NavTree` |
 | `PageHead`, `Metrics`, `SpecList` | `page-head.tsx`, `components/shared/` | Plain markup |
@@ -430,17 +438,21 @@ cannot pass functions or icon components to a client one. The Overview page carr
 
 ## 9. Motion
 
-Tailwind durations and easings only: `ease-out` to enter, `ease-in-out` to leave.
+Interactive components use **Animate UI v2** (`@animate-ui/react` + `AnimateUIProvider` mounted inside `ThemeProvider`), which provides spring physics, shared gliding highlights (`Tabs`, `Sidebar`, `DropdownMenu`, `Select`, `Combobox`, `Tooltip`), disclosure height/blur folding (`Accordion`, `Collapsible`), and View Transition theme wipes (`ThemeToggler`). For plain CSS transitions, use Tailwind durations and easings (`ease-out` to enter, `ease-in-out` to leave):
 
-| Interaction | Classes |
+| Interaction | Implementation / Classes |
 | :--- | :--- |
-| Color change (links, tabs, rows) | `transition-colors duration-150` |
+| Interactive primitives (menus, dialogs, tabs, tooltips, collapsible, sidebar) | Animate UI v2 (`@workspace/ui/components/*` & `@workspace/ui/components/animate-ui/*`) |
+| Sidebar hover & collapse | `SidebarPrimitive.Highlight` (shared spring highlight across `[data-sidebar="menu-button"]`, 280ms FLIP collapse & label blur) |
+| Theme switch | Animate UI `ThemeToggler` (View Transition clip-path wipe) + `ThemeTogglerButton` (90° spin + blur swap) |
+| Copy feedback | Animate UI `CopyButton` + `CopyButtonIcon` (blur/scale icon swap + spring press) |
+| Changing numbers | `CountingNumber`, `SlidingNumber`, `ScrollingNumber` (`@workspace/ui/components/animate-ui/numbers/*`) |
+| Color change (links, rows) | `transition-colors duration-150` |
 | Small movement (arrow, TOC item) | `transition-transform duration-200 ease-out`, `translate-x-1` |
 | Dropdown caret | `rotate-180 duration-300` |
 | Reveal on enter | `tw-animate-css` fade/slide, `duration-500`/`700`, stagger `delay-75` steps |
-| Theme switch | Instant (`disableTransitionOnChange`) |
 
-Everything must respect `prefers-reduced-motion` (`motion-safe:` / `motion-reduce:`).
+Everything respects `prefers-reduced-motion` (`AnimateUIProvider` + `useShouldReduceMotion()` for Animate UI, and `motion-safe:` / `motion-reduce:` for CSS).
 
 Applied in `apps/studio`:
 

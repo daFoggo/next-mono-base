@@ -35,7 +35,7 @@ The docs in `docs/` are the single source of truth for `apps/studio` (the dashbo
 | UI: theme tokens, typography, spacing, responsive, shadcn component sizes, patterns, page templates, motion, admin shell | `docs/design-system.md` (visual: `docs/design-system/base-design-system.html`) |
 
 For a fast decision (which pattern applies) use the skill `.agents/skills/next-mono-base/SKILL.md`; it links back to the docs above.
-For any className, layout, theme or motion work use `.agents/skills/design-system/SKILL.md` (no arbitrary Tailwind values; component sizes via props).
+For any className, layout, theme or motion work use `.agents/skills/design-system/SKILL.md` (no arbitrary Tailwind values; component sizes via props) and `.agents/skills/animate-ui/SKILL.md` (always prioritize Animate UI components/primitives in `@workspace/ui/components/*` and `@workspace/ui/components/animate-ui/*` over static shadcn components).
 `.claude/skills/` is a copy of `.agents/skills/` (Claude Code reads it): change a skill in both, then check with `diff -rq --strip-trailing-cr .agents/skills .claude/skills`.
 
 <!-- BEGIN:turborepo-agent-rules -->
