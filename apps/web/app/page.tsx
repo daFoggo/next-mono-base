@@ -10,28 +10,28 @@ import { REPO_URL, SIGN_IN_HREF, SIGN_UP_HREF } from "@/config/site"
 
 const FEATURES = [
   {
-    title: "Monorepo Architecture",
-    text: "pnpm workspaces + Turborepo: Next.js 16.4 App Router with PPR & Cache Components alongside shared UI, auth, and data packages.",
+    title: "Next.js 16 Monorepo",
+    text: "pnpm workspaces + Turborepo: Next.js 16.4 App Router with PPR and Cache Components, cleanly separated into shared UI, auth, and data packages.",
   },
   {
-    title: "Tri-Stack Auth Seam",
-    text: "Keycloak 26 OIDC, Better Auth, or Supabase behind a single @workspace/auth seam. Switch providers via AUTH_PROVIDER with zero code churn.",
+    title: "Pluggable Auth Providers",
+    text: "Built-in support for Keycloak 26 OIDC, Better Auth, or Supabase behind one @workspace/auth seam. Switch via AUTH_PROVIDER with zero code churn.",
   },
   {
-    title: "Data & Infrastructure",
-    text: "PostgreSQL, Redis caching, Docker containerization, and an optional FastAPI Python backend option for heavy computational workloads.",
+    title: "Modular Backend & Data",
+    text: "Engineered for PostgreSQL with connection pooling. Plug in Docker environments, Redis caching, or a FastAPI Python service as needed.",
   },
   {
     title: "Client State & Contracts",
-    text: "Zustand for client-only persistent state without context bloat, paired with Zod runtime schema validation across all boundaries.",
+    text: "Zustand for client-only shared state without provider bloat, paired with Zod runtime schema validation across all data boundaries.",
   },
   {
-    title: "Design System",
+    title: "Zinc Design System",
     text: "shadcn base-nova on zinc theme with Animate UI v2 spring physics, dark mode default, ready-made dashboard shell and detail sheets.",
   },
   {
     title: "AI & Skill Workflow",
-    text: "Comprehensive engineering docs, Claude AI skill definitions, and strict architectural rules for deterministic agentic pair programming.",
+    text: "Comprehensive engineering docs, Claude AI skill definitions, and strict monorepo rules for deterministic agentic pair programming.",
   },
 ] as const
 
@@ -62,14 +62,15 @@ export default function HomePage() {
         {/* Hero Section */}
         <section className="flex flex-col gap-6">
           <p className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
-            Production-grade starter base
+            Modular Next.js monorepo starter
           </p>
           <h1 className="max-w-3xl text-5xl leading-tight font-normal tracking-tighter">
             Build on a solid base
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            Next.js 16.4, Turborepo, tri-stack authentication (Keycloak, Better Auth, Supabase),
-            PostgreSQL, Docker, and strict best-practice architecture. Replace this page with your product.
+            A production-grade Next.js 16.4 monorepo starter designed to be modular.
+            Choose your preferred auth provider (Keycloak, Better Auth, or Supabase),
+            plug in your database, and build with strict architectural best practices.
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -90,18 +91,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Tech Stack Bento Grid Section (matching reference image) */}
+        {/* Supported Ecosystem Section */}
         <section className="flex flex-col gap-8">
           <div className="flex flex-col gap-2">
             <p className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
-              Architecture &amp; Tech Stack
+              Supported Ecosystem &amp; Integrations
             </p>
             <h2 className="text-2xl font-normal tracking-tight sm:text-3xl text-balance">
-              Engineered with modern, production-grade tools
+              Supported technologies &amp; integrations
             </h2>
             <p className="text-muted-foreground max-w-xl text-sm leading-relaxed">
-              15 carefully curated technologies organized into five cohesive layers:
-              monorepo core, frontend &amp; state, identity &amp; access, backend data, and cloud infrastructure.
+              This starter base is built around Next.js and provides first-class, pluggable support
+              for your choice of authentication providers, databases, and deployment targets.
             </p>
           </div>
 

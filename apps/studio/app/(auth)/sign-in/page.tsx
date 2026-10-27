@@ -52,7 +52,7 @@ export default function SignInPage({
     <>
       <AuthAside>
         <AuthPitch title="Pick up where you left off.">
-          Production monorepo with Keycloak, Better Auth &amp; Supabase behind one seam.
+          Next.js 16 monorepo starter with pluggable auth (Keycloak, Better Auth, or Supabase).
         </AuthPitch>
         <StackShowcase />
       </AuthAside>

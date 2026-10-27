@@ -30,8 +30,8 @@ export default function SignUpPage() {
   return (
     <>
       <AuthAside>
-        <AuthPitch title="Start from a production-grade base.">
-          Turborepo monorepo with tri-stack auth, PostgreSQL, Docker &amp; Claude AI best practices.
+        <AuthPitch title="Start from a solid Next.js base.">
+          A modular monorepo starter with pluggable auth, clean data layers, and Claude AI conventions.
         </AuthPitch>
         <StackShowcase />
       </AuthAside>
