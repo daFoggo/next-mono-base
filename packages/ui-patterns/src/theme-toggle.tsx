@@ -8,35 +8,26 @@ import {
   type Resolved,
   type ThemeSelection,
 } from "@workspace/ui/components/animate-ui/buttons/theme-toggler"
-import { ThemeToggler } from "@workspace/ui/components/animate-ui/effects/theme-toggler"
 
-/** Icon button that flips between light and dark with a View Transition wipe. Needs `ThemeProvider` above it. */
+/** Icon button that flips between light and dark. Needs `ThemeProvider` above it. */
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, resolvedTheme, setTheme } = useTheme()
   const currentTheme = (theme ?? "light") as ThemeSelection
   const currentResolved = (resolvedTheme ?? "light") as Resolved
 
   return (
-    <ThemeToggler
+    <ThemeTogglerButton
+      variant="ghost"
+      size="icon-sm"
+      modes={["light", "dark"]}
       theme={currentTheme}
       resolvedTheme={currentResolved}
       setTheme={setTheme}
+      aria-label="Toggle theme"
+      className={className}
     >
-      {({ effective, resolved, toggleTheme }) => (
-        <ThemeTogglerButton
-          variant="ghost"
-          size="icon-sm"
-          modes={["light", "dark"]}
-          theme={effective}
-          resolvedTheme={resolved}
-          setTheme={toggleTheme}
-          aria-label="Toggle theme"
-          className={className}
-        >
-          <ThemeTogglerButtonIcon />
-          <span className="sr-only">Toggle theme</span>
-        </ThemeTogglerButton>
-      )}
-    </ThemeToggler>
+      <ThemeTogglerButtonIcon />
+      <span className="sr-only">Toggle theme</span>
+    </ThemeTogglerButton>
   )
 }

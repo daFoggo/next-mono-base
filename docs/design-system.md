@@ -277,7 +277,7 @@ layout under `app/(dashboard)/<prefix>/[param]/`. `SessionNav` (server) filters 
 `ScopedNav` picks the scope from `usePathname()` and renders `NavTree`, which knows nothing about scopes.
 
 The header has two icon buttons (`ghost`, `icon-sm`): `SidebarTrigger` (with `SidebarPrimitive.TriggerIcon` swapping between collapse/expand icons; Cmd/Ctrl+B also works) and `ThemeToggle`
-(built on Animate UI's `ThemeToggler` View Transition clip-path wipe + `ThemeTogglerButton` icon spin/blur swap). The account row shows `└`, a user icon, name and role. Icons are functional only: one per navigable page (and the
+(built on Animate UI's `ThemeTogglerButton` icon spin/blur swap, while the page theme flips instantly via `disableTransitionOnChange`). The account row shows `└`, a user icon, name and role. Icons are functional only: one per navigable page (and the
 account row), never on group headers or menu items; the `└` glyph stays next to them as the hierarchy mark.
 
 Main header below `md`: sidebar trigger, wordmark, `/`, current page in ink, truncated with `…` rather than wrapping.
@@ -347,7 +347,7 @@ Next Mono Base look is composed on top in `apps/studio/components/layout/`, grou
 | `ColumnHeader` | `column-header.tsx` | Plain `div` (`h-14 border-b px-4`) |
 | `AppSidebar`, `AppSidebarBody`, `AppSidebarSection` | `sidebar/app-sidebar.tsx` | Animated `Sidebar collapsible="icon"` (`@animate-ui/react/primitives/sidebar`), `SidebarContent`, `data-sidebar="group"` / `data-sidebar="group-label"` for FLIP collapse folding |
 | `NavTree` | `sidebar/nav-tree.tsx`, `sidebar/nav-icons.tsx` | `SidebarMenu` / `SidebarMenuItem` + animated `Collapsible` for groups + `data-sidebar="menu-button"` so `SidebarPrimitive.Highlight` shares one gliding spring hover surface and smoothly blurs/folds labels on icon-rail collapse; `Tooltip` names the icon in the rail |
-| `ThemeToggle` | `packages/ui-patterns/src/theme-toggle.tsx` | Animate UI `ThemeToggler` (View Transition page wipe) + `ThemeTogglerButton` (`ghost`, `icon-sm`); also in the landing header and the auth rail footer |
+| `ThemeToggle` | `packages/ui-patterns/src/theme-toggle.tsx` | Animate UI `ThemeTogglerButton` (`ghost`, `icon-sm`); also in the landing header and the auth rail footer |
 | `DetailSheet*` | `components/shared/detail-sheet.tsx` | Compound parts over animated `Sheet` (see Detail sheets) |
 | `CopyButton` | `components/shared/copy-button.tsx` | Animate UI `CopyButton` + `CopyButtonIcon` (`ghost`, `icon-sm`) |
 | `UserMenu` | `sidebar/user-menu.tsx` | Animated `DropdownMenu` with `data-sidebar="menu-button"` on the trigger; items are passed as children (sign out comes from `features/auth`) |
@@ -438,13 +438,13 @@ cannot pass functions or icon components to a client one. The Overview page carr
 
 ## 9. Motion
 
-Interactive components use **Animate UI v2** (`@animate-ui/react` + `AnimateUIProvider` mounted inside `ThemeProvider`), which provides spring physics, shared gliding highlights (`Tabs`, `Sidebar`, `DropdownMenu`, `Select`, `Combobox`, `Tooltip`), disclosure height/blur folding (`Accordion`, `Collapsible`), and View Transition theme wipes (`ThemeToggler`). For plain CSS transitions, use Tailwind durations and easings (`ease-out` to enter, `ease-in-out` to leave):
+Interactive components use **Animate UI v2** (`@animate-ui/react` + `AnimateUIProvider` mounted inside `ThemeProvider`), which provides spring physics, shared gliding highlights (`Tabs`, `Sidebar`, `DropdownMenu`, `Select`, `Combobox`, `Tooltip`), and disclosure height/blur folding (`Accordion`, `Collapsible`). For plain CSS transitions, use Tailwind durations and easings (`ease-out` to enter, `ease-in-out` to leave):
 
 | Interaction | Implementation / Classes |
 | :--- | :--- |
 | Interactive primitives (menus, dialogs, tabs, tooltips, collapsible, sidebar) | Animate UI v2 (`@workspace/ui/components/*` & `@workspace/ui/components/animate-ui/*`) |
 | Sidebar hover & collapse | `SidebarPrimitive.Highlight` (shared spring highlight across `[data-sidebar="menu-button"]`, 280ms FLIP collapse & label blur) |
-| Theme switch | Animate UI `ThemeToggler` (View Transition clip-path wipe) + `ThemeTogglerButton` (90° spin + blur swap) |
+| Theme switch | Instant page flip (`disableTransitionOnChange`) + Animate UI `ThemeTogglerButton` (90° spin + blur icon swap) |
 | Copy feedback | Animate UI `CopyButton` + `CopyButtonIcon` (blur/scale icon swap + spring press) |
 | Changing numbers | `CountingNumber`, `SlidingNumber`, `ScrollingNumber` (`@workspace/ui/components/animate-ui/numbers/*`) |
 | Color change (links, rows) | `transition-colors duration-150` |
