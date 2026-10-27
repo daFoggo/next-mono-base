@@ -63,12 +63,15 @@ export interface AuthProvider {
    * to show in the form. Anything else (network, 5xx) is an outage and must be rethrown.
    */
   isExpectedError(error: unknown): boolean
-  /** Social login (redirect flow). Only providers that support it implement this. */
+  /** Social / OIDC login (redirect flow). Only providers that support it implement this. */
   oauth?: {
     /** Returns the URL to send the browser to. */
-    start(provider: "google", redirectTo: string): Promise<string>
+    start(
+      provider: "google" | "keycloak" | "keycloak-register",
+      redirectTo: string
+    ): Promise<string>
     /** Completes the flow on the callback route. Throws on failure. */
-    exchangeCode(code: string): Promise<void>
+    exchangeCode(code: string, state?: string | null): Promise<void>
   }
 }
 

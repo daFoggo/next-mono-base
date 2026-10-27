@@ -34,7 +34,10 @@
         "NODE_ENV",
         "EXPOSE_TESTING_API",
         "DEMO_AUTH",
-        "DEMO_AUTH_SECRET"
+        "DEMO_AUTH_SECRET",
+        "KEYCLOAK_ISSUER",
+        "KEYCLOAK_CLIENT_ID",
+        "KEYCLOAK_CLIENT_SECRET"
       ]
     },
     "lint": {
