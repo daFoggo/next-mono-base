@@ -11,12 +11,13 @@ export async function GET(request: NextRequest) {
   // `request.nextUrl.origin` can be the internal host behind a reverse proxy; use the public URL.
   const origin = publicEnv.NEXT_PUBLIC_APP_URL
   const code = searchParams.get("code")
+  const state = searchParams.get("state")
 
   if (code) {
     try {
       const provider = await getAuthProvider()
       if (provider.oauth) {
-        await provider.oauth.exchangeCode(code)
+        await provider.oauth.exchangeCode(code, state)
         return NextResponse.redirect(new URL(DASHBOARD_PATH, origin))
       }
     } catch {

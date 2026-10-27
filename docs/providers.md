@@ -7,6 +7,7 @@ components and the DAL do not know which one is active.
 | :--- | :--- | :--- | :--- |
 | `better-auth` | Better Auth inside Next (`/api/auth/*`), EdDSA JWT | FastAPI (`your FastAPI backend`) through `apiFetch` | `your FastAPI backend/migrations` (Alembic) |
 | `supabase` | Supabase Auth (GoTrue), ES256 JWT, cookies via `@supabase/ssr` | PostgREST + RLS + SQL functions through `createDataClient` | `packages/db/supabase/migrations` (Supabase CLI) |
+| `keycloak` | Standalone Keycloak 26 OIDC server, RS256 JWT | FastAPI or PostgREST through `Session.accessToken` (Bearer) | Realm export in `d:\Dev_Projects\keycloak-idp\realms` |
 
 **Current state.** A project built on the base can run on `supabase` (hosted project, foundation schema only; the studio
 uses it through `packages/auth` and `packages/db`). Both stacks stay in the base: switching `AUTH_PROVIDER` still works
@@ -67,6 +68,11 @@ Everything is in commit `91c11f0`:
 3. `supabase db push`, then enable the hook (uncomment `[auth.hook.custom_access_token]`; push only that block as in
    §2.2.5). Push the migrations first: an enabled hook whose function is missing blocks every sign-in.
 4. `e2e/parity.spec.ts` on both stacks (8/8 each at `91c11f0`).
+
+### 2.4 Keycloak IDP
+1. In `d:\Dev_Projects\keycloak-idp`: `docker compose up -d` (starts Keycloak 26 on port 8080 and Postgres 17; imports the `studio` realm).
+2. `apps/studio/.env.local`: `AUTH_PROVIDER=keycloak`, `KEYCLOAK_ISSUER=http://localhost:8080/realms/studio`, `KEYCLOAK_CLIENT_ID=studio-app`, `KEYCLOAK_CLIENT_SECRET=studio-dev-client-secret-at-least-32-chars`.
+3. `pnpm --filter studio dev`.
 
 ## 3. The seams (the only code that knows the provider)
 

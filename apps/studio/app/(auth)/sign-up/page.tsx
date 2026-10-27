@@ -1,9 +1,14 @@
 import type { Metadata } from "next"
 
+import { OAuthButton } from "@/features/auth/components/oauth-button"
 import { SignUpForm } from "@/features/auth/components/sign-up-form"
 
 import { SIGN_IN_PATH } from "@/config/routes"
-import { signUpAction } from "@/features/auth/actions"
+import {
+  signUpAction,
+  signUpWithKeycloakAction,
+} from "@/features/auth/actions"
+import { isKeycloakProvider } from "@/lib/auth"
 
 import {
   AuthAside,
@@ -37,7 +42,13 @@ export default function SignUpPage() {
           <AuthHeading eyebrow="Sign up" title="Create an account">
             Create an account to get started.
           </AuthHeading>
-          <SignUpForm action={signUpAction} />
+          {isKeycloakProvider() ? (
+            <OAuthButton action={signUpWithKeycloakAction}>
+              Create account with Keycloak
+            </OAuthButton>
+          ) : (
+            <SignUpForm action={signUpAction} />
+          )}
         </AuthBody>
       </AuthMain>
     </>

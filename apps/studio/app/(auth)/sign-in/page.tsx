@@ -3,10 +3,16 @@ import { Suspense } from "react"
 
 import { DemoSignInButton } from "@/features/auth/components/demo-sign-in-button"
 import { FormError } from "@/features/auth/components/form-error"
+import { OAuthButton } from "@/features/auth/components/oauth-button"
 import { SignInForm } from "@/features/auth/components/sign-in-form"
 
 import { SIGN_UP_PATH } from "@/config/routes"
-import { demoSignInAction, signInAction } from "@/features/auth/actions"
+import {
+  demoSignInAction,
+  signInAction,
+  signInWithKeycloakAction,
+} from "@/features/auth/actions"
+import { isKeycloakProvider } from "@/lib/auth"
 import { demoAuthSecret } from "@/lib/demo-session"
 
 import {
@@ -61,7 +67,13 @@ export default function SignInPage({
             <Suspense>
               <OAuthError searchParams={searchParams} />
             </Suspense>
-            <SignInForm action={signInAction} />
+            {isKeycloakProvider() ? (
+              <OAuthButton action={signInWithKeycloakAction}>
+                Continue with Keycloak
+              </OAuthButton>
+            ) : (
+              <SignInForm action={signInAction} />
+            )}
             {demoAuthSecret() !== null ? (
               <DemoSignInButton action={demoSignInAction} />
             ) : null}
