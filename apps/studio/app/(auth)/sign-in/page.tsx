@@ -1,18 +1,18 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { DemoSignInButton } from "@/features/auth/components/demo-sign-in-button"
 import { FormError } from "@/features/auth/components/form-error"
-import { OAuthButton } from "@/features/auth/components/oauth-button"
 import { SignInForm } from "@/features/auth/components/sign-in-form"
+import { SocialAuthButtons } from "@/features/auth/components/social-auth-buttons"
 
 import { SIGN_UP_PATH } from "@/config/routes"
 import {
   demoSignInAction,
   signInAction,
+  signInWithGoogleAction,
   signInWithKeycloakAction,
 } from "@/features/auth/actions"
-import { isKeycloakProvider } from "@/lib/auth"
+import { getActiveAuthProvider } from "@/lib/auth"
 import { demoAuthSecret } from "@/lib/demo-session"
 
 import {
@@ -45,6 +45,9 @@ export default function SignInPage({
 }: {
   searchParams: Promise<{ error?: string }>
 }) {
+  const activeProvider = getActiveAuthProvider()
+  const hasDemo = demoAuthSecret() !== null
+
   return (
     <>
       <AuthAside>
@@ -67,17 +70,15 @@ export default function SignInPage({
             <Suspense>
               <OAuthError searchParams={searchParams} />
             </Suspense>
-            {isKeycloakProvider() ? (
-              <OAuthButton action={signInWithKeycloakAction}>
-                Continue with Keycloak
-              </OAuthButton>
-            ) : (
-              <SignInForm action={signInAction} />
-            )}
-            {demoAuthSecret() !== null ? (
-              <DemoSignInButton action={demoSignInAction} />
-            ) : null}
-            {/* Google is disabled; enable the provider in Supabase, then render `<OAuthButton action={signInWithGoogleAction}>Continue with Google</OAuthButton>` from @/features/auth/components/oauth-button. */}
+            <SignInForm action={signInAction} />
+            <SocialAuthButtons
+              activeProvider={activeProvider}
+              mode="sign-in"
+              hasDemo={hasDemo}
+              keycloakAction={signInWithKeycloakAction}
+              googleAction={signInWithGoogleAction}
+              demoAction={demoSignInAction}
+            />
           </div>
         </AuthBody>
       </AuthMain>

@@ -30,7 +30,7 @@ describe("Keycloak AuthProvider & Proxy", () => {
     vi.restoreAllMocks()
   })
 
-  it("rejects exchangeCode when state mismatches and cleans up pkce cookie", async () => {
+  it("rejects exchangeCode when state is mismatched or missing and cleans up pkce cookie", async () => {
     const { createKeycloakProvider } = await import("../keycloak/server")
     cookieJar.set(
       "nmb-studio-auth.pkce",
@@ -43,6 +43,20 @@ describe("Keycloak AuthProvider & Proxy", () => {
     const provider = createKeycloakProvider({ cookieName: "nmb-studio-auth" })
     await expect(
       provider.oauth!.exchangeCode("code-123", "wrong-state")
+    ).rejects.toThrow(/state/i)
+    expect(cookieJar.has("nmb-studio-auth.pkce")).toBe(false)
+
+    // Test missing/null state parameter
+    cookieJar.set(
+      "nmb-studio-auth.pkce",
+      JSON.stringify({
+        state: "expected-state",
+        codeVerifier: "verifier-1",
+        redirectUri: "http://localhost:3001/auth/callback",
+      })
+    )
+    await expect(
+      provider.oauth!.exchangeCode("code-123", null)
     ).rejects.toThrow(/state/i)
     expect(cookieJar.has("nmb-studio-auth.pkce")).toBe(false)
   })

@@ -104,10 +104,17 @@ export async function updateSession(
       oidcConfig.issuer
     )
 
+    if (!newClaims) {
+      response.cookies.delete(cookieNames.access)
+      response.cookies.delete(cookieNames.refresh)
+      response.cookies.delete(cookieNames.id)
+      return { response, isAuthenticated: false, role: null }
+    }
+
     return {
       response,
       isAuthenticated: true,
-      role: newClaims?.role ?? "customer",
+      role: newClaims.role,
     }
   } catch (error) {
     console.error("[keycloak-proxy] token refresh failed:", error)

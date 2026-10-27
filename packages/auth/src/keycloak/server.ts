@@ -118,13 +118,13 @@ export function createKeycloakProvider(options: AuthOptions): AuthProvider {
 
     async signIn(_credentials: Credentials): Promise<void> {
       throw new Error(
-        "Direct password grant is disabled. Use Keycloak OIDC redirect flow."
+        "Direct email/password login is not available on this stack. Please use the Keycloak SSO button below."
       )
     },
 
     async signUp(_input: SignUpInput): Promise<SignUpResult> {
       throw new Error(
-        "Direct registration is disabled. Use Keycloak OIDC registration flow."
+        "Direct registration is not available on this stack. Please use the Keycloak SSO button below."
       )
     },
 
@@ -146,8 +146,12 @@ export function createKeycloakProvider(options: AuthOptions): AuthProvider {
       }
     },
 
-    isExpectedError(_error: unknown): boolean {
-      return false
+    isExpectedError(error: unknown): boolean {
+      return (
+        error instanceof Error &&
+        (error.message.includes("Keycloak") ||
+          error.message.includes("not available on this stack"))
+      )
     },
 
     oauth: {
@@ -199,7 +203,7 @@ export function createKeycloakProvider(options: AuthOptions): AuthProvider {
           throw new Error("Invalid or expired PKCE state session.")
         }
 
-        if (state && state !== pkce.state) {
+        if (!state || state !== pkce.state) {
           throw new Error("State mismatch: possible CSRF attempt.")
         }
 

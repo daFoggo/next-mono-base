@@ -17,6 +17,11 @@ export type {
   SignUpResult,
 } from "@workspace/auth/types"
 
+/** Active provider union for this deployment. */
+export function getActiveAuthProvider(): "better-auth" | "supabase" | "keycloak" {
+  return authConfig.AUTH_PROVIDER
+}
+
 /** True when the active deployment runs on the Keycloak IDP stack. */
 export function isKeycloakProvider(): boolean {
   return authConfig.AUTH_PROVIDER === "keycloak"

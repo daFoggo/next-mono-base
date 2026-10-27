@@ -1,14 +1,15 @@
 import type { Metadata } from "next"
 
-import { OAuthButton } from "@/features/auth/components/oauth-button"
 import { SignUpForm } from "@/features/auth/components/sign-up-form"
+import { SocialAuthButtons } from "@/features/auth/components/social-auth-buttons"
 
 import { SIGN_IN_PATH } from "@/config/routes"
 import {
   signUpAction,
+  signInWithGoogleAction,
   signUpWithKeycloakAction,
 } from "@/features/auth/actions"
-import { isKeycloakProvider } from "@/lib/auth"
+import { getActiveAuthProvider } from "@/lib/auth"
 
 import {
   AuthAside,
@@ -24,6 +25,8 @@ import { StackShowcase } from "../_components/stack-showcase"
 export const metadata: Metadata = { title: "Sign up" }
 
 export default function SignUpPage() {
+  const activeProvider = getActiveAuthProvider()
+
   return (
     <>
       <AuthAside>
@@ -42,13 +45,16 @@ export default function SignUpPage() {
           <AuthHeading eyebrow="Sign up" title="Create an account">
             Create an account to get started.
           </AuthHeading>
-          {isKeycloakProvider() ? (
-            <OAuthButton action={signUpWithKeycloakAction}>
-              Create account with Keycloak
-            </OAuthButton>
-          ) : (
+          <div className="flex flex-col gap-4">
             <SignUpForm action={signUpAction} />
-          )}
+            <SocialAuthButtons
+              activeProvider={activeProvider}
+              mode="sign-up"
+              hasDemo={false}
+              keycloakAction={signUpWithKeycloakAction}
+              googleAction={signInWithGoogleAction}
+            />
+          </div>
         </AuthBody>
       </AuthMain>
     </>
