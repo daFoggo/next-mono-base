@@ -1,9 +1,15 @@
 import type { Metadata } from "next"
 
 import { SignUpForm } from "@/features/auth/components/sign-up-form"
+import { SocialAuthButtons } from "@/features/auth/components/social-auth-buttons"
 
 import { SIGN_IN_PATH } from "@/config/routes"
-import { signUpAction } from "@/features/auth/actions"
+import {
+  signUpAction,
+  signInWithGoogleAction,
+  signUpWithKeycloakAction,
+} from "@/features/auth/actions"
+import { getActiveAuthProvider } from "@/lib/auth"
 
 import {
   AuthAside,
@@ -19,11 +25,13 @@ import { StackShowcase } from "../_components/stack-showcase"
 export const metadata: Metadata = { title: "Sign up" }
 
 export default function SignUpPage() {
+  const activeProvider = getActiveAuthProvider()
+
   return (
     <>
       <AuthAside>
-        <AuthPitch title="Start from a solid base.">
-          Create an account and set up your workspace in a minute.
+        <AuthPitch title="Start from a solid Next.js base.">
+          A modular monorepo starter with pluggable auth, clean data layers, and Claude AI conventions.
         </AuthPitch>
         <StackShowcase />
       </AuthAside>
@@ -37,7 +45,16 @@ export default function SignUpPage() {
           <AuthHeading eyebrow="Sign up" title="Create an account">
             Create an account to get started.
           </AuthHeading>
-          <SignUpForm action={signUpAction} />
+          <div className="flex flex-col gap-4">
+            <SignUpForm action={signUpAction} />
+            <SocialAuthButtons
+              activeProvider={activeProvider}
+              mode="sign-up"
+              hasDemo={false}
+              keycloakAction={signUpWithKeycloakAction}
+              googleAction={signInWithGoogleAction}
+            />
+          </div>
         </AuthBody>
       </AuthMain>
     </>

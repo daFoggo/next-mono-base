@@ -1,12 +1,18 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { DemoSignInButton } from "@/features/auth/components/demo-sign-in-button"
 import { FormError } from "@/features/auth/components/form-error"
 import { SignInForm } from "@/features/auth/components/sign-in-form"
+import { SocialAuthButtons } from "@/features/auth/components/social-auth-buttons"
 
 import { SIGN_UP_PATH } from "@/config/routes"
-import { demoSignInAction, signInAction } from "@/features/auth/actions"
+import {
+  demoSignInAction,
+  signInAction,
+  signInWithGoogleAction,
+  signInWithKeycloakAction,
+} from "@/features/auth/actions"
+import { getActiveAuthProvider } from "@/lib/auth"
 import { demoAuthSecret } from "@/lib/demo-session"
 
 import {
@@ -39,11 +45,14 @@ export default function SignInPage({
 }: {
   searchParams: Promise<{ error?: string }>
 }) {
+  const activeProvider = getActiveAuthProvider()
+  const hasDemo = demoAuthSecret() !== null
+
   return (
     <>
       <AuthAside>
         <AuthPitch title="Pick up where you left off.">
-          Your workspace is one sign-in away.
+          Next.js 16 monorepo starter with pluggable auth (Keycloak, Better Auth, or Supabase).
         </AuthPitch>
         <StackShowcase />
       </AuthAside>
@@ -62,10 +71,14 @@ export default function SignInPage({
               <OAuthError searchParams={searchParams} />
             </Suspense>
             <SignInForm action={signInAction} />
-            {demoAuthSecret() !== null ? (
-              <DemoSignInButton action={demoSignInAction} />
-            ) : null}
-            {/* Google is disabled; enable the provider in Supabase, then render `<OAuthButton action={signInWithGoogleAction}>Continue with Google</OAuthButton>` from @/features/auth/components/oauth-button. */}
+            <SocialAuthButtons
+              activeProvider={activeProvider}
+              mode="sign-in"
+              hasDemo={hasDemo}
+              keycloakAction={signInWithKeycloakAction}
+              googleAction={signInWithGoogleAction}
+              demoAction={demoSignInAction}
+            />
           </div>
         </AuthBody>
       </AuthMain>

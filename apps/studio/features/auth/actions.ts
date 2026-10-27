@@ -110,6 +110,34 @@ export async function signInWithGoogleAction(): Promise<void> {
   redirect(url ?? `${SIGN_IN_PATH}?error=oauth`)
 }
 
+export async function signInWithKeycloakAction(): Promise<void> {
+  const provider = await getAuthProvider()
+  let url: string | undefined
+  try {
+    url = await provider.oauth?.start(
+      "keycloak",
+      `${publicEnv.NEXT_PUBLIC_APP_URL}${OAUTH_CALLBACK_PATH}`
+    )
+  } catch (error) {
+    if (!provider.isExpectedError(error)) throw error
+  }
+  redirect(url ?? `${SIGN_IN_PATH}?error=oauth`)
+}
+
+export async function signUpWithKeycloakAction(): Promise<void> {
+  const provider = await getAuthProvider()
+  let url: string | undefined
+  try {
+    url = await provider.oauth?.start(
+      "keycloak-register",
+      `${publicEnv.NEXT_PUBLIC_APP_URL}${OAUTH_CALLBACK_PATH}`
+    )
+  } catch (error) {
+    if (!provider.isExpectedError(error)) throw error
+  }
+  redirect(url ?? `${SIGN_IN_PATH}?error=oauth`)
+}
+
 export async function demoSignInAction(
   _previous: { error?: string },
   _formData: FormData

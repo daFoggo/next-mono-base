@@ -140,9 +140,12 @@ export function createSupabaseProvider(options: AuthOptions): AuthProvider {
 
     oauth: {
       async start(provider, redirectTo) {
+        if (provider !== "google") {
+          throw new Error(`Unsupported OAuth provider for Supabase: ${provider}`)
+        }
         const supabase = await createClient(options)
         const { data, error } = await supabase.auth.signInWithOAuth({
-          provider,
+          provider: "google",
           options: { redirectTo },
         })
         if (error) throw error

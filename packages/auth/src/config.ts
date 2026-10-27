@@ -21,6 +21,15 @@ const authSchema = z.discriminatedUnion("AUTH_PROVIDER", [
     NEXT_PUBLIC_SUPABASE_URL: z.url(),
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   }),
+  z.object({
+    AUTH_PROVIDER: z.literal("keycloak"),
+    KEYCLOAK_ISSUER: z.url().default("http://localhost:8080/realms/studio"),
+    KEYCLOAK_CLIENT_ID: z.string().min(1).default("studio-app"),
+    KEYCLOAK_CLIENT_SECRET: z
+      .string()
+      .min(1)
+      .default("studio-dev-client-secret-at-least-32-chars"),
+  }),
 ])
 
 export type AuthConfig = z.infer<typeof authSchema>
@@ -40,4 +49,7 @@ export const authConfig: AuthConfig = authSchema.parse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  KEYCLOAK_ISSUER: process.env.KEYCLOAK_ISSUER,
+  KEYCLOAK_CLIENT_ID: process.env.KEYCLOAK_CLIENT_ID,
+  KEYCLOAK_CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET,
 })

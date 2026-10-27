@@ -13,10 +13,11 @@ One provider per deployment, chosen by `AUTH_PROVIDER`; it also picks the data p
 |---|---|---|
 | `better-auth` | Self-hosted auth backed by PostgreSQL `auth` schema; issues EdDSA JWTs via JWKS for FastAPI | Secure httpOnly session cookies handled by Better Auth |
 | `supabase` | Supabase Auth via `@supabase/ssr`; ES256 JWT checked locally with `getClaims()`; data through PostgREST + RLS | `sb-<ref>-auth-token` cookies, refreshed only in `proxy.ts` |
+| `keycloak` | Keycloak 26 OIDC provider backed by PostgreSQL; RS256 JWT verified locally via JWKS | Split `httpOnly` cookies (`<name>.{access,refresh,id}`), refreshed only in `proxy.ts` |
 
-Both implement `AuthProvider` and expose `Session { userId, accessToken, role, name, email, calendar? }`, so the DAL,
-Server Actions and data clients interact through a standard, decoupled contract. The base can run on `supabase`; the
-Better Auth + FastAPI stack stays in the base ([providers.md](providers.md)).
+All implement `AuthProvider` and expose `Session { userId, accessToken, role, name, email, calendar? }`, so the DAL,
+Server Actions and data clients interact through a standard, decoupled contract. The base can run on `supabase`,
+`better-auth` or `keycloak` ([providers.md](providers.md)).
 
 Principles:
 

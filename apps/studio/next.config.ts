@@ -19,6 +19,13 @@ function contentSecurityPolicy(): string {
     formActions.push(new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin)
   }
 
+  // Keycloak OIDC sends the browser to the Keycloak realm auth endpoint.
+  const keycloakIssuer =
+    process.env.KEYCLOAK_ISSUER || "http://localhost:8080/realms/studio"
+  if (process.env.AUTH_PROVIDER === "keycloak") {
+    formActions.push(new URL(keycloakIssuer).origin)
+  }
+
   const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
     ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
     : null

@@ -15,6 +15,9 @@ export async function updateSession(
   if (authConfig.AUTH_PROVIDER === "supabase") {
     return (await import("./supabase/proxy")).updateSession(request, options)
   }
+  if (authConfig.AUTH_PROVIDER === "keycloak") {
+    return (await import("./keycloak/proxy")).updateSession(request, options)
+  }
   return (await import("./better-auth/proxy")).updateSession(request, options)
 }
 
