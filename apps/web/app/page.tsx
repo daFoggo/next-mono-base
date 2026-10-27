@@ -1,4 +1,14 @@
-import { IconBrandGithub } from "@tabler/icons-react"
+import {
+  IconArrowRight,
+  IconBrandGithub,
+  IconCpu,
+  IconDatabase,
+  IconLayersLinked,
+  IconLock,
+  IconPalette,
+  IconShieldCheck,
+  IconSparkles,
+} from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
 import { AppLogo } from "@workspace/ui-patterns/app-logo"
@@ -7,134 +17,430 @@ import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
 
 import { CONTAINER } from "@/config/layout"
 import { REPO_URL, SIGN_IN_HREF, SIGN_UP_HREF } from "@/config/site"
+import { CopyCommand } from "@/components/copy-command"
+import { MonorepoMap } from "@/components/monorepo-map"
+import { ProviderTabs } from "@/components/provider-tabs"
+import { ArchitectureFaq } from "@/components/architecture-faq"
 
-const FEATURES = [
+const ARCHITECTURE_CHAPTERS = [
   {
-    title: "Next.js 16 Monorepo",
-    text: "pnpm workspaces + Turborepo: Next.js 16.4 App Router with PPR and Cache Components, cleanly separated into shared UI, auth, and data packages.",
+    number: "01",
+    badge: "Monorepo",
+    title: "Next.js 16.4 App Router with PPR & Cache Components",
+    desc: "Turborepo + pnpm workspaces keeping applications next to shared packages for UI, auth, db, and patterns with zero transpilation boilerplate.",
+    meta: "Turbopack",
   },
   {
-    title: "Pluggable Auth Providers",
-    text: "Built-in support for Keycloak 26 OIDC, Better Auth, or Supabase behind one @workspace/auth seam. Switch via AUTH_PROVIDER with zero code churn.",
+    number: "02",
+    badge: "Auth Seam",
+    title: "Tri-Stack Authentication Seam",
+    desc: "Native support for Keycloak 26 OIDC, Better Auth, or Supabase behind one @workspace/auth seam. Switch via AUTH_PROVIDER without touching application code.",
+    meta: "Zero lock-in",
   },
   {
-    title: "Modular Backend & Data",
-    text: "Engineered for PostgreSQL with connection pooling. Plug in Docker environments, Redis caching, or a FastAPI Python service as needed.",
+    number: "03",
+    badge: "Data Layer",
+    title: "Decoupled Data Access Layer (DAL)",
+    desc: "Strict server-only boundaries, per-user caching with 'use cache', connection pooling for PostgreSQL, and zero client token exposure.",
+    meta: "Server-only",
   },
   {
-    title: "Client State & Contracts",
-    text: "Zustand for client-only shared state without provider bloat, paired with Zod runtime schema validation across all data boundaries.",
+    number: "04",
+    badge: "Client State",
+    title: "Zustand Client-Only State",
+    desc: "Minimal, shared client state without React Context cascade re-renders, with optional persistent storage across navigation.",
+    meta: "Zero bloat",
   },
   {
-    title: "Zinc Design System",
-    text: "shadcn base-nova on zinc theme with Animate UI v2 spring physics, dark mode default, ready-made dashboard shell and detail sheets.",
+    number: "05",
+    badge: "Validation",
+    title: "Zod Schema Contracts",
+    desc: "Runtime type validation at every network boundary, form mutation, and server action. Strict TypeScript contracts from database to UI.",
+    meta: "Type-safe",
   },
   {
-    title: "AI & Skill Workflow",
-    text: "Comprehensive engineering docs, Claude AI skill definitions, and strict monorepo rules for deterministic agentic pair programming.",
+    number: "06",
+    badge: "Design",
+    title: "Base-Nova Design System",
+    desc: "zinc neutral palette, dark mode default, Animate UI v2 spring physics, and ready-made dashboard shells with collapsible rails and detail sheets.",
+    meta: "Tailwind v4",
   },
 ] as const
 
-/** Landing page. The product itself lives in apps/studio; this app only links to it. */
+const PILLARS = [
+  {
+    icon: IconLock,
+    title: "Tri-Stack Auth Seam",
+    badge: "Pluggable",
+    description:
+      "Enterprise Keycloak 26 with PKCE S256 & RS256 JWKS verification, Better Auth with direct DB pooling, or Supabase Auth. Switch providers via an environment variable with zero application code changes.",
+  },
+  {
+    icon: IconDatabase,
+    title: "Server-Only Data Access",
+    badge: "Strict DAL",
+    description:
+      "Server actions, queries, and auth secrets reside in strict server-only boundaries. Per-user caching uses 'use cache' and cacheLife directives without ever leaking credentials to client bundles.",
+  },
+  {
+    icon: IconPalette,
+    title: "Zinc Base-Nova UI Kit",
+    badge: "Design System",
+    description:
+      "Engineered on shadcn base-nova with Animate UI v2 spring physics, zero arbitrary Tailwind values, dark mode default, and a full dashboard shell with collapsible navigation and detail sheets.",
+  },
+  {
+    icon: IconCpu,
+    title: "Zustand & Zod Contracts",
+    badge: "Client State",
+    description:
+      "Zustand manages shared client-only state without React context re-render waterfalls. Zod validates all API parameters, form mutations, and server action inputs with end-to-end type safety.",
+  },
+] as const
+
+/**
+ * Modern developer landing page with high craft inspired by interfaces.dev:
+ * - Wide 1336px responsive container with comfortable whitespace
+ * - Interactive provider switcher demo (.env.local toggle)
+ * - Monorepo workspace package topology map
+ * - Bento tech stack proof grid matching the reference image
+ * - Chapter-style architectural breakdown
+ * - Architecture decisions FAQ accordion
+ */
 export default function HomePage() {
   return (
     <>
-      <header className="border-b">
-        <div className={`${CONTAINER} flex h-14 items-center gap-4`}>
+      {/* Sticky navigation header */}
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
+        <div className={`${CONTAINER} flex h-14 items-center justify-between`}>
           <AppLogo />
-          <nav className="ml-auto flex items-center gap-2">
+          <nav className="flex items-center gap-2">
             <ThemeToggle />
             <Button
               variant="ghost"
+              size="sm"
               render={<a href={SIGN_IN_HREF} />}
               nativeButton={false}
             >
               Sign in
             </Button>
-            <Button render={<a href={SIGN_UP_HREF} />} nativeButton={false}>
-              Get started
+            <Button
+              size="sm"
+              render={<a href={SIGN_UP_HREF} />}
+              nativeButton={false}
+            >
+              Open Studio
             </Button>
           </nav>
         </div>
       </header>
 
-      <main className={`${CONTAINER} flex flex-col gap-14 pt-20 pb-14`}>
+      <main className={`${CONTAINER} flex flex-col gap-16 pt-16 pb-24 sm:gap-24 sm:pt-20`}>
         {/* Hero Section */}
-        <section className="flex flex-col gap-6">
-          <p className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
-            Modular Next.js monorepo starter
-          </p>
-          <h1 className="max-w-3xl text-5xl leading-tight font-normal tracking-tighter">
-            Build on a solid base
-          </h1>
-          <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            A production-grade Next.js 16.4 monorepo starter designed to be modular.
-            Choose your preferred auth provider (Keycloak, Better Auth, or Supabase),
-            plug in your database, and build with strict architectural best practices.
-          </p>
-          <div className="flex items-center gap-2">
+        <section className="flex flex-col gap-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/40 px-2.5 py-0.5 font-mono text-[11px] text-foreground/85">
+                v0.1.0 · Next.js 16.4
+              </span>
+              <span className="font-mono text-xs text-muted-foreground">
+                Turborepo Starter Base
+              </span>
+            </div>
+
+            <CopyCommand command="git clone https://github.com/daFoggo/next-mono-base.git" />
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h1 className="max-w-4xl text-4xl leading-[1.12] font-normal tracking-tight sm:text-5xl lg:text-6xl text-balance">
+              Build on a solid, production-grade base.
+            </h1>
+            <p className="max-w-3xl text-lg leading-relaxed text-muted-foreground sm:text-xl font-normal">
+              A modular Next.js 16.4 monorepo starter engineered with intentional architecture.
+              Choose your preferred auth provider (Keycloak, Better Auth, or Supabase),
+              build with strict data access boundaries, and pair program with Claude AI under deterministic skill rules.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               size="lg"
-              variant="ghost"
               render={<a href={SIGN_IN_HREF} />}
               nativeButton={false}
             >
-              Sign in
+              <span>Explore Studio Dashboard</span>
+              <IconArrowRight className="size-4" />
             </Button>
             <Button
               size="lg"
-              render={<a href={SIGN_UP_HREF} />}
+              variant="outline"
+              render={<a href={REPO_URL} target="_blank" rel="noreferrer" />}
               nativeButton={false}
             >
-              Get started
+              <IconBrandGithub aria-hidden className="size-4" />
+              <span>GitHub Repository</span>
             </Button>
           </div>
         </section>
 
-        {/* Supported Ecosystem Section */}
-        <section className="flex flex-col gap-8">
-          <div className="flex flex-col gap-2">
-            <p className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
-              Supported Ecosystem &amp; Integrations
-            </p>
-            <h2 className="text-2xl font-normal tracking-tight sm:text-3xl text-balance">
-              Supported technologies &amp; integrations
-            </h2>
-            <p className="text-muted-foreground max-w-xl text-sm leading-relaxed">
-              This starter base is built around Next.js and provides first-class, pluggable support
-              for your choice of authentication providers, databases, and deployment targets.
+        {/* Supported Tech Stack Bento Grid (matching user reference image) */}
+        <section className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2 border-t border-border/40 pt-8 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-1">
+              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                Supported Ecosystem
+              </span>
+              <h2 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
+                Integrated technologies across 5 tiers
+              </h2>
+            </div>
+            <p className="font-mono text-xs text-muted-foreground">
+              15 technologies · Pluggable architecture · Zero lock-in
             </p>
           </div>
 
-          <StackGrid />
+          <div className="mx-auto w-full max-w-4xl">
+            <StackGrid />
+          </div>
         </section>
 
-        {/* Core Architecture Features */}
-        <section className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((feature) => (
-            <div key={feature.title} className="flex flex-col gap-3">
-              <h3 className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
-                {feature.title}
-              </h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {feature.text}
+        {/* Live Interactive Architecture Bento Section */}
+        <section className="flex flex-col gap-8">
+          <div className="flex flex-col gap-2 border-t border-border/40 pt-10 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-1">
+              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                Architecture in Action
+              </span>
+              <h2 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
+                Pluggable seams &amp; workspace topology
+              </h2>
+            </div>
+            <p className="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Decoupled modules guarantee you can swap authentication or database engines without rewriting application components.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Bento Card 1: Interactive Auth Switcher */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-medium text-foreground">
+                  Pluggable Authentication Seam
+                </span>
+                <span className="font-mono text-[11px] text-muted-foreground">
+                  packages/auth
+                </span>
+              </div>
+              <ProviderTabs />
+            </div>
+
+            {/* Bento Card 2: Turborepo Workspace Topology */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-medium text-foreground">
+                  Turborepo Package Graph
+                </span>
+                <span className="font-mono text-[11px] text-muted-foreground">
+                  pnpm workspaces
+                </span>
+              </div>
+              <MonorepoMap />
+            </div>
+          </div>
+        </section>
+
+        {/* Architectural Pillars (Rich Bento Cards) */}
+        <section className="flex flex-col gap-8">
+          <div className="flex flex-col gap-1 border-t border-border/40 pt-10">
+            <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              Core Principles
+            </span>
+            <h2 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
+              Engineered for production reliability
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {PILLARS.map((pillar) => (
+              <div
+                key={pillar.title}
+                className="group flex flex-col gap-3 rounded-lg border border-border/50 bg-muted/10 p-6 transition-all duration-150 hover:border-border hover:bg-muted/25"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <pillar.icon className="size-5 text-muted-foreground transition-colors group-hover:text-foreground" />
+                    <h3 className="font-medium text-base text-foreground">
+                      {pillar.title}
+                    </h3>
+                  </div>
+                  <span className="inline-flex rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 font-mono text-[11px] text-foreground/80">
+                    {pillar.badge}
+                  </span>
+                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {pillar.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Architectural Breakdown (Chapter-style list inspired by interfaces.dev) */}
+        <section className="flex flex-col gap-6">
+          <div className="flex flex-col gap-1 border-t border-border/40 pt-10">
+            <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              Deep Dive
+            </span>
+            <h2 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
+              Architecture at a glance
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Every decision is intentional: modular seams, strict typing, and zero unnecessary runtime dependencies.
+            </p>
+          </div>
+
+          <div className="flex flex-col divide-y divide-border/40 border-y border-border/40">
+            {ARCHITECTURE_CHAPTERS.map((item) => (
+              <div
+                key={item.number}
+                className="group flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6 py-4.5 transition-colors hover:bg-muted/15 px-3 -mx-3 rounded-sm"
+              >
+                <div className="flex items-center gap-2.5 shrink-0 sm:w-36">
+                  <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                    {item.number}
+                  </span>
+                  <span className="inline-flex rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 font-mono text-[11px] text-foreground/80">
+                    {item.badge}
+                  </span>
+                </div>
+                <div className="flex flex-1 flex-col gap-1 min-w-0">
+                  <h4 className="text-sm font-medium text-foreground">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+                <span className="font-mono text-[11px] text-muted-foreground shrink-0 hidden md:block pt-0.5">
+                  {item.meta}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Built for AI Pair Programming Section */}
+        <section className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2 border-t border-border/40 pt-10">
+            <div className="flex items-center gap-2">
+              <IconSparkles className="size-4 text-foreground/80" />
+              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                AI Pair Programming
+              </span>
+            </div>
+            <h2 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
+              Built for developers and AI agents
+            </h2>
+            <p className="max-w-2xl text-sm text-muted-foreground leading-relaxed">
+              In the age of Claude, Antigravity, and autonomous coding assistants, clean conventions and deterministic boundaries matter more than ever.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-5 transition-colors hover:bg-muted/20">
+              <div className="flex items-center gap-2">
+                <IconShieldCheck className="size-4 text-muted-foreground" />
+                <span className="font-mono text-xs font-medium text-foreground">
+                  Deterministic AGENTS.md Rules
+                </span>
+              </div>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Context-aware rules in AGENTS.md instruct AI assistants on Next.js 16 breaking changes, Turbopack compiling, and monorepo guidelines before writing code.
               </p>
             </div>
-          ))}
+
+            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-5 transition-colors hover:bg-muted/20">
+              <div className="flex items-center gap-2">
+                <IconLayersLinked className="size-4 text-muted-foreground" />
+                <span className="font-mono text-xs font-medium text-foreground">
+                  Single Source of Truth in docs/
+                </span>
+              </div>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Exhaustive architectural docs cover data fetching, authentication seams, Zustand client state, and design-system tokens so agents never hallucinate patterns.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-5 transition-colors hover:bg-muted/20">
+              <div className="flex items-center gap-2">
+                <IconLock className="size-4 text-muted-foreground" />
+                <span className="font-mono text-xs font-medium text-foreground">
+                  Strict ESLint Monorepo Boundaries
+                </span>
+              </div>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Custom ESLint rules enforce strict architectural boundaries: client components cannot import server-only modules, and workspace packages maintain clean dependency graphs.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-5 transition-colors hover:bg-muted/20">
+              <div className="flex items-center gap-2">
+                <IconCpu className="size-4 text-muted-foreground" />
+                <span className="font-mono text-xs font-medium text-foreground">
+                  One-Command Full Monorepo Check
+                </span>
+              </div>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Running pnpm check executes lint, typecheck, and Vitest across all 8 packages in parallel via Turborepo, providing instant verification for generated code.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Architecture FAQ Section (Interactive Accordion) */}
+        <section className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2 border-t border-border/40 pt-10">
+            <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              Frequently Asked Questions
+            </span>
+            <h2 className="text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
+              Architectural decisions &amp; FAQ
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Common questions about provider seams, caching strategies, and monorepo workflows.
+            </p>
+          </div>
+
+          <ArchitectureFaq />
         </section>
       </main>
 
-      <footer className="border-t">
-        <div className={`${CONTAINER} flex h-14 items-center`}>
-          <a
-            href={REPO_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 font-mono text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
-          >
-            <IconBrandGithub aria-hidden className="size-4" />
-            daFoggo/next-mono-base
-          </a>
+      {/* Minimalist high-craft footer */}
+      <footer className="border-t border-border/40 py-10">
+        <div className={`${CONTAINER} flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-xs font-mono text-muted-foreground`}>
+          <div className="flex items-center gap-3">
+            <span>© 2026 Next Mono Base</span>
+            <span>·</span>
+            <span>MIT License</span>
+            <span>·</span>
+            <span>Production Monorepo Starter</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-foreground"
+            >
+              GitHub
+            </a>
+            <a
+              href={SIGN_IN_HREF}
+              className="transition-colors hover:text-foreground"
+            >
+              Studio Dashboard
+            </a>
+          </div>
         </div>
       </footer>
     </>
