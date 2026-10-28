@@ -28,7 +28,7 @@ export interface StackItem {
 /**
  * 16 primary technologies comprising the next-mono-base stack,
  * ordered logically across 5 cohesive architectural tiers:
- * 1. Monorepo & browser runtime: Next.js, TanStack Redact, Turborepo, pnpm
+ * 1. Monorepo & browser runtime: Next.js, TanStack, Turborepo, pnpm
  * 2. Frontend & state: Tailwind CSS, Zustand, Zod
  * 3. Tri-stack auth seam: Keycloak, Better Auth, Supabase
  * 4. Backend & database: PostgreSQL, FastAPI, Docker
@@ -37,7 +37,7 @@ export interface StackItem {
 export const STACK_ITEMS: readonly StackItem[] = [
   // Tier 1: Foundation, Monorepo & Browser Runtime
   { name: "Next.js", category: "foundation", Icon: IconNextjs },
-  { name: "TanStack Redact", category: "frontend", Icon: IconTanstack },
+  { name: "TanStack", category: "frontend", Icon: IconTanstack },
   { name: "Turborepo", category: "foundation", Icon: IconTurborepo },
   { name: "pnpm", category: "foundation", Icon: IconPnpm },
 
