@@ -23,7 +23,7 @@ function LogoMark({ size, motion }: { size: Size; motion: Motion }) {
   return (
     <svg
       viewBox="0 0 8 8"
-      shapeRendering="crispEdges"
+      style={{ shapeRendering: "crispEdges" }}
       aria-hidden
       className={cn("shrink-0", MARK[size])}
     >

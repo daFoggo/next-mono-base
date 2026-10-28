@@ -37,8 +37,8 @@ export function IconNextjs(props: SVGProps<SVGSVGElement>) {
         y1="116.5"
         y2="160.5"
       >
-        <stop stopColor="white" />
-        <stop offset="1" stopColor="white" stopOpacity="0" />
+        <stop style={{ stopColor: "white" }} />
+        <stop offset="1" style={{ stopColor: "white", stopOpacity: 0 }} />
       </linearGradient>
       <linearGradient
         gradientUnits="userSpaceOnUse"
@@ -48,8 +48,8 @@ export function IconNextjs(props: SVGProps<SVGSVGElement>) {
         y1="54"
         y2="106.875"
       >
-        <stop stopColor="white" />
-        <stop offset="1" stopColor="white" stopOpacity="0" />
+        <stop style={{ stopColor: "white" }} />
+        <stop offset="1" style={{ stopColor: "white", stopOpacity: 0 }} />
       </linearGradient>
     </defs>
   </svg>
@@ -78,8 +78,8 @@ export function IconTurborepo(props: SVGProps<SVGSVGElement>) {
         y2="55.735"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stopColor="#0096FF" />
-        <stop offset="1" stopColor="#FF1E56" />
+        <stop style={{ stopColor: "#0096FF" }} />
+        <stop offset="1" style={{ stopColor: "#FF1E56" }} />
       </linearGradient>
     </defs>
   </svg>
@@ -90,7 +90,6 @@ export function IconPnpm(props: SVGProps<SVGSVGElement>) {
   return (
   <svg
     {...props}
-    xmlnsXlink="http://www.w3.org/1999/xlink"
     viewBox="76.58987244897958 44 164.00775510204068 164"
   >
     <defs>
@@ -129,28 +128,28 @@ export function IconPnpm(props: SVGProps<SVGSVGElement>) {
     </defs>
     <g>
       <g>
-        <use xlinkHref="#b45vdTD8hs" fill="#f9ad00" />
+        <use href="#b45vdTD8hs" fill="#f9ad00" />
       </g>
       <g>
-        <use xlinkHref="#a40WtxIl8d" fill="#f9ad00" />
+        <use href="#a40WtxIl8d" fill="#f9ad00" />
       </g>
       <g>
-        <use xlinkHref="#h2CN9AEEpe" fill="#f9ad00" />
+        <use href="#h2CN9AEEpe" fill="#f9ad00" />
       </g>
       <g>
-        <use xlinkHref="#dqv5133G8" fill="#f9ad00" />
+        <use href="#dqv5133G8" fill="#f9ad00" />
       </g>
       <g>
-        <use xlinkHref="#b1Lv79ypvm" fill="#ffffff" />
+        <use href="#b1Lv79ypvm" fill="#ffffff" />
       </g>
       <g>
-        <use xlinkHref="#hy1IZWwLX" fill="#ffffff" />
+        <use href="#hy1IZWwLX" fill="#ffffff" />
       </g>
       <g>
-        <use xlinkHref="#akQfjxQes" fill="#ffffff" />
+        <use href="#akQfjxQes" fill="#ffffff" />
       </g>
       <g>
-        <use xlinkHref="#bdSrwE5pk" fill="#ffffff" />
+        <use href="#bdSrwE5pk" fill="#ffffff" />
       </g>
     </g>
   </svg>
@@ -181,7 +180,6 @@ export function IconZod(props: SVGProps<SVGSVGElement>) {
   return (
   <svg
     {...props}
-    xmlnsXlink="http://www.w3.org/1999/xlink"
     viewBox="0 0 256 203"
   >
     <defs>
@@ -222,8 +220,8 @@ export function IconZod(props: SVGProps<SVGSVGElement>) {
       d="m225.56 43.834-147.382 85.09-19.226-24.051 114.099-65.877-2.096-3.631 30.391-17.546zM146.596 14.075 35.93 77.968 18.719 56.483l74.095-42.78z"
     />
     <g transform="translate(2 1.51)">
-      <use xlinkHref="#b" filter="url(#a)" />
-      <use xlinkHref="#b" fill="#3068B7" />
+      <use href="#b" filter="url(#a)" />
+      <use href="#b" fill="#3068B7" />
     </g>
   </svg>
 )
@@ -331,8 +329,8 @@ export function IconSupabase(props: SVGProps<SVGSVGElement>) {
         y2="71.8295"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stopColor="#249361" />
-        <stop offset="1" stopColor="#3ECF8E" />
+        <stop style={{ stopColor: "#249361" }} />
+        <stop offset="1" style={{ stopColor: "#3ECF8E" }} />
       </linearGradient>
       <linearGradient
         id="paint1_linear"
@@ -343,7 +341,7 @@ export function IconSupabase(props: SVGProps<SVGSVGElement>) {
         gradientUnits="userSpaceOnUse"
       >
         <stop />
-        <stop offset="1" stopOpacity="0" />
+        <stop offset="1" style={{ stopOpacity: 0 }} />
       </linearGradient>
     </defs>
   </svg>
@@ -352,7 +350,7 @@ export function IconSupabase(props: SVGProps<SVGSVGElement>) {
 
 export function IconPostgresql(props: SVGProps<SVGSVGElement>) {
   return (
-  <svg {...props} xmlSpace="preserve" viewBox="0 0 432.071 445.383">
+  <svg {...props} viewBox="0 0 432.071 445.383">
     <g
       style={{
         fillRule: "nonzero",
