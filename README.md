@@ -1,18 +1,18 @@
 # next-mono-base
 
-Next.js 16 + Turborepo + pnpm monorepo base with shadcn/ui.
+Next.js 16.4 + TanStack Redact + Turborepo + pnpm monorepo base with shadcn/ui (`base-nova` + Animate UI) and pluggable tri-stack authentication (`keycloak` | `better-auth` | `supabase`).
 
 ## Structure
 
 ```
 apps/
-  web/                    Next.js landing page (runnable, public)
-  studio/                 Next.js dashboard: sign-in, organizations, projects (runnable)
+  web/                    Next.js landing page (runnable, public, withRedact browser runtime)
+  studio/                 Next.js dashboard: sign-in, organizations, projects (runnable, withRedact browser runtime)
 packages/
   ui/                     @workspace/ui — shared shadcn/ui components, styles
-  auth/                   @workspace/auth — Better Auth / Supabase providers behind AUTH_PROVIDER
-  ui-patterns/            @workspace/ui-patterns — pieces both apps share: ThemeProvider, ThemeToggle, AppLogo
-  db/                     @workspace/db — Supabase clients, types, migrations
+  auth/                   @workspace/auth — Keycloak / Better Auth / Supabase providers behind AUTH_PROVIDER
+  ui-patterns/            @workspace/ui-patterns — pieces both apps share: ThemeProvider, ThemeToggle, AppLogo, StackGrid
+  db/                     @workspace/db — Supabase & PostgreSQL clients, types, migrations
   eslint-config/          @workspace/eslint-config
   typescript-config/      @workspace/typescript-config
 ```

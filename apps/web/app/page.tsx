@@ -33,34 +33,41 @@ const ARCHITECTURE_CHAPTERS = [
   },
   {
     number: "02",
+    badge: "Browser Runtime",
+    title: "Hybrid React 19 Server + TanStack Redact Browser Runtime",
+    desc: "Native React 19.3 handles Server Components, Flight streaming, and 'use cache' on the server while @tanstack/redact/next swaps the browser runtime to a synchronous engine (-58% DOM runtime gzip, -35 KB client JS).",
+    meta: "~28 KB gzip",
+  },
+  {
+    number: "03",
     badge: "Auth Seam",
     title: "Tri-Stack Authentication Seam",
     desc: "Native support for Keycloak 26 OIDC, Better Auth, or Supabase behind one @workspace/auth seam. Switch via AUTH_PROVIDER without touching application code.",
     meta: "Zero lock-in",
   },
   {
-    number: "03",
+    number: "04",
     badge: "Data Layer",
     title: "Decoupled Data Access Layer (DAL)",
     desc: "Strict server-only boundaries, per-user caching with 'use cache', connection pooling for PostgreSQL, and zero client token exposure.",
     meta: "Server-only",
   },
   {
-    number: "04",
+    number: "05",
     badge: "Client State",
     title: "Zustand Client-Only State",
     desc: "Minimal, shared client state without React Context cascade re-renders, with optional persistent storage across navigation.",
     meta: "Zero bloat",
   },
   {
-    number: "05",
+    number: "06",
     badge: "Validation",
     title: "Zod Schema Contracts",
     desc: "Runtime type validation at every network boundary, form mutation, and server action. Strict TypeScript contracts from database to UI.",
     meta: "Type-safe",
   },
   {
-    number: "06",
+    number: "07",
     badge: "Design",
     title: "Base-Nova Design System",
     desc: "zinc neutral palette, dark mode default, Animate UI v2 spring physics, and ready-made dashboard shells with collapsible rails and detail sheets.",
@@ -92,10 +99,10 @@ const PILLARS = [
   },
   {
     icon: IconCpu,
-    title: "Zustand & Zod Contracts",
-    badge: "Client State",
+    title: "TanStack Redact, Zustand & Zod",
+    badge: "Lean Client",
     description:
-      "Zustand manages shared client-only state without React context re-render waterfalls. Zod validates all API parameters, form mutations, and server action inputs with end-to-end type safety.",
+      "TanStack Redact replaces React's heavy concurrent browser scheduler with a lightweight synchronous runtime (-58% DOM runtime gzip), paired with Zustand client stores and end-to-end Zod contracts.",
   },
 ] as const
 
@@ -159,8 +166,8 @@ export default function HomePage() {
             </h1>
             <p className="max-w-3xl text-lg leading-relaxed text-muted-foreground sm:text-xl font-normal">
               A modular Next.js 16.4 monorepo starter engineered with intentional architecture.
-              Choose your preferred auth provider (Keycloak, Better Auth, or Supabase),
-              build with strict data access boundaries, and pair program with Claude AI under deterministic skill rules.
+              Run React 19 Server Components on the server with TanStack Redact in the browser,
+              choose your auth provider (Keycloak, Better Auth, or Supabase), and pair program with Claude AI under deterministic skill rules.
             </p>
           </div>
 
@@ -197,7 +204,7 @@ export default function HomePage() {
               </h2>
             </div>
             <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
-              <CountingNumber number={15} />
+              <CountingNumber number={16} />
               <span>technologies ·</span>
               <CountingNumber number={3} />
               <span>auth providers · Zero lock-in</span>

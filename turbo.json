@@ -37,7 +37,8 @@
         "DEMO_AUTH_SECRET",
         "KEYCLOAK_ISSUER",
         "KEYCLOAK_CLIENT_ID",
-        "KEYCLOAK_CLIENT_SECRET"
+        "KEYCLOAK_CLIENT_SECRET",
+        "DISABLE_REDACT"
       ]
     },
     "lint": {

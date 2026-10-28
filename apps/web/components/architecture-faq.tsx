@@ -15,6 +15,12 @@ const FAQS = [
       "All three providers are normalized behind the unified AuthProvider interface in @workspace/auth. Set AUTH_PROVIDER in apps/studio/.env.local (e.g. keycloak, better-auth, or supabase). Server actions, proxy session refreshes, and getSession() calls remain 100% identical without changing any application code.",
   },
   {
+    id: "tanstack-redact",
+    question: "How does TanStack Redact work with Next.js 16 Server Components?",
+    answer:
+      "Both apps wrap next.config.ts with withRedact from @tanstack/redact/next. Next.js keeps native React 19.3 on the server for Server Components, Flight serialization, 'use cache', and Server Actions, while Turbopack swaps browser React/DOM entrypoints to Redact's synchronous runtime—cutting the client DOM runtime chunk by ~58% gzip (~35 KB total client JS saved) with zero changes to component imports.",
+  },
+  {
     id: "cache-components",
     question: "How does Next.js 16 Cache Components and Partial Prerendering (PPR) work?",
     answer:

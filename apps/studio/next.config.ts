@@ -1,4 +1,5 @@
 import type { NextConfig } from "next"
+import { withRedact } from "@tanstack/redact/next"
 
 const isDev = process.env.NODE_ENV === "development"
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -89,4 +90,6 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default process.env.DISABLE_REDACT === "1"
+  ? nextConfig
+  : withRedact(nextConfig)
