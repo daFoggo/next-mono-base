@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { IconArrowRight } from "@tabler/icons-react"
 
-import { buttonVariants } from "@workspace/ui/components/button"
+import { buttonVariants } from "@workspace/ui/components/button-variants"
 
 import { HOME_PATH } from "@/config/routes"
 
