@@ -161,7 +161,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <h1 className="max-w-4xl text-4xl leading-[1.12] font-normal tracking-tight sm:text-5xl lg:text-6xl text-balance">
+            <h1 className="max-w-4xl text-4xl font-serif leading-[1.12] font-normal tracking-tight sm:text-5xl lg:text-6xl text-balance">
               Build on a solid, production-grade base.
             </h1>
             <p className="max-w-3xl text-lg leading-relaxed text-muted-foreground sm:text-xl font-normal">

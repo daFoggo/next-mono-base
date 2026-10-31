@@ -51,6 +51,8 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+  --font-pixel-square: var(--font-pixel-square);
+  --font-pixel-grid: var(--font-pixel-grid);
 }
 
 /* Flat by default: every `shadow-*` utility (including those in shadcn components) renders no shadow. */
@@ -184,6 +186,7 @@
 
 @utility no-scrollbar {
   scrollbar-width: none;
+ 
   &::-webkit-scrollbar {
     display: none;
   }
