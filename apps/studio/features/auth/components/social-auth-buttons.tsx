@@ -13,7 +13,7 @@ import { toast } from "@workspace/ui/components/toast"
 
 type SocialAuthButtonsProps = {
   activeProvider:
-    "neon-auth" | "supabase" | "keycloak" | "fastapi-oauth"
+    "demo" | "neon-auth" | "supabase" | "keycloak" | "fastapi-oauth"
   mode?: "sign-in" | "sign-up"
   hasDemo?: boolean
   googleEnabled?: boolean

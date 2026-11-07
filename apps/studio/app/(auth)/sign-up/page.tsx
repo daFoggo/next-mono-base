@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 
 import { SignUpForm } from "@/features/auth/components/sign-up-form"
 import { SocialAuthButtons } from "@/features/auth/components/social-auth-buttons"
@@ -28,6 +29,7 @@ export const metadata: Metadata = { title: "Sign up" }
 
 export default function SignUpPage() {
   const activeProvider = getActiveAuthProvider()
+  if (activeProvider === "demo") redirect(SIGN_IN_PATH)
   const hasDemo = demoAuthSecret() !== null
 
   return (

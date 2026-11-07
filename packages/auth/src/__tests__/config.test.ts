@@ -16,6 +16,13 @@ describe("parseAuthConfig", () => {
     }
   })
 
+  it("accepts demo in production with no provider secrets", () => {
+    expect(
+      parseAuthConfig({ NODE_ENV: "production", AUTH_PROVIDER: "demo" })
+        .AUTH_PROVIDER
+    ).toBe("demo")
+  })
+
   it("fails in production if KEYCLOAK_CLIENT_SECRET is omitted", () => {
     expect(() =>
       parseAuthConfig({

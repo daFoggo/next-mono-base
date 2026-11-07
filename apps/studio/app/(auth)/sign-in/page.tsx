@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
+import { DemoSignInButton } from "@/features/auth/components/demo-sign-in-button"
 import { FormError } from "@/features/auth/components/form-error"
 import { SignInForm } from "@/features/auth/components/sign-in-form"
 import { SocialAuthButtons } from "@/features/auth/components/social-auth-buttons"
@@ -71,16 +72,26 @@ export default function SignInPage({
             <Suspense>
               <OAuthError searchParams={searchParams} />
             </Suspense>
-            <SignInForm action={signInAction} />
-            <SocialAuthButtons
-              activeProvider={activeProvider}
-              mode="sign-in"
-              hasDemo={hasDemo}
-              googleEnabled={isGoogleEnabled()}
-              keycloakAction={signInWithKeycloakAction}
-              googleAction={signInWithGoogleAction}
-              demoAction={demoSignInAction}
-            />
+            {activeProvider === "demo" ? (
+              hasDemo ? (
+                <DemoSignInButton action={demoSignInAction} />
+              ) : (
+                <FormError message="Demo login is not configured (set DEMO_AUTH and DEMO_AUTH_SECRET)." />
+              )
+            ) : (
+              <>
+                <SignInForm action={signInAction} />
+                <SocialAuthButtons
+                  activeProvider={activeProvider}
+                  mode="sign-in"
+                  hasDemo={hasDemo}
+                  googleEnabled={isGoogleEnabled()}
+                  keycloakAction={signInWithKeycloakAction}
+                  googleAction={signInWithGoogleAction}
+                  demoAction={demoSignInAction}
+                />
+              </>
+            )}
           </div>
         </AuthBody>
       </AuthMain>

@@ -8,6 +8,8 @@ import { z } from "zod"
  */
 export function getAuthSchema(isProd = process.env.NODE_ENV === "production") {
   return z.discriminatedUnion("AUTH_PROVIDER", [
+    // No identity provider: only the signed demo cookie (DEMO_AUTH) signs anyone in.
+    z.object({ AUTH_PROVIDER: z.literal("demo") }),
     z.object({
       AUTH_PROVIDER: z.literal("supabase"),
       NEXT_PUBLIC_SUPABASE_URL: isProd

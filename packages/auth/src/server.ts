@@ -7,6 +7,19 @@ import type { AuthOptions, AuthProvider } from "./types"
 export async function getAuthProvider(
   options: AuthOptions
 ): Promise<AuthProvider> {
+  if (authConfig.AUTH_PROVIDER === "demo") {
+    const refuse = async () => {
+      throw new Error("AUTH_PROVIDER=demo: use the demo login.")
+    }
+    return {
+      getSession: async () => null,
+      verifySessionFresh: async () => null,
+      signIn: refuse,
+      signUp: refuse,
+      signOut: async () => {},
+      isExpectedError: () => false,
+    }
+  }
   if (authConfig.AUTH_PROVIDER === "supabase") {
     return (await import("./supabase/server")).createSupabaseProvider(options)
   }

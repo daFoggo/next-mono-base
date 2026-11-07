@@ -12,6 +12,13 @@ export async function updateSession(
   request: NextRequest,
   options: AuthOptions
 ): Promise<ProxyAuthResult> {
+  if (authConfig.AUTH_PROVIDER === "demo") {
+    return {
+      response: NextResponse.next({ request }),
+      isAuthenticated: false,
+      role: null,
+    }
+  }
   if (authConfig.AUTH_PROVIDER === "supabase") {
     return (await import("./supabase/proxy")).updateSession(request, options)
   }

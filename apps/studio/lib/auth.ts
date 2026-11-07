@@ -19,7 +19,7 @@ export type {
 
 /** Active provider union for this deployment. */
 export function getActiveAuthProvider():
-  "neon-auth" | "supabase" | "keycloak" | "fastapi-oauth" {
+  "demo" | "neon-auth" | "supabase" | "keycloak" | "fastapi-oauth" {
   return authConfig.AUTH_PROVIDER
 }
 
