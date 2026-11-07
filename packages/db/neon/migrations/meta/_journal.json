@@ -29,6 +29,13 @@
       "when": 1793689456323,
       "tag": "0003_drop_better_auth_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794057439305,
+      "tag": "0004_workspace_indexes",
+      "breakpoints": true
     }
   ]
 }
