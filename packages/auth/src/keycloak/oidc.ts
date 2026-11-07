@@ -96,6 +96,17 @@ export async function exchangeAuthorizationCode(
   return (await res.json()) as KeycloakTokenResponse
 }
 
+/** A refresh the IdP answered with an HTTP error; `status` tells a rejected token (4xx) from an outage (5xx). */
+export class KeycloakTokenError extends Error {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
+    super(message)
+    this.name = "KeycloakTokenError"
+  }
+}
+
 export async function refreshKeycloakTokens(
   config: KeycloakOidcConfig,
   refreshToken: string
@@ -116,7 +127,10 @@ export async function refreshKeycloakTokens(
 
   if (!res.ok) {
     const errorText = await res.text()
-    throw new Error(`Token refresh failed (${res.status}): ${errorText}`)
+    throw new KeycloakTokenError(
+      res.status,
+      `Token refresh failed (${res.status}): ${errorText}`
+    )
   }
 
   return (await res.json()) as KeycloakTokenResponse
@@ -149,9 +163,15 @@ export async function logoutKeycloakSession(
     refresh_token: refreshToken,
   })
 
-  await fetch(endpoints.logout, {
+  const res = await fetch(endpoints.logout, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
   })
+  // The caller still clears the local cookies; say so when the IdP session survives.
+  if (!res.ok) {
+    console.warn(
+      `[keycloak] logout rejected (${res.status}): the SSO session may still be active`
+    )
+  }
 }

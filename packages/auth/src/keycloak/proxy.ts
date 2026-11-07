@@ -3,12 +3,10 @@ import type { NextRequest } from "next/server"
 
 import { authConfig } from "../config"
 import type { AuthOptions, ProxyAuthResult } from "../types"
-import {
-  getKeycloakCookieNames,
-  tokenCookieOptions,
-} from "./cookies"
+import { getKeycloakCookieNames, tokenCookieOptions } from "./cookies"
 import { verifyKeycloakJwt } from "./jwks"
 import {
+  KeycloakTokenError,
   refreshKeycloakTokens,
   type KeycloakOidcConfig,
 } from "./oidc"
@@ -47,19 +45,19 @@ export async function updateSession(
   const nowSeconds = Math.floor(Date.now() / 1000)
 
   // 1. Try existing access token if it has more than 60s left
+  let stillValid: Awaited<ReturnType<typeof verifyKeycloakJwt>> = null
   if (accessToken) {
-    const claims = await verifyKeycloakJwt(
-      accessToken,
-      oidcConfig.issuer,
-      { clientId: oidcConfig.clientId }
-    )
-    if (claims && (!claims.exp || claims.exp - nowSeconds > 60)) {
+    const claims = await verifyKeycloakJwt(accessToken, oidcConfig.issuer, {
+      clientId: oidcConfig.clientId,
+    })
+    if (claims && claims.exp - nowSeconds > 60) {
       return {
         response,
         isAuthenticated: true,
         role: claims.role,
       }
     }
+    stillValid = claims
   }
 
   // 2. Access token is missing or expiring soon: refresh using refreshToken
@@ -109,10 +107,9 @@ export async function updateSession(
       { clientId: oidcConfig.clientId }
     )
 
+    // Verification also fails when the JWKS cannot be fetched. The refresh token was already rotated and
+    // the new cookies are set above, so keep them: deleting would lose the only valid refresh token.
     if (!newClaims) {
-      response.cookies.delete(cookieNames.access)
-      response.cookies.delete(cookieNames.refresh)
-      response.cookies.delete(cookieNames.id)
       return { response, isAuthenticated: false, role: null }
     }
 
@@ -122,7 +119,19 @@ export async function updateSession(
       role: newClaims.role,
     }
   } catch (error) {
-    console.error("[keycloak-proxy] token refresh failed:", error)
+    // An outage (network, 5xx) must not sign everyone out: keep the cookies so the next request retries, and
+    // let a token that has not expired yet keep working. Only a refresh the IdP rejected ends the session.
+    const rejected =
+      error instanceof KeycloakTokenError &&
+      [400, 401, 403].includes(error.status)
+    if (!rejected) {
+      console.error("[keycloak-proxy] token refresh failed:", error)
+      return {
+        response,
+        isAuthenticated: stillValid !== null,
+        role: stillValid?.role ?? null,
+      }
+    }
     response.cookies.delete(cookieNames.access)
     response.cookies.delete(cookieNames.refresh)
     response.cookies.delete(cookieNames.id)

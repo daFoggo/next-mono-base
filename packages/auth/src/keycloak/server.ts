@@ -55,11 +55,9 @@ export function createKeycloakProvider(options: AuthOptions): AuthProvider {
       const accessToken = cookieStore.get(cookieNames.access)?.value
       if (!accessToken) return null
 
-      const claims = await verifyKeycloakJwt(
-        accessToken,
-        oidcConfig.issuer,
-        { clientId: oidcConfig.clientId }
-      )
+      const claims = await verifyKeycloakJwt(accessToken, oidcConfig.issuer, {
+        clientId: oidcConfig.clientId,
+      })
       if (!claims) return null
 
       return {
@@ -167,7 +165,7 @@ export function createKeycloakProvider(options: AuthOptions): AuthProvider {
         const pkce = createPkceChallenge()
 
         cookieStore.set(
-          cookieNames.pkce,
+          `${cookieNames.pkce}.${pkce.state}`,
           JSON.stringify({
             state: pkce.state,
             codeVerifier: pkce.codeVerifier,
@@ -199,15 +197,20 @@ export function createKeycloakProvider(options: AuthOptions): AuthProvider {
 
       async exchangeCode(code: string, state?: string | null): Promise<void> {
         const cookieStore = await cookies()
-        const rawPkce = cookieStore.get(cookieNames.pkce)?.value
-        cookieStore.delete(cookieNames.pkce)
+        // The state names the cookie (one per login attempt); keep it to cookie-safe characters.
+        if (!state || !/^[\w-]{1,64}$/.test(state)) {
+          throw new Error("State mismatch: possible CSRF attempt.")
+        }
+        const pkceName = `${cookieNames.pkce}.${state}`
+        const rawPkce = cookieStore.get(pkceName)?.value
+        cookieStore.delete(pkceName)
 
         const pkce = parsePkceCookie(rawPkce)
         if (!pkce) {
           throw new Error("Invalid or expired PKCE state session.")
         }
 
-        if (!state || state !== pkce.state) {
+        if (state !== pkce.state) {
           throw new Error("State mismatch: possible CSRF attempt.")
         }
 

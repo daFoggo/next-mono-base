@@ -2,10 +2,7 @@ import { exportJWK, generateKeyPair, SignJWT } from "jose"
 import { createLocalJWKSet } from "jose"
 import { describe, expect, it } from "vitest"
 
-import {
-  getKeycloakCookieNames,
-  parsePkceCookie,
-} from "../keycloak/cookies"
+import { getKeycloakCookieNames, parsePkceCookie } from "../keycloak/cookies"
 import { resolveKeycloakRole, verifyKeycloakJwt } from "../keycloak/jwks"
 import {
   buildAuthorizationUrl,
@@ -47,7 +44,9 @@ describe("resolveKeycloakRole & verifyKeycloakJwt", () => {
   it("picks highest privilege when default realm roles coexist with admin/editor", () => {
     expect(
       resolveKeycloakRole({
-        realm_access: { roles: ["default-roles-dashboard", "customer", "admin"] },
+        realm_access: {
+          roles: ["default-roles-dashboard", "customer", "admin"],
+        },
       })
     ).toBe("admin")
     expect(
@@ -162,6 +161,34 @@ describe("resolveKeycloakRole & verifyKeycloakJwt", () => {
     })
     expect(verified).not.toBeNull()
     expect(verified?.role).toBe("editor")
+  })
+})
+
+describe("required claims", () => {
+  it("rejects a token without azp or without exp", async () => {
+    const { publicKey, privateKey } = await generateKeyPair("RS256")
+    const jwk = await exportJWK(publicKey)
+    jwk.kid = "k3"
+    jwk.alg = "RS256"
+    jwk.use = "sig"
+    const jwks = createLocalJWKSet({ keys: [jwk] })
+    const issuer = "http://localhost:8080/realms/dashboard"
+    const options = { clientId: "dashboard-app", jwksOverride: jwks }
+
+    const noAzp = await new SignJWT({ typ: "Bearer" })
+      .setProtectedHeader({ alg: "RS256", kid: "k3" })
+      .setSubject("user-789")
+      .setIssuer(issuer)
+      .setExpirationTime("5m")
+      .sign(privateKey)
+    expect(await verifyKeycloakJwt(noAzp, issuer, options)).toBeNull()
+
+    const noExp = await new SignJWT({ azp: "dashboard-app", typ: "Bearer" })
+      .setProtectedHeader({ alg: "RS256", kid: "k3" })
+      .setSubject("user-789")
+      .setIssuer(issuer)
+      .sign(privateKey)
+    expect(await verifyKeycloakJwt(noExp, issuer, options)).toBeNull()
   })
 })
 

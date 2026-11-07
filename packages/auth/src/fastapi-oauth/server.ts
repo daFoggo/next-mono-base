@@ -35,12 +35,8 @@ function getFastApiConfig() {
   }
 }
 
-/** Seconds left on a token's `exp` claim, or a safe default if it has none. */
-function maxAgeFromExp(
-  exp: number | undefined,
-  fallbackSeconds: number
-): number {
-  if (!exp) return fallbackSeconds
+/** Seconds left on a token's `exp` claim. */
+function maxAgeFromExp(exp: number): number {
   return Math.max(1, exp - Math.floor(Date.now() / 1000))
 }
 
@@ -74,10 +70,16 @@ export function createFastApiOAuthProvider(options: AuthOptions): AuthProvider {
       tokens.access_token,
       jwtSecretKey
     )
+    // Storing a token this app cannot verify would look like a sign-in and then bounce back to sign-in.
+    if (!accessClaims) {
+      throw new Error(
+        "fastapi-oauth: the access token failed verification (JWT_SECRET_KEY must equal the backend's, and the token needs type=access)"
+      )
+    }
     cookieStore.set(
       cookieNames.access,
       tokens.access_token,
-      tokenCookieOptions(maxAgeFromExp(accessClaims?.exp, 60 * 30))
+      tokenCookieOptions(maxAgeFromExp(accessClaims.exp))
     )
     cookieStore.set(
       cookieNames.refresh,
@@ -95,6 +97,7 @@ export function createFastApiOAuthProvider(options: AuthOptions): AuthProvider {
       return sessionFromAccessToken(cookieStore.get(cookieNames.access)?.value)
     },
 
+    // Writes the rotated cookies, so call it from a Server Action or Route Handler, never a render.
     async verifySessionFresh(): Promise<Session | null> {
       await io()
       const cookieStore = await cookies()

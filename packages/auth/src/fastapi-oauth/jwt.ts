@@ -7,7 +7,7 @@ export type VerifiedFastApiClaims = {
   role: Role
   name: string | null
   email: string | null
-  exp?: number
+  exp: number
 }
 
 /**
@@ -42,6 +42,8 @@ export async function verifyFastApiJwt(
   try {
     const { payload } = await jwtVerify(token, getSecretKey(secret), {
       algorithms: ["HS256"],
+      // A token that never expires must not be accepted.
+      requiredClaims: ["exp"],
     })
     if (!payload.sub || payload.type !== "access") return null
 
@@ -50,7 +52,8 @@ export async function verifyFastApiJwt(
       role: mapFastApiRole(payload.role),
       name: typeof payload.name === "string" ? payload.name : null,
       email: typeof payload.email === "string" ? payload.email : null,
-      exp: payload.exp,
+      // requiredClaims above guarantees it
+      exp: payload.exp as number,
     }
   } catch {
     return null

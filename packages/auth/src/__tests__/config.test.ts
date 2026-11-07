@@ -16,11 +16,26 @@ describe("parseAuthConfig", () => {
     }
   })
 
-  it("accepts demo in production with no provider secrets", () => {
+  it("accepts demo in production with only its signing secret", () => {
     expect(
-      parseAuthConfig({ NODE_ENV: "production", AUTH_PROVIDER: "demo" })
-        .AUTH_PROVIDER
+      parseAuthConfig({
+        NODE_ENV: "production",
+        AUTH_PROVIDER: "demo",
+        DEMO_AUTH_SECRET: "d".repeat(32),
+      }).AUTH_PROVIDER
     ).toBe("demo")
+  })
+
+  it("fails in production if the demo secret is missing or short", () => {
+    for (const DEMO_AUTH_SECRET of [undefined, "short"]) {
+      expect(() =>
+        parseAuthConfig({
+          NODE_ENV: "production",
+          AUTH_PROVIDER: "demo",
+          DEMO_AUTH_SECRET,
+        })
+      ).toThrow("DEMO_AUTH_SECRET")
+    }
   })
 
   it("fails in production if KEYCLOAK_CLIENT_SECRET is omitted", () => {

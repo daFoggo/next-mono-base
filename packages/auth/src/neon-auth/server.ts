@@ -13,7 +13,7 @@ import type {
 import { getNeonAuth } from "./auth"
 
 /** A rejection from Neon Auth (`{ error }` result), kept apart from outages (thrown by the SDK). */
-export class NeonAuthRejection extends Error {
+class NeonAuthRejection extends Error {
   constructor(
     message: string,
     readonly status: number

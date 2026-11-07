@@ -2,14 +2,22 @@ import { z } from "zod"
 
 /**
  * Auth environment. `AUTH_PROVIDER` picks the whole stack (docs/providers.md): `neon-auth` = Neon Auth + Neon
- * Postgres, `supabase` = Supabase Auth + PostgREST. Each branch lists only its own variables.
+ * Postgres, `demo` = signed cookie + in-memory data, `supabase` = Supabase Auth + PostgREST. Each branch lists
+ * only its own variables.
  * Not `server-only` so `proxy.ts` can read it; client components must not import it (ESLint rule).
  * `process.env.X` is referenced literally so `NEXT_PUBLIC_*` stay inlinable.
  */
 export function getAuthSchema(isProd = process.env.NODE_ENV === "production") {
   return z.discriminatedUnion("AUTH_PROVIDER", [
-    // No identity provider: only the signed demo cookie (DEMO_AUTH) signs anyone in.
-    z.object({ AUTH_PROVIDER: z.literal("demo") }),
+    // No identity provider: only the signed demo cookie signs anyone in; the secret signs it.
+    z.object({
+      AUTH_PROVIDER: z.literal("demo"),
+      DEMO_AUTH_SECRET: isProd
+        ? z
+            .string()
+            .min(32, "DEMO_AUTH_SECRET must be at least 32 characters in production")
+        : z.string().optional(),
+    }),
     z.object({
       AUTH_PROVIDER: z.literal("supabase"),
       NEXT_PUBLIC_SUPABASE_URL: isProd
@@ -81,6 +89,7 @@ export function parseAuthConfig(
   const schema = getAuthSchema(isProd)
   return schema.parse({
     AUTH_PROVIDER: env.AUTH_PROVIDER || "neon-auth",
+    DEMO_AUTH_SECRET: env.DEMO_AUTH_SECRET || undefined,
     NEXT_PUBLIC_SUPABASE_URL:
       env.NEXT_PUBLIC_SUPABASE_URL ||
       (!isProd ? "http://127.0.0.1:54321" : undefined),

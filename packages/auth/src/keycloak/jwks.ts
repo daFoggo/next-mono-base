@@ -9,7 +9,7 @@ export type VerifiedKeycloakClaims = {
   name: string | null
   email: string | null
   calendar?: Calendar
-  exp?: number
+  exp: number
 }
 
 export type VerifyKeycloakOptions = {
@@ -20,7 +20,7 @@ export type VerifyKeycloakOptions = {
 
 const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>()
 
-export function getIssuerJwks(issuer: string) {
+function getIssuerJwks(issuer: string) {
   let jwks = jwksCache.get(issuer)
   if (!jwks) {
     const certsUrl = new URL(
@@ -106,6 +106,8 @@ export async function verifyKeycloakJwt(
     const jwks = options.jwksOverride ?? getIssuerJwks(issuer)
     const { payload } = await jwtVerify(token, jwks, {
       issuer,
+      // A token that never expires must not be accepted.
+      requiredClaims: ["exp"],
       ...(options.expectedAudience
         ? { audience: options.expectedAudience }
         : {}),
@@ -118,12 +120,8 @@ export async function verifyKeycloakJwt(
       return null
     }
 
-    // Enforce authorized party (azp) binding to client_id if present
-    if (
-      options.clientId &&
-      typeof payload.azp === "string" &&
-      payload.azp !== options.clientId
-    ) {
+    // Enforce authorized party (azp) binding to client_id: a token without `azp` is not proof it was issued to this app
+    if (options.clientId && payload.azp !== options.clientId) {
       return null
     }
 
@@ -145,7 +143,8 @@ export async function verifyKeycloakJwt(
       name,
       email,
       calendar,
-      exp: payload.exp,
+      // requiredClaims above guarantees it
+      exp: payload.exp as number,
     }
   } catch {
     return null

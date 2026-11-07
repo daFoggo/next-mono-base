@@ -40,11 +40,13 @@ export async function updateSession(
   const nowSeconds = Math.floor(Date.now() / 1000)
 
   // 1. The access token still has more than 60s left: verified locally, no network call.
+  let stillValid: Awaited<ReturnType<typeof verifyFastApiJwt>> = null
   if (accessToken) {
     const claims = await verifyFastApiJwt(accessToken, jwtSecretKey)
-    if (claims && (!claims.exp || claims.exp - nowSeconds > 60)) {
+    if (claims && claims.exp - nowSeconds > 60) {
       return { response, isAuthenticated: true, role: claims.role }
     }
+    stillValid = claims
   }
 
   // 2. Missing or expiring soon: refresh using the refresh token.
@@ -61,9 +63,7 @@ export async function updateSession(
       return { response, isAuthenticated: false, role: null }
     }
 
-    const accessMaxAge = newClaims.exp
-      ? Math.max(1, newClaims.exp - nowSeconds)
-      : 60 * 30
+    const accessMaxAge = Math.max(1, newClaims.exp - nowSeconds)
 
     request.cookies.set(cookieNames.access, tokens.access_token)
     request.cookies.set(cookieNames.refresh, tokens.refresh_token)
@@ -82,8 +82,18 @@ export async function updateSession(
 
     return { response, isAuthenticated: true, role: newClaims.role }
   } catch (error) {
-    if (!(error instanceof FastApiAuthError)) {
+    // An outage (network, 5xx) must not sign everyone out: keep the cookies so the next request retries, and
+    // let a token that has not expired yet keep working. Only a refresh the backend rejected ends the session.
+    const rejected =
+      error instanceof FastApiAuthError &&
+      [400, 401, 403].includes(error.status)
+    if (!rejected) {
       console.error("[fastapi-oauth-proxy] token refresh failed:", error)
+      return {
+        response,
+        isAuthenticated: stillValid !== null,
+        role: stillValid?.role ?? null,
+      }
     }
     response.cookies.delete(cookieNames.access)
     response.cookies.delete(cookieNames.refresh)
