@@ -51,6 +51,11 @@ const nextConfig: NextConfig = {
       ...DASHBOARD_PATHS.flatMap((path) => [
         { source: `/${path}`, destination: `${origin}/${path}` },
         { source: `/${path}/:rest*`, destination: `${origin}/${path}/:rest*` },
+        // Segment prefetches (partialPrefetching) ask for `/<path>.segments/...`.
+        {
+          source: `/${path}.segments/:rest*`,
+          destination: `${origin}/${path}.segments/:rest*`,
+        },
       ]),
       {
         source: "/dashboard-static/:path+",
