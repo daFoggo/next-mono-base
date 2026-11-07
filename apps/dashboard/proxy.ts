@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { redirectWithSession, updateSession } from "@workspace/auth/proxy"
 
 import { AUTH_OPTIONS } from "@/config/auth"
+import { publicEnv } from "@/lib/env.public"
 import { DEMO_COOKIE, readDemoSession } from "@/lib/demo-session"
 import {
   DASHBOARD_PATH,
@@ -33,10 +34,10 @@ export async function proxy(request: NextRequest) {
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   )
   if (isProtected && !isAuthenticated) {
-    return redirectWithSession(new URL(SIGN_IN_PATH, request.url), response)
+    return redirectWithSession(new URL(SIGN_IN_PATH, publicEnv.NEXT_PUBLIC_APP_URL), response)
   }
   if (isAuthenticated && (AUTH_PAGES as readonly string[]).includes(pathname)) {
-    return redirectWithSession(new URL(DASHBOARD_PATH, request.url), response)
+    return redirectWithSession(new URL(DASHBOARD_PATH, publicEnv.NEXT_PUBLIC_APP_URL), response)
   }
   return response
 }

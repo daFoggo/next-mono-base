@@ -50,12 +50,20 @@ function contentSecurityPolicy(): string {
 // Turbopack compiles workspace packages (e.g. @workspace/ui) automatically,
 // so `transpilePackages` is not needed here.
 const nextConfig: NextConfig = {
+  // Multi-zone (docs/deployment): apps/web serves this app under its own domain, so its assets need their own prefix.
+  assetPrefix: "/dashboard-static",
   // Recommended for all new apps from Next.js 16.4 (default in create-next-app).
   cacheComponents: true,
   partialPrefetching: true,
   // Enables forbidden() / forbidden.tsx, used by requirePermission() in lib/dal.ts.
   experimental: {
     authInterrupts: true,
+    // Behind the landing domain the browser Origin is that domain, not this app's host.
+    serverActions: {
+      allowedOrigins: process.env.NEXT_PUBLIC_APP_URL
+        ? [new URL(process.env.NEXT_PUBLIC_APP_URL).host]
+        : [],
+    },
     optimizePackageImports: ["@tabler/icons-react"],
     // Ships the instant() testing API only in a dedicated test build (EXPOSE_TESTING_API=1); never set in deploys.
     exposeTestingApiInProductionBuild: process.env.EXPOSE_TESTING_API === "1",

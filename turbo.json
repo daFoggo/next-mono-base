@@ -38,7 +38,8 @@
         "KEYCLOAK_ISSUER",
         "KEYCLOAK_CLIENT_ID",
         "KEYCLOAK_CLIENT_SECRET",
-        "JWT_SECRET_KEY"
+        "JWT_SECRET_KEY",
+        "DASHBOARD_ORIGIN"
       ]
     },
     "lint": {

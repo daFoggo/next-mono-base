@@ -25,6 +25,17 @@ function contentSecurityPolicy(): string {
   return directives.join("; ")
 }
 
+/** Paths owned by apps/dashboard (multi-zone): proxied there so landing and dashboard share one domain. */
+const DASHBOARD_PATHS = [
+  "sign-in",
+  "sign-up",
+  "dashboard",
+  "org",
+  "project",
+  "auth",
+  "api/auth",
+] as const
+
 // Turbopack compiles workspace packages (e.g. @workspace/ui) automatically,
 // so `transpilePackages` is not needed here.
 const nextConfig: NextConfig = {
@@ -34,10 +45,24 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@tabler/icons-react"],
   },
+  async rewrites() {
+    const origin = process.env.DASHBOARD_ORIGIN ?? "http://localhost:3001"
+    return [
+      ...DASHBOARD_PATHS.flatMap((path) => [
+        { source: `/${path}`, destination: `${origin}/${path}` },
+        { source: `/${path}/:rest*`, destination: `${origin}/${path}/:rest*` },
+      ]),
+      {
+        source: "/dashboard-static/:path+",
+        destination: `${origin}/dashboard-static/:path+`,
+      },
+    ]
+  },
   async headers() {
     return [
       {
-        source: "/(.*)",
+        // Not the dashboard paths: they answer with their own CSP.
+        source: `/((?!${DASHBOARD_PATHS.join("|")}).*)`,
         headers: [
           { key: "Content-Security-Policy", value: contentSecurityPolicy() },
           { key: "X-Content-Type-Options", value: "nosniff" },

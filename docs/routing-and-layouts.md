@@ -440,3 +440,17 @@ export default async function Image({
   )
 }
 ```
+
+## One domain for landing and dashboard (multi-zone)
+
+`apps/web` owns the domain and proxies the dashboard paths (`/sign-in`, `/sign-up`, `/dashboard`, `/org`, `/project`, `/auth`, `/api/auth`) to `apps/dashboard` with `rewrites` in `apps/web/next.config.ts`. The dashboard sets `assetPrefix: "/dashboard-static"` so its `/_next` assets do not collide with the landing page, and `serverActions.allowedOrigins` so Server Actions accept the landing domain as `Origin`.
+
+Deploy as two Vercel projects (free on Hobby): the dashboard project (Root Directory `apps/dashboard`) keeps its `*.vercel.app` address, and only the web project gets the public domain. Set:
+
+| Project | Variable | Value |
+| :--- | :--- | :--- |
+| web | `DASHBOARD_ORIGIN` | the dashboard project's own URL |
+| web | `NEXT_PUBLIC_DASHBOARD_URL` | the public domain |
+| dashboard | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_LANDING_URL` | the public domain |
+
+Add a new dashboard path to `DASHBOARD_PATHS` in `apps/web/next.config.ts`. Between zones use `<a>`, not `<Link>`.
