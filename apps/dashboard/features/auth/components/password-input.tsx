@@ -35,7 +35,7 @@ export function PasswordInput({
         autoComplete={autoComplete}
         placeholder={placeholder}
         required
-        minLength={6}
+        minLength={autoComplete === "new-password" ? 8 : undefined}
         maxLength={128}
         disabled={disabled}
       />

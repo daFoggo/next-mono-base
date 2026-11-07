@@ -1,21 +1,25 @@
 # Providers: Neon, Supabase, Keycloak, or FastAPI OAuth2
 
-`apps/dashboard` is built to run on one of four **stacks**, chosen by a single env var. Pages, queries, actions, cache,
+`apps/dashboard` is built to run on one of four **stacks** (plus a `demo` login with no identity provider), chosen by a single env var. Pages, queries, actions, cache,
 components and the DAL do not know which one is active.
 
 | `AUTH_PROVIDER` | Identity | Data and business rules | Schema lives in |
 | :--- | :--- | :--- | :--- |
-| `neon-auth` | Neon Auth (managed Better Auth), proxied at `/api/auth/*` | Neon Postgres via Drizzle (`DATA_PROVIDER=neon`) | `packages/db/neon/migrations` (drizzle-kit) |
+| `neon-auth` | Neon Auth (managed Better Auth), proxied at `/api/auth/*` | Neon Postgres via Drizzle (`DATABASE_URL` required) | `packages/db/neon/migrations` (drizzle-kit) |
 | `supabase` | Supabase Auth (GoTrue), ES256 JWT, cookies via `@supabase/ssr` | PostgREST + RLS + SQL functions through `createDataClient` | `packages/db/supabase/migrations` (Supabase CLI) |
-| `keycloak` | Standalone Keycloak 26 OIDC server, RS256 JWT | FastAPI or PostgREST through `Session.accessToken` (Bearer) | Realm export in `d:\Dev_Projects\keycloak-idp\realms` |
+| `keycloak` | Standalone Keycloak 26 OIDC server, RS256 JWT | FastAPI or PostgREST through `Session.accessToken` (Bearer) | The realm export of your Keycloak server |
+| `demo` | None: only the signed demo cookie (`DEMO_AUTH_SECRET`, 32+ chars), role `customer`, one random id per visitor | Bounded in-memory store | Nothing |
 | `fastapi-oauth` | `your FastAPI backend` is the IdP itself (OAuth2 password flow), HS256 JWT | Same FastAPI backend, same request (`Session.accessToken`) | `your FastAPI backend/migrations` (Alembic, `users` table) |
 
-## 0. Two axes: identity and data
+## 0. One axis: the stack
 
-`AUTH_PROVIDER` picks who signs users in. `DATA_PROVIDER` (`mock` | `neon`, default `mock`) picks where feature data
-lives; `lib/env.ts` rejects `DATA_PROVIDER=neon` with an `AUTH_PROVIDER` other than `neon-auth` (each data path pairs with its own identity), or
-without `DATABASE_URL`. Feature `server.ts` files select the implementation (`server.mock.ts` / `server.neon.ts`,
-the latter type-checked against the former). Today only `features/workspace` has a Neon path.
+`AUTH_PROVIDER` picks the whole stack, identity and data together. There is no separate data switch, so a demo cookie can never
+reach a real database and an identity can never meet another app's data. `neon-auth` uses Neon Postgres (`lib/env.ts` refuses to
+start at runtime without `DATABASE_URL`; `next build` does not need it); `demo` uses the bounded in-memory store. `supabase`,
+`keycloak` and `fastapi-oauth` have no data path in the dashboard yet: they fall back to the in-memory store and log a warning on
+start (data is lost on restart) until you write theirs (§2.2, §8). Feature `server.ts` files select the implementation from
+`AUTH_PROVIDER` (`server.mock.ts` / `server.neon.ts`, the latter type-checked against the former). Today only `features/workspace`
+has a Neon path.
 
 Neon (Postgres) with Drizzle, in `packages/db`:
 - `@workspace/db/neon` (`getDb()`, `node-postgres` pool over the pooled `DATABASE_URL`) and `@workspace/db/neon/schema`
@@ -41,8 +45,8 @@ stays in the base (§1) so a new project can start on Supabase without setup wor
 commit `91c11f0` as a complete reference (§2.3). With today's code, `AUTH_PROVIDER=supabase` signs users in but feature
 data still goes to FastAPI, which does not know Supabase users: it is not runnable end-to-end until §2.2 or §2.3 is done.
 
-Not supported on purpose (each would double the test matrix): switching at runtime, a generic repository layer, mixing an
-identity with the other data path without the backend work in §8.
+Not supported on purpose (each would double the test matrix): switching at runtime, a generic repository layer, a second
+data switch next to `AUTH_PROVIDER`, mixing an identity with another data path without the backend work in §8.
 
 ## 1. The Supabase foundation (kept in the base)
 
@@ -63,7 +67,7 @@ Paths relative to `apps/dashboard/`.
 ## 2. Running each stack
 
 ### 2.1 Neon (Neon Auth + Neon Postgres)
-1. `pnpm neon:env` (root) pulls the Neon variables into `apps/dashboard/.env.local`; add `NEON_AUTH_COOKIE_SECRET` (32+ chars) and `DATA_PROVIDER=neon`.
+1. `pnpm neon:env` (root) pulls the Neon variables into `apps/dashboard/.env.local`; add `NEON_AUTH_COOKIE_SECRET` (32+ chars).
 2. `pnpm --filter @workspace/db neon:migrate`.
 3. `pnpm --filter dashboard dev`.
 

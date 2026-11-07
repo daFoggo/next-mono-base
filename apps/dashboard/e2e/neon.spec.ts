@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto"
 import { expect, test, type Page } from "@playwright/test"
 
 /**
- * Two users on a real stack (`AUTH_PROVIDER=neon-auth`, `DATA_PROVIDER=neon`), run against a
+ * Two users on a real stack (`AUTH_PROVIDER=neon-auth`), run against a
  * disposable Neon branch: sign up, own data, sign out, tenant isolation. Skipped unless `E2E_NEON=1`.
  * Users and orgs it creates are left in that branch (delete the branch, or run it against `ci-test`).
  */

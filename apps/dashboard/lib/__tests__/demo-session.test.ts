@@ -33,7 +33,7 @@ async function signed(claims: unknown, secret = SECRET) {
 
 describe("demo session", () => {
   beforeEach(() => {
-    vi.stubEnv("DEMO_AUTH", "true")
+    vi.stubEnv("AUTH_PROVIDER", "demo")
     vi.stubEnv("DEMO_AUTH_SECRET", SECRET)
   })
   afterEach(() => {
@@ -43,7 +43,10 @@ describe("demo session", () => {
 
   it("round-trips a valid token", async () => {
     const claims = await verifyDemoToken(await createDemoToken(SECRET), SECRET)
-    expect(claims).toMatchObject({ sub: "demo-student", role: "customer" })
+    expect(claims).toMatchObject({ role: "customer" })
+    expect(claims?.sub).toMatch(/^demo-[0-9a-f-]{36}$/)
+    const other = await verifyDemoToken(await createDemoToken(SECRET), SECRET)
+    expect(other?.sub).not.toBe(claims?.sub)
   })
 
   it("rejects a tampered payload", async () => {
@@ -88,23 +91,26 @@ describe("demo session", () => {
     ).toBeNull()
   })
 
-  it("is off unless DEMO_AUTH is true with a 32+ char secret", async () => {
+  it("is off under any other provider, even with a valid cookie and secret", async () => {
     const token = await createDemoToken(SECRET)
-    vi.stubEnv("DEMO_AUTH", "false")
-    expect(demoAuthSecret()).toBeNull()
-    expect(await readDemoSession(token)).toBeNull()
-    vi.stubEnv("DEMO_AUTH", "")
-    expect(demoAuthSecret()).toBeNull()
-    vi.stubEnv("DEMO_AUTH", "true")
+    for (const provider of ["neon-auth", "supabase", "keycloak", ""]) {
+      vi.stubEnv("AUTH_PROVIDER", provider)
+      expect(demoAuthSecret()).toBeNull()
+      expect(await readDemoSession(token)).toBeNull()
+    }
+  })
+
+  it("is off without a 32+ char secret", async () => {
+    const token = await createDemoToken(SECRET)
     vi.stubEnv("DEMO_AUTH_SECRET", "short")
     expect(demoAuthSecret()).toBeNull()
     expect(await readDemoSession(token)).toBeNull()
+    vi.stubEnv("DEMO_AUTH_SECRET", "")
+    expect(demoAuthSecret()).toBeNull()
   })
 
-  it("works in production when DEMO_AUTH is explicitly true with a valid secret", () => {
+  it("works in production under AUTH_PROVIDER=demo with a valid secret", () => {
     vi.stubEnv("NODE_ENV", "production")
-    vi.stubEnv("DEMO_AUTH", "true")
-    vi.stubEnv("DEMO_AUTH_SECRET", SECRET)
     expect(demoAuthSecret()).toBe(SECRET)
   })
 

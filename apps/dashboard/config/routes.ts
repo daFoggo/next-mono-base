@@ -1,7 +1,6 @@
 /** Path prefixes that require a session (optimistic check in `proxy.ts`). */
 export const PROTECTED_PREFIXES = ["/dashboard", "/org", "/project"] as const
 
-export const HOME_PATH = "/"
 export const SIGN_IN_PATH = "/sign-in"
 export const SIGN_UP_PATH = "/sign-up"
 /** Pages a signed-in user is redirected away from (optimistic check in `proxy.ts`). */

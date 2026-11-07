@@ -4,10 +4,10 @@ import { useEffect } from "react"
 
 export default function GlobalError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string }
-  reset: () => void
+  retry: () => void
 }) {
   useEffect(() => {
     console.error(error)
@@ -28,8 +28,8 @@ export default function GlobalError({
           gap: "1rem",
           padding: "1.5rem",
           textAlign: "center",
-          background: "rgb(250, 250, 250)",
-          color: "rgb(24, 24, 27)",
+          background: "Canvas",
+          color: "CanvasText",
         }}
       >
         <h1 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>
@@ -47,15 +47,15 @@ export default function GlobalError({
         </p>
         <button
           type="button"
-          onClick={() => reset()}
+          onClick={() => retry()}
           style={{
             cursor: "pointer",
             borderRadius: "0.375rem",
             padding: "0.5rem 1rem",
             fontSize: "0.875rem",
             fontWeight: 500,
-            background: "rgb(24, 24, 27)",
-            color: "rgb(255, 255, 255)",
+            background: "CanvasText",
+            color: "Canvas",
             border: "none",
           }}
         >

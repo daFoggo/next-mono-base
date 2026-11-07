@@ -3,8 +3,12 @@ import "server-only"
 import { ApiError } from "@/lib/errors"
 
 import {
+  MAX_ORGS_PER_OWNER,
+  MAX_PROJECTS_PER_ORG,
   OrgSchema,
   ProjectSchema,
+  SLUG_ATTEMPTS,
+  slugCandidate,
   slugify,
   type CreateOrgInput,
   type CreateProjectInput,
@@ -26,7 +30,13 @@ const SEED: Db = {
   orgs: [
     { slug: "acme", name: "Acme Inc", plan: "Pro", members: 8, ownerId: "*" },
     { slug: "globex", name: "Globex", plan: "Free", members: 3, ownerId: "*" },
-    { slug: "initech", name: "Initech", plan: "Team", members: 14, ownerId: "*" },
+    {
+      slug: "initech",
+      name: "Initech",
+      plan: "Team",
+      members: 14,
+      ownerId: "*",
+    },
   ],
   projects: [
     {
@@ -96,6 +106,35 @@ const SEED: Db = {
   ],
 }
 
+/** The store lives in process memory and the demo login is public: bound its total size. */
+const MAX_MOCK_ROWS = 500
+const SEED_ORG_SLUGS = new Set(SEED.orgs.map((org) => org.slug))
+const SEED_PROJECT_REFS = new Set(SEED.projects.map((project) => project.ref))
+
+/** Full store: drop the oldest visitor-created org (with its projects) instead of refusing everyone. */
+function makeRoomForOrg() {
+  const index = db.orgs.findIndex((org) => !SEED_ORG_SLUGS.has(org.slug))
+  if (index < 0)
+    throw new ApiError(429, "Demo storage is full, try again later")
+  const [gone] = db.orgs.splice(index, 1)
+  db.projects = db.projects.filter((p) => p.orgSlug !== gone?.slug)
+}
+
+function makeRoomForProject() {
+  const index = db.projects.findIndex((p) => !SEED_PROJECT_REFS.has(p.ref))
+  if (index < 0)
+    throw new ApiError(429, "Demo storage is full, try again later")
+  db.projects.splice(index, 1)
+}
+
+function freeSlug(base: string, taken: (slug: string) => boolean): string {
+  for (let attempt = 0; attempt < SLUG_ATTEMPTS; attempt++) {
+    const slug = slugCandidate(base, attempt)
+    if (!taken(slug)) return slug
+  }
+  throw new ApiError(409, "Could not pick a free name, please try again")
+}
+
 // On globalThis so dev hot reloads keep what was created.
 const globalForDb = globalThis as { __workspaceMock?: Db }
 const db = (globalForDb.__workspaceMock ??= structuredClone(SEED))
@@ -110,7 +149,9 @@ export async function fetchOrgs(viewerId: string): Promise<Org[]> {
 export async function fetchProjects(viewerId: string): Promise<Project[]> {
   const visibleOrgSlugs = new Set(
     db.orgs
-      .filter((org) => !org.ownerId || org.ownerId === "*" || org.ownerId === viewerId)
+      .filter(
+        (org) => !org.ownerId || org.ownerId === "*" || org.ownerId === viewerId
+      )
       .map((org) => org.slug)
   )
   const visible = db.projects.filter((p) => visibleOrgSlugs.has(p.orgSlug))
@@ -121,12 +162,18 @@ export async function insertOrg(
   viewerId: string,
   input: CreateOrgInput
 ): Promise<Org> {
-  const slug = slugify(input.name)
-  if (slug.length < 3)
+  const base = slugify(input.name)
+  if (base.length < 3)
     throw new ApiError(422, "Use letters or numbers in the name")
-  if (db.orgs.some((org) => org.slug === slug)) {
-    throw new ApiError(409, "An organization with this name already exists")
+  if (db.orgs.length >= MAX_MOCK_ROWS) makeRoomForOrg()
+  const owned = db.orgs.filter((org) => org.ownerId === viewerId).length
+  if (owned >= MAX_ORGS_PER_OWNER) {
+    throw new ApiError(
+      429,
+      `You can own at most ${MAX_ORGS_PER_OWNER} organizations`
+    )
   }
+  const slug = freeSlug(base, (s) => db.orgs.some((org) => org.slug === s))
   const org = OrgSchema.parse({
     slug,
     name: input.name,
@@ -159,12 +206,18 @@ export async function insertProject(
     )
   }
 
-  const ref = slugify(input.name)
-  if (ref.length < 3)
+  const base = slugify(input.name)
+  if (base.length < 3)
     throw new ApiError(422, "Use letters or numbers in the name")
-  if (db.projects.some((project) => project.ref === ref)) {
-    throw new ApiError(409, "A project with this name already exists")
+  if (db.projects.length >= MAX_MOCK_ROWS) makeRoomForProject()
+  const existing = db.projects.filter((p) => p.orgSlug === orgSlug).length
+  if (existing >= MAX_PROJECTS_PER_ORG) {
+    throw new ApiError(
+      429,
+      `An organization can hold at most ${MAX_PROJECTS_PER_ORG} projects`
+    )
   }
+  const ref = freeSlug(base, (r) => db.projects.some((p) => p.ref === r))
   const project = ProjectSchema.parse({
     ref,
     name: input.name,

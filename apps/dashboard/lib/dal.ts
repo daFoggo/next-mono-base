@@ -50,6 +50,7 @@ export const requirePermission = cache(
 /**
  * For sensitive actions (change password, delete account, payments): also confirms with
  * the identity system that the session was not revoked. Costs a network round trip.
+ * Call it from a Server Action or Route Handler: some providers rotate the session cookies here.
  */
 export const verifySessionFresh = cache(async (): Promise<Session> => {
   const provider = await getAuthProvider()

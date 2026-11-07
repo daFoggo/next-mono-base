@@ -1,6 +1,6 @@
 import "server-only"
 
-import { eq, inArray } from "drizzle-orm"
+import { count, eq, inArray } from "drizzle-orm"
 
 import { getDb } from "@workspace/db/neon"
 import { orgs, projects } from "@workspace/db/neon/schema"
@@ -8,8 +8,12 @@ import { orgs, projects } from "@workspace/db/neon/schema"
 import { ApiError } from "@/lib/errors"
 
 import {
+  MAX_ORGS_PER_OWNER,
+  MAX_PROJECTS_PER_ORG,
   OrgSchema,
   ProjectSchema,
+  SLUG_ATTEMPTS,
+  slugCandidate,
   slugify,
   type CreateOrgInput,
   type CreateProjectInput,
@@ -19,7 +23,7 @@ import {
 import type * as Mock from "./server.mock"
 
 /**
- * `DATA_PROVIDER=neon`: Drizzle over Neon Postgres. Same signatures and DTOs as `server.mock.ts`
+ * `AUTH_PROVIDER=neon-auth`: Drizzle over Neon Postgres. Same signatures and DTOs as `server.mock.ts`
  * (`satisfies` below makes `tsc` fail when they drift). Tenant boundary: every query filters by
  * `viewerId` (the identity provider's user id); a request for another user's org looks like a missing one.
  */
@@ -27,7 +31,9 @@ const UNIQUE_VIOLATION = "23505"
 
 function isUniqueViolation(error: unknown) {
   const cause = (error as { cause?: { code?: string } })?.cause
-  return (cause?.code ?? (error as { code?: string })?.code) === UNIQUE_VIOLATION
+  return (
+    (cause?.code ?? (error as { code?: string })?.code) === UNIQUE_VIOLATION
+  )
 }
 
 export async function fetchOrgs(viewerId: string): Promise<Org[]> {
@@ -57,21 +63,37 @@ export async function insertOrg(
   viewerId: string,
   input: CreateOrgInput
 ): Promise<Org> {
-  const slug = slugify(input.name)
-  if (slug.length < 3)
+  const base = slugify(input.name)
+  if (base.length < 3)
     throw new ApiError(422, "Use letters or numbers in the name")
-  try {
-    const [row] = await getDb()
-      .insert(orgs)
-      .values({ slug, name: input.name, ownerId: viewerId })
-      .returning()
-    return OrgSchema.parse(row)
-  } catch (error) {
-    if (isUniqueViolation(error)) {
-      throw new ApiError(409, "An organization with this name already exists")
-    }
-    throw error
+  const db = getDb()
+  // shortcut: count-then-insert can overshoot the cap under concurrent requests, upgrade to a DB constraint if it matters.
+  const [ownedRow] = await db
+    .select({ owned: count() })
+    .from(orgs)
+    .where(eq(orgs.ownerId, viewerId))
+  if ((ownedRow?.owned ?? 0) >= MAX_ORGS_PER_OWNER) {
+    throw new ApiError(
+      429,
+      `You can own at most ${MAX_ORGS_PER_OWNER} organizations`
+    )
   }
+  for (let attempt = 0; attempt < SLUG_ATTEMPTS; attempt++) {
+    try {
+      const [row] = await db
+        .insert(orgs)
+        .values({
+          slug: slugCandidate(base, attempt),
+          name: input.name,
+          ownerId: viewerId,
+        })
+        .returning()
+      return OrgSchema.parse(row)
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error
+    }
+  }
+  throw new ApiError(409, "Could not pick a free name, please try again")
 }
 
 export async function insertProject(
@@ -92,21 +114,36 @@ export async function insertProject(
     )
   }
 
-  const ref = slugify(input.name)
-  if (ref.length < 3)
+  const base = slugify(input.name)
+  if (base.length < 3)
     throw new ApiError(422, "Use letters or numbers in the name")
-  try {
-    const [row] = await db
-      .insert(projects)
-      .values({ ref, name: input.name, orgSlug, region: input.region })
-      .returning()
-    return ProjectSchema.parse(row)
-  } catch (error) {
-    if (isUniqueViolation(error)) {
-      throw new ApiError(409, "A project with this name already exists")
-    }
-    throw error
+  const [existingRow] = await db
+    .select({ existing: count() })
+    .from(projects)
+    .where(eq(projects.orgSlug, orgSlug))
+  if ((existingRow?.existing ?? 0) >= MAX_PROJECTS_PER_ORG) {
+    throw new ApiError(
+      429,
+      `An organization can hold at most ${MAX_PROJECTS_PER_ORG} projects`
+    )
   }
+  for (let attempt = 0; attempt < SLUG_ATTEMPTS; attempt++) {
+    try {
+      const [row] = await db
+        .insert(projects)
+        .values({
+          ref: slugCandidate(base, attempt),
+          name: input.name,
+          orgSlug,
+          region: input.region,
+        })
+        .returning()
+      return ProjectSchema.parse(row)
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error
+    }
+  }
+  throw new ApiError(409, "Could not pick a free name, please try again")
 }
 
 // Compile-time parity with the mock (the reference signatures).

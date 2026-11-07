@@ -22,7 +22,6 @@
       ],
       "env": [
         "AUTH_PROVIDER",
-        "DATA_PROVIDER",
         "API_BASE_URL",
         "DATABASE_URL",
         "DATABASE_URL_UNPOOLED",
@@ -33,7 +32,6 @@
         "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "EXPOSE_TESTING_API",
-        "DEMO_AUTH",
         "DEMO_AUTH_SECRET",
         "KEYCLOAK_ISSUER",
         "KEYCLOAK_CLIENT_ID",
@@ -75,7 +73,8 @@
     "test:e2e": {
       "cache": false,
       "env": [
-        "E2E_NEON"
+        "E2E_NEON",
+        "AUTH_PROVIDER"
       ]
     }
   }

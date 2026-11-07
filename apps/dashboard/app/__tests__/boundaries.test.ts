@@ -6,6 +6,7 @@ import RootError from "../error"
 import AuthError from "../(auth)/error"
 import NotFound from "../not-found"
 import GlobalError from "../global-error"
+import { publicEnv } from "@/lib/env.public"
 
 describe("boundaries", () => {
   it("root error renders English copy and retry button", () => {
@@ -33,14 +34,14 @@ describe("boundaries", () => {
   it("not-found renders English copy and links home", () => {
     const html = renderToStaticMarkup(createElement(NotFound))
     expect(html).toContain("Page not found")
-    expect(html).toContain('href="/"')
+    expect(html).toContain(`href="${publicEnv.NEXT_PUBLIC_LANDING_URL}"`)
   })
 
   it("global error renders English copy, lang=en, and retry button", () => {
     const html = renderToStaticMarkup(
       createElement(GlobalError, {
         error: new Error("test"),
-        reset: () => {},
+        retry: () => {},
       })
     )
     expect(html).toContain('lang="en"')

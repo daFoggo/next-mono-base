@@ -50,7 +50,7 @@ function contentSecurityPolicy(): string {
 // Turbopack compiles workspace packages (e.g. @workspace/ui) automatically,
 // so `transpilePackages` is not needed here.
 const nextConfig: NextConfig = {
-  // Multi-zone (docs/deployment): apps/web serves this app under its own domain, so its assets need their own prefix.
+  // Multi-zone: apps/web serves this app under its own domain (rewrites in apps/web/next.config.ts), so its assets need their own prefix.
   assetPrefix: "/dashboard-static",
   // Recommended for all new apps from Next.js 16.4 (default in create-next-app).
   cacheComponents: true,

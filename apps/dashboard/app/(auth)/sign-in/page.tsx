@@ -76,7 +76,7 @@ export default function SignInPage({
               hasDemo ? (
                 <DemoSignInButton action={demoSignInAction} />
               ) : (
-                <FormError message="Demo login is not configured (set DEMO_AUTH and DEMO_AUTH_SECRET)." />
+                <FormError message="Demo login is not configured (set DEMO_AUTH_SECRET to 32+ characters)." />
               )
             ) : (
               <>
@@ -84,11 +84,9 @@ export default function SignInPage({
                 <SocialAuthButtons
                   activeProvider={activeProvider}
                   mode="sign-in"
-                  hasDemo={hasDemo}
                   googleEnabled={isGoogleEnabled()}
                   keycloakAction={signInWithKeycloakAction}
                   googleAction={signInWithGoogleAction}
-                  demoAction={demoSignInAction}
                 />
               </>
             )}

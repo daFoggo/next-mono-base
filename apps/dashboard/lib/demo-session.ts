@@ -8,8 +8,9 @@ type DemoClaims = { sub: string; role: "customer"; exp: number }
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
+/** The signing secret, only when this deployment IS the demo provider: under any other provider the cookie is ignored. */
 export function demoAuthSecret(): string | null {
-  if (process.env.DEMO_AUTH !== "true") return null
+  if (process.env.AUTH_PROVIDER !== "demo") return null
   const secret = process.env.DEMO_AUTH_SECRET
   return secret && secret.length >= MIN_SECRET_LENGTH ? secret : null
 }
@@ -40,7 +41,8 @@ function importKey(secret: string, usage: "sign" | "verify") {
 
 export async function createDemoToken(secret: string): Promise<string> {
   const claims: DemoClaims = {
-    sub: "demo-student",
+    // One id per visitor: a shared id would show every demo user the same workspace.
+    sub: `demo-${crypto.randomUUID()}`,
     role: "customer",
     exp: Math.floor(Date.now() / 1000) + DEMO_TTL_SECONDS,
   }

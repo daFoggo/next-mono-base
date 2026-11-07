@@ -5,7 +5,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes"
 
 import { AnimateUIProvider } from "@workspace/ui/provider"
 
-/** Light first (a furniture store reads on white); dark is complete and follows the system. */
+/** Dark by default (docs/design-system.md); light and the system setting stay available. */
 function ThemeProvider({
   children,
   ...props
@@ -13,7 +13,7 @@ function ThemeProvider({
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="light"
+      defaultTheme="dark"
       enableSystem
       disableTransitionOnChange
       {...props}

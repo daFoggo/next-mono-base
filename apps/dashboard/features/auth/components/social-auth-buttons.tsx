@@ -1,46 +1,28 @@
 "use client"
 
-import {
-  IconBrandGoogle,
-  IconShieldLock,
-  IconSparkles,
-} from "@tabler/icons-react"
-import { useActionState } from "react"
+import { IconBrandGoogle, IconShieldLock } from "@tabler/icons-react"
 
 import { Button } from "@workspace/ui/components/button"
-import { Spinner } from "@workspace/ui/components/spinner"
 import { toast } from "@workspace/ui/components/toast"
 
 type SocialAuthButtonsProps = {
   activeProvider:
     "demo" | "neon-auth" | "supabase" | "keycloak" | "fastapi-oauth"
   mode?: "sign-in" | "sign-up"
-  hasDemo?: boolean
   googleEnabled?: boolean
   keycloakAction: () => Promise<void>
   googleAction?: () => Promise<void>
-  demoAction?: (
-    _previous: { error?: string },
-    _formData: FormData
-  ) => Promise<{ error?: string }>
 }
 
 export function SocialAuthButtons({
   activeProvider,
   mode = "sign-in",
-  hasDemo = false,
   googleEnabled = false,
   keycloakAction,
   googleAction,
-  demoAction,
 }: SocialAuthButtonsProps) {
   const isKeycloakActive = activeProvider === "keycloak"
   const isGoogleActive = googleEnabled
-
-  const [_demoState, demoFormAction, demoPending] = useActionState(
-    demoAction ?? (async () => ({})),
-    {}
-  )
 
   const handleKeycloakClick = () => {
     if (!isKeycloakActive) {
@@ -136,27 +118,6 @@ export function SocialAuthButtons({
             <span className="truncate">Google</span>
           </Button>
         )}
-
-        {/* Demo Sign-in Button */}
-        {hasDemo && demoAction ? (
-          <form action={demoFormAction} className="flex-1">
-            <Button
-              type="submit"
-              variant="secondary"
-              size="default"
-              className="w-full gap-2 text-xs sm:text-sm"
-              disabled={demoPending}
-              title="Demo sign in (instant access)"
-            >
-              {demoPending ? (
-                <Spinner className="size-4 shrink-0" />
-              ) : (
-                <IconSparkles className="size-4 shrink-0" />
-              )}
-              <span className="truncate">Demo</span>
-            </Button>
-          </form>
-        ) : null}
       </div>
     </div>
   )

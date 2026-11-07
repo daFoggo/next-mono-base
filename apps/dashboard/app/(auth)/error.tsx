@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect } from "react"
-import Link from "next/link"
-
 import { Button } from "@workspace/ui/components/button"
+
+import { publicEnv } from "@/lib/env.public"
 
 export default function AuthError({
   error,
@@ -31,7 +31,7 @@ export default function AuthError({
         <Button
           size="lg"
           variant="outline"
-          render={<Link href="/" />}
+          render={<a href={publicEnv.NEXT_PUBLIC_LANDING_URL} />}
           nativeButton={false}
         >
           Back to home

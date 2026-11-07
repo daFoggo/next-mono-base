@@ -6,13 +6,11 @@ import { SocialAuthButtons } from "@/features/auth/components/social-auth-button
 
 import { SIGN_IN_PATH } from "@/config/routes"
 import {
-  demoSignInAction,
   signUpAction,
   signInWithGoogleAction,
   signUpWithKeycloakAction,
 } from "@/features/auth/actions"
 import { getActiveAuthProvider, isGoogleEnabled } from "@/lib/auth"
-import { demoAuthSecret } from "@/lib/demo-session"
 
 import {
   AuthAside,
@@ -30,7 +28,6 @@ export const metadata: Metadata = { title: "Sign up" }
 export default function SignUpPage() {
   const activeProvider = getActiveAuthProvider()
   if (activeProvider === "demo") redirect(SIGN_IN_PATH)
-  const hasDemo = demoAuthSecret() !== null
 
   return (
     <>
@@ -56,11 +53,9 @@ export default function SignUpPage() {
             <SocialAuthButtons
               activeProvider={activeProvider}
               mode="sign-up"
-              hasDemo={hasDemo}
               googleEnabled={isGoogleEnabled()}
               keycloakAction={signUpWithKeycloakAction}
               googleAction={signInWithGoogleAction}
-              demoAction={demoSignInAction}
             />
           </div>
         </AuthBody>

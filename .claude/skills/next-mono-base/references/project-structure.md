@@ -13,7 +13,7 @@ Use when creating new files, adding pages/features, structuring components, or d
 | **Page-Only UI** | `apps/dashboard/app/**/_components/` | Sub-components used exclusively on that single page (Next.js ignores `_` folders). |
 | **Domain Feature** | `apps/dashboard/features/<name>/` | Vertical domain slice (UI, queries, actions, schemas). Route-agnostic. |
 | **Cross-Feature UI (Generic)** | `packages/ui/src/components/` | Primitive shadcn/ui components (`@workspace/ui`). Generic, no business logic. |
-| **Cross-Feature UI (App-Shared)**| `apps/dashboard/components/shared/` | Presentational UI used across features (empty-state, confirm-dialog). Pure props only. |
+| **Cross-Feature UI (App-Shared)**| `apps/dashboard/components/shared/` | Presentational UI used across features (copy-button, detail-sheet). Pure props only. |
 | **Cross-Feature UI (Domain)** | `features/<owner>/components/` | Owned by primary feature; compose in `app/` via props/slots (never cross-import). |
 | **App Shell / Layout** | `apps/dashboard/components/layout/` | Global Header, Sidebar, Nav, Shell. |
 | **Global Providers** | `apps/dashboard/components/providers/` | `ThemeProvider`, `Toaster`, client context providers. |

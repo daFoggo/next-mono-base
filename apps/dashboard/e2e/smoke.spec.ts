@@ -25,6 +25,7 @@ test.describe("Smoke", () => {
   })
 
   test("sign-in renders the form", async ({ page }) => {
+    test.skip(process.env.AUTH_PROVIDER === "demo", "demo shows only the demo button")
     const { errors } = watch(page)
     const response = await page.goto("/sign-in")
     expect(response?.status()).toBe(200)
@@ -36,6 +37,7 @@ test.describe("Smoke", () => {
   })
 
   test("sign-up renders the form", async ({ page }) => {
+    test.skip(process.env.AUTH_PROVIDER === "demo", "demo has no sign-up")
     const { errors } = watch(page)
     const response = await page.goto("/sign-up")
     expect(response?.status()).toBe(200)

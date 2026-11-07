@@ -37,6 +37,8 @@ import { cn } from "@workspace/ui/lib/utils"
  * a ref, with no React state and no transition, and commits to localStorage on release.
  */
 const DEFAULT_WIDTH = "42rem"
+// 42rem at the 16px root size, only for the separator's aria-valuenow while the width is the default.
+const DEFAULT_WIDTH_PX = 672
 const MIN_WIDTH = 384
 const KEY_STEP = 32
 const WIDTH_VAR = "--detail-sheet-width"
@@ -65,6 +67,7 @@ function writeWidth(storageKey: string, px: number | null) {
 
 const DetailSheetContext = createContext<{
   storageKey: string
+  width: number | null
   onWidthCommit: (px: number | null) => void
 } | null>(null)
 
@@ -89,7 +92,13 @@ export function DetailSheetContent({
     typeof window === "undefined" ? null : readWidth(storageKey)
   )
   return (
-    <DetailSheetContext value={{ storageKey, onWidthCommit: setCommittedWidth }}>
+    <DetailSheetContext
+      value={{
+        storageKey,
+        width: committedWidth,
+        onWidthCommit: setCommittedWidth,
+      }}
+    >
       <SheetContent
         showCloseButton={false}
         style={
@@ -113,9 +122,18 @@ export function DetailSheetContent({
 
 /** The grab area on the sheet's left edge. Drives the width of its parent, the sheet popup. */
 function DetailSheetResizeHandle() {
-  const { storageKey, onWidthCommit } = useDetailSheet()
+  const { storageKey, width: committedWidth, onWidthCommit } = useDetailSheet()
   const width = useRef<number | null>(null)
   const dragging = useRef(false)
+
+  function finish(element: HTMLElement) {
+    dragging.current = false
+    delete element.dataset.resizing
+    if (width.current !== null) {
+      writeWidth(storageKey, width.current)
+      onWidthCommit(width.current)
+    }
+  }
 
   function apply(element: HTMLElement, px: number) {
     width.current = clampWidth(px)
@@ -127,6 +145,9 @@ function DetailSheetResizeHandle() {
       role="separator"
       aria-orientation="vertical"
       aria-label="Resize sheet"
+      aria-valuenow={committedWidth ?? DEFAULT_WIDTH_PX}
+      aria-valuemin={MIN_WIDTH}
+      aria-valuemax={window.innerWidth - 64}
       tabIndex={0}
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId)
@@ -137,14 +158,8 @@ function DetailSheetResizeHandle() {
         if (dragging.current)
           apply(event.currentTarget, window.innerWidth - event.clientX)
       }}
-      onPointerUp={(event) => {
-        dragging.current = false
-        delete event.currentTarget.dataset.resizing
-        if (width.current !== null) {
-          writeWidth(storageKey, width.current)
-          onWidthCommit(width.current)
-        }
-      }}
+      onPointerUp={(event) => finish(event.currentTarget)}
+      onPointerCancel={(event) => finish(event.currentTarget)}
       onDoubleClick={(event) => {
         width.current = null
         event.currentTarget.parentElement?.style.setProperty(

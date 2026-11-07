@@ -28,7 +28,7 @@ The docs in `docs/` are the single source of truth for `apps/dashboard` (the das
 | Data fetching, caching, mutations, Server Actions | `docs/data-fetching.md` |
 | Routes, layouts, parallel and intercepting routes | `docs/routing-and-layouts.md` |
 | Client-only shared state (Zustand) | `docs/client-state.md` |
-| Auth, sessions, DAL, roles, per-app cookies, `packages/auth` + `packages/db` (`AUTH_PROVIDER=neon-auth\|supabase\|keycloak\|fastapi-oauth`, `DATA_PROVIDER=mock\|neon`; env template `apps/dashboard/.env.example`) | `docs/authentication.md` |
+| Auth, sessions, DAL, roles, per-app cookies, `packages/auth` + `packages/db` (`AUTH_PROVIDER=neon-auth\|demo\|supabase\|keycloak\|fastapi-oauth` picks identity and data together; env template `apps/dashboard/.env.example`) | `docs/authentication.md` |
 | Stacks: Neon Auth + Neon Postgres (default), Supabase, Keycloak or FastAPI OAuth2, starting a project on Neon or Supabase, provider seams, per-provider rules, latency | `docs/providers.md` |
 | Performance, code splitting, lazy loading, Core Web Vitals | `docs/performance-optimization.md` |
 | Redis cache, large uploads, SSE, telemetry, instant-navigation tests | `docs/advanced-patterns.md` |

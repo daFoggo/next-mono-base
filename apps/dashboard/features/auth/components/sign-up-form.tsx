@@ -71,7 +71,7 @@ export function SignUpForm({ action }: { action: FormAction<SignUpState> }) {
           placeholder="••••••••"
           disabled={pending}
         />
-        <p className="text-xs text-muted-foreground">At least 6 characters</p>
+        <p className="text-xs text-muted-foreground">At least 8 characters</p>
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="confirmPassword">Confirm password</Label>

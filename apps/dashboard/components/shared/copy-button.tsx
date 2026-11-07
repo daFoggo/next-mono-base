@@ -22,6 +22,7 @@ export function CopyButton({
   icon?: React.ComponentType<{ className?: string }>
 }) {
   const [copied, setCopied] = useState(false)
+  const [failed, setFailed] = useState(false)
   const staticContent = typeof value === "string" ? value : ""
 
   return (
@@ -32,20 +33,29 @@ export function CopyButton({
       copied={typeof value === "function" ? copied : undefined}
       onCopiedChange={setCopied}
       delay={1500}
-      aria-label={copied ? "Copied" : label}
+      aria-label={copied ? "Copied" : failed ? "Copy failed" : label}
       onClick={
         typeof value === "function"
           ? () => {
-              void navigator.clipboard.writeText(value()).then(() => {
-                setCopied(true)
-                setTimeout(() => setCopied(false), 1500)
-              })
+              void navigator.clipboard.writeText(value()).then(
+                () => {
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 1500)
+                },
+                // Blocked clipboard (insecure context, denied permission): say so.
+                () => {
+                  setFailed(true)
+                  setTimeout(() => setFailed(false), 1500)
+                }
+              )
             }
           : undefined
       }
     >
       <CopyButtonIcon icon={<Icon />} copiedIcon={<IconCheck />} />
-      <span className="sr-only">{copied ? "Copied" : label}</span>
+      <span className="sr-only" role="status">
+        {copied ? "Copied" : failed ? "Copy failed" : label}
+      </span>
     </AnimateCopyButton>
   )
 }

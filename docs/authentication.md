@@ -6,11 +6,12 @@ Applies to Next.js 16.4 with Cache Components enabled.
 
 ## 1. Overview
 
-One provider per deployment, chosen by `AUTH_PROVIDER`; it also picks the data path (the whole "stack", see
-[providers.md](providers.md) for switching and the seams):
+One provider per deployment, chosen by `AUTH_PROVIDER`; it also picks the data path (the whole "stack": there is no separate
+data variable, see [providers.md](providers.md) for the seams):
 
 | Provider | Description | Session lives in |
 |---|---|---|
+| `demo` | No identity provider: only the signed demo cookie (`DEMO_AUTH_SECRET`, 32+ chars; the cookie is ignored under any other provider); role is always `customer`, and every visitor gets its own random id. Data is the bounded in-memory store (public demos) | `nmb-web-demo` signed `httpOnly` cookie, 2 h |
 | `neon-auth` | Neon Auth (managed Better Auth hosted by Neon); the app proxies `/api/auth/*` and verifies sessions through the SDK | Signed session cookie kept by `@neon/auth` (`__Secure-neon-auth.*`) |
 | `supabase` | Supabase Auth via `@supabase/ssr`; ES256 JWT checked locally with `getClaims()`; data through PostgREST + RLS | `sb-<ref>-auth-token` cookies, refreshed only in `proxy.ts` |
 | `keycloak` | Keycloak 26 OIDC provider backed by PostgreSQL; RS256 JWT verified locally via JWKS | Split `httpOnly` cookies (`<name>.{access,refresh,id}`), refreshed only in `proxy.ts` |
@@ -18,7 +19,7 @@ One provider per deployment, chosen by `AUTH_PROVIDER`; it also picks the data p
 
 All implement `AuthProvider` and expose `Session { userId, accessToken, role, name, email, calendar? }`, so the DAL,
 Server Actions and data clients interact through a standard, decoupled contract. The base can run on `supabase`,
-`neon-auth`, `keycloak` or `fastapi-oauth` ([providers.md](providers.md)).
+`neon-auth`, `keycloak`, `fastapi-oauth` or `demo` ([providers.md](providers.md)).
 
 Principles:
 
@@ -68,7 +69,7 @@ Only the `keycloak` and `fastapi-oauth` stacks send a Bearer token to FastAPI. K
 ## Shared packages, per-app cookies and roles
 
 **Auth UI (`apps/dashboard/features/auth/components`).** The forms hold no logic, so they copy cleanly into another
-project: `SignInForm`, `SignUpForm`, `DemoSignInButton`, `OAuthButton`, `SignOutButton`, `SignOutMenuItem`,
+project: `SignInForm`, `SignUpForm`, `DemoSignInButton`, `SignOutMenuItem`,
 `PasswordInput` and `FormError` take the Server Action as an `action` prop (`<SignInForm action={signInAction} />`) and
 share the state types in `features/auth/types.ts`. `features/auth/actions.ts` owns the provider, cookie and redirects.
 Like Supabase (its sign-in form lives in `apps/dashboard/components/interfaces/SignIn`, not in a package), the forms stay
@@ -83,7 +84,8 @@ in the app that owns the login; they become a package only when a second app nee
 | `@workspace/auth/auth-handler` | `createAuthHandler()` for `app/api/auth/[...path]` |
 | `@workspace/auth/permissions` | `Role`, `hasPermission`, `parseRole`, `isStaff` |
 | `@workspace/auth/types`, `/schemas` | `Session`, `AuthProvider`, `AuthOptions`; `SignInSchema`, `SignUpSchema` |
-| `@workspace/db/{public,server,errors,format,types}` | Supabase clients (`createPublicClient` for `"use cache"`, `createDataClient(token)` for RLS as the user), `unwrap`, `DataError`, `formatVnd`, `slugify`, generated `Database` |
+| `@workspace/db/{public,server,errors,types}` | Supabase clients (`createPublicClient` for `"use cache"`, `createDataClient(token)` for RLS as the user), `unwrap`, `DataError`, generated `Database` |
+| `@workspace/db/neon`, `@workspace/db/neon/schema` | Drizzle client (`getDb()`) and tables for the `neon` data path |
 
 **One cookie per app.** `AuthOptions.cookieName` becomes the Supabase cookie name (`cookieOptions.name`) and the Better
 Auth cookie prefix (`advanced.cookiePrefix`). The dashboard uses `nmb-dashboard-auth`. A second app (a back office) would pick its own name:

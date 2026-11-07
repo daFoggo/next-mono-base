@@ -206,7 +206,7 @@ export function filterNav(
   }))
 }
 
-export function navLinks(sections: NavSection[]): NavLink[] {
+function navLinks(sections: NavSection[]): NavLink[] {
   return sections.flatMap((section) =>
     section.entries.flatMap((entry) =>
       "items" in entry ? entry.items : [entry]

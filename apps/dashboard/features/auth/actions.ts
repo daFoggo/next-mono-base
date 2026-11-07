@@ -105,46 +105,33 @@ export async function signUpAction(
   redirect(DASHBOARD_PATH)
 }
 
-export async function signInWithGoogleAction(): Promise<void> {
+/** Sends the browser to the identity provider; an expected provider error lands back on sign-in. */
+async function startOAuth(
+  name: "google" | "keycloak" | "keycloak-register"
+): Promise<void> {
   const provider = await getAuthProvider()
   let url: string | undefined
   try {
     url = await provider.oauth?.start(
-      "google",
+      name,
       `${publicEnv.NEXT_PUBLIC_APP_URL}${OAUTH_CALLBACK_PATH}`
     )
   } catch (error) {
     if (!provider.isExpectedError(error)) throw error
   }
   redirect(url ?? `${SIGN_IN_PATH}?error=oauth`)
+}
+
+export async function signInWithGoogleAction(): Promise<void> {
+  return startOAuth("google")
 }
 
 export async function signInWithKeycloakAction(): Promise<void> {
-  const provider = await getAuthProvider()
-  let url: string | undefined
-  try {
-    url = await provider.oauth?.start(
-      "keycloak",
-      `${publicEnv.NEXT_PUBLIC_APP_URL}${OAUTH_CALLBACK_PATH}`
-    )
-  } catch (error) {
-    if (!provider.isExpectedError(error)) throw error
-  }
-  redirect(url ?? `${SIGN_IN_PATH}?error=oauth`)
+  return startOAuth("keycloak")
 }
 
 export async function signUpWithKeycloakAction(): Promise<void> {
-  const provider = await getAuthProvider()
-  let url: string | undefined
-  try {
-    url = await provider.oauth?.start(
-      "keycloak-register",
-      `${publicEnv.NEXT_PUBLIC_APP_URL}${OAUTH_CALLBACK_PATH}`
-    )
-  } catch (error) {
-    if (!provider.isExpectedError(error)) throw error
-  }
-  redirect(url ?? `${SIGN_IN_PATH}?error=oauth`)
+  return startOAuth("keycloak-register")
 }
 
 export async function demoSignInAction(

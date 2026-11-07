@@ -14,6 +14,7 @@ describe.skipIf(!url)("neon backend (live)", () => {
   const run = randomUUID().slice(0, 8)
   const userA = randomUUID()
   const userB = randomUUID()
+  let theirsSlug = ""
   const orgName = `Neon Test ${run}`
   const orgSlug = `neon-test-${run}`
   let server: typeof import("../server.neon")
@@ -50,13 +51,14 @@ describe.skipIf(!url)("neon backend (live)", () => {
     ])
   })
 
-  it("rejects a duplicate slug with an expected 409, even from another user", async () => {
-    await expect(
-      server.insertOrg(userA, { name: orgName })
-    ).rejects.toMatchObject({ status: 409 })
-    await expect(
-      server.insertOrg(userB, { name: orgName })
-    ).rejects.toMatchObject({ status: 409 })
+  it("gives a taken name a suffixed slug instead of an error, for any user", async () => {
+    const mine = await server.insertOrg(userA, { name: orgName })
+    const theirs = await server.insertOrg(userB, { name: orgName })
+    theirsSlug = theirs.slug
+    for (const org of [mine, theirs]) {
+      expect(org.slug).toMatch(new RegExp(`^${orgSlug}-[a-z0-9]{4}$`))
+    }
+    expect(mine.slug).not.toBe(theirs.slug)
   })
 
   it("rejects names with no usable letters (422)", async () => {
@@ -65,7 +67,7 @@ describe.skipIf(!url)("neon backend (live)", () => {
     ).rejects.toMatchObject({ status: 422 })
   })
 
-  it("creates projects, lists them, and rejects a duplicate ref (409)", async () => {
+  it("creates projects, lists them, and suffixes a duplicate ref", async () => {
     const project = await server.insertProject(userA, orgSlug, {
       name: `Web ${run}`,
       region: "eu-west-1",
@@ -80,16 +82,17 @@ describe.skipIf(!url)("neon backend (live)", () => {
     expect((await server.fetchProjects(userA)).map((p) => p.ref)).toEqual([
       `web-${run}`,
     ])
-    await expect(
-      server.insertProject(userA, orgSlug, {
-        name: `Web ${run}`,
-        region: "us-east-1",
-      })
-    ).rejects.toMatchObject({ status: 409 })
+    const again = await server.insertProject(userA, orgSlug, {
+      name: `Web ${run}`,
+      region: "us-east-1",
+    })
+    expect(again.ref).toMatch(new RegExp(`^web-${run}-[a-z0-9]{4}$`))
   })
 
   it("is invisible and read-only to another user (tenant isolation)", async () => {
-    expect(await server.fetchOrgs(userB)).toEqual([])
+    expect((await server.fetchOrgs(userB)).map((o) => o.slug)).toEqual([
+      theirsSlug,
+    ])
     expect(await server.fetchProjects(userB)).toEqual([])
     await expect(
       server.insertProject(userB, orgSlug, {

@@ -3,7 +3,7 @@ import { IconArrowRight } from "@tabler/icons-react"
 
 import { buttonVariants } from "@workspace/ui/components/button-variants"
 
-import { HOME_PATH } from "@/config/routes"
+import { DASHBOARD_PATH } from "@/config/routes"
 
 /**
  * Rendered by `forbidden()` (403), e.g. from `requirePermission` in lib/dal.ts. It renders inside
@@ -12,7 +12,7 @@ import { HOME_PATH } from "@/config/routes"
 export default function Forbidden() {
   return (
     <div className="flex flex-col items-start gap-5">
-      <span className="text-xs font-semibold tracking-widest text-foreground uppercase">
+      <span className="text-xs font-medium tracking-widest text-foreground uppercase">
         403 · No access
       </span>
       <h1 className="text-5xl leading-tight font-normal tracking-tighter max-sm:text-4xl">
@@ -23,10 +23,10 @@ export default function Forbidden() {
         administrator if you think this is a mistake.
       </p>
       <Link
-        href={HOME_PATH}
+        href={DASHBOARD_PATH}
         className={buttonVariants({ size: "lg", className: "group" })}
       >
-        Back to home
+        Back to dashboard
         <IconArrowRight
           data-icon="inline-end"
           aria-hidden

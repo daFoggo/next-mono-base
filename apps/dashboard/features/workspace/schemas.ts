@@ -47,6 +47,21 @@ export const CreateProjectSchema = z.object({
 export type CreateOrgInput = z.infer<typeof CreateOrgSchema>
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>
 
+/** Per-owner / per-org caps: nothing else stops one account from filling the table. */
+export const MAX_ORGS_PER_OWNER = 20
+export const MAX_PROJECTS_PER_ORG = 50
+
+/**
+ * Slugs are global keys, so a taken name must not block another tenant's: retry with a short
+ * suffix instead of failing. Attempt 0 is the plain slug; the base is trimmed so the result stays valid.
+ */
+export const SLUG_ATTEMPTS = 4
+export function slugCandidate(slug: string, attempt: number): string {
+  if (attempt === 0) return slug
+  const suffix = Math.random().toString(36).slice(2, 6).padEnd(4, "0")
+  return `${slug.slice(0, 43).replace(/-+$/, "")}-${suffix}`
+}
+
 /** "Internal tools!" becomes "internal-tools". */
 export function slugify(name: string): string {
   return name

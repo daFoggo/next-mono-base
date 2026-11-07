@@ -1,6 +1,6 @@
-import Link from "next/link"
-
 import { Button } from "@workspace/ui/components/button"
+
+import { publicEnv } from "@/lib/env.public"
 
 export default function NotFound() {
   return (
@@ -11,7 +11,7 @@ export default function NotFound() {
       <p className="text-muted-foreground">
         The page you are looking for does not exist or has moved.
       </p>
-      <Button size="lg" render={<Link href="/" />} nativeButton={false}>
+      <Button size="lg" render={<a href={publicEnv.NEXT_PUBLIC_LANDING_URL} />} nativeButton={false}>
         Back to home
       </Button>
     </main>
