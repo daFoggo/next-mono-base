@@ -55,7 +55,7 @@ export function TraceSheet() {
           <DetailSheetSplit>
             <DetailSheetList>
               <DetailSheetPaneHeader>
-                <span className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
+                <span className="text-sm text-muted-foreground">
                   Spans ({flattenSpans(TRACE).length})
                 </span>
                 <div className="ml-auto">

@@ -1,14 +1,15 @@
 import { cn } from "@workspace/ui/lib/utils"
 
 // 8x8 pixel grid: every mark size is a whole multiple (2, 3, 4px per pixel), so it stays crisp.
-const MARK = { sm: "size-4", md: "size-6", lg: "size-8" } as const
+const MARK = { sm: "size-4", md: "size-6", lg: "size-8", xl: "size-64" } as const
 // `/none`: line-height 1, so the wordmark box is exactly its font size and centers on the mark.
 const TEXT = {
   sm: "text-sm/none",
   md: "text-lg/none",
   lg: "text-2xl/none",
+  xl: "text-4xl/none",
 } as const
-const GAP = { sm: "gap-2", md: "gap-2.5", lg: "gap-3" } as const
+const GAP = { sm: "gap-2", md: "gap-2.5", lg: "gap-3", xl: "gap-4" } as const
 
 type Size = keyof typeof MARK
 type Motion = "static" | "idle"
@@ -35,7 +36,7 @@ function LogoMark({ size, motion }: { size: Size; motion: Motion }) {
         <rect x="0" y="6" width="1" height="1" />
       </g>
       <g
-        className={cn("fill-primary", idle && "motion-safe:animate-logo-plus")}
+        className={cn("fill-chart-1", idle && "motion-safe:animate-logo-plus")}
       >
         <rect x="5" y="2" width="1" height="1" />
         <rect x="4" y="3" width="3" height="1" />
@@ -43,7 +44,7 @@ function LogoMark({ size, motion }: { size: Size; motion: Motion }) {
       </g>
       {idle ? (
         <>
-          <g className="fill-primary opacity-0 motion-safe:animate-logo-cross">
+          <g className="fill-chart-1 opacity-0 motion-safe:animate-logo-cross">
             <rect x="4" y="2" width="1" height="1" />
             <rect x="6" y="2" width="1" height="1" />
             <rect x="5" y="3" width="1" height="1" />

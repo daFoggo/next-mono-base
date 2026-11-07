@@ -4,7 +4,7 @@ export function Spec({ rows }: { rows: (readonly [string, string])[] }) {
     <dl className="flex max-w-xl flex-col gap-3">
       {rows.map(([term, value]) => (
         <div key={term} className="flex gap-3">
-          <dt className="w-32 shrink-0 font-mono text-xs tracking-wider text-muted-foreground uppercase">
+          <dt className="w-32 shrink-0 text-sm text-muted-foreground">
             {term}
           </dt>
           <dd>{value}</dd>

@@ -37,7 +37,7 @@ import { KindTile } from "./span-kind"
 import { useTrace } from "./trace-context"
 import { STARTED_AT, type Message } from "./trace-data"
 
-const LABEL = "font-mono text-xs tracking-wider text-muted-foreground uppercase"
+const LABEL = "text-sm text-muted-foreground"
 
 const ROLE_ICON = {
   Human: IconUser,

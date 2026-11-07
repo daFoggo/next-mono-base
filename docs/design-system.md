@@ -30,10 +30,12 @@ An illustrated, interactive version of this guide lives in [design-system/base-d
 
 ## 2. Color
 
-Defined in `globals.css` (oklch, neutral zinc) and exposed as utilities (`bg-background`, `text-muted-foreground`, ...).
+Defined in `globals.css` as hex values (flat, Mistral-style: warm cream in light, steel `#101013` in dark) and exposed as utilities (`bg-background`, `text-muted-foreground`, ...).
 Only the stock shadcn tokens exist: `background`, `foreground`, `card`, `popover`, `primary`, `secondary`, `muted`,
 `accent`, `destructive`, `border`, `input`, `ring`, `chart-1..5`, `sidebar-*` (each with its `-foreground`), plus `--radius`
-(`0.625rem`). Both `:root` and `.dark` define every token.
+(`0.375rem`). Both `:root` and `.dark` define every token.
+`chart-1..4` are the brand ramp (orange, tangerine, yellow, red); `chart-1` (`#ff5229`) is the one accent color, used by the
+logo spark and the pixel art. Buttons stay neutral (`primary` is near-black in light, near-white in dark).
 
 | Need | Use |
 | :--- | :--- |
@@ -45,6 +47,7 @@ Only the stock shadcn tokens exist: `background`, `foreground`, `card`, `popover
 | Hover surface | `bg-accent` |
 | Errors, blocked | `text-destructive`, `<Alert variant="destructive">` |
 | Hairlines, field outlines | `border-border`, `border-input` |
+| The brand accent (logo spark, pixel art) | `fill-chart-1` … `fill-chart-4`, `text-chart-1`. Never for body text or buttons |
 
 To add a semantic color (success, warning), add a token to both `:root` and `.dark` and map it in `@theme inline`.
 
@@ -55,19 +58,24 @@ To add a semantic color (success, warning), add a token to both `:root` and `.da
 | Family | Class | Use |
 | :--- | :--- | :--- |
 | Geist | `font-sans` | UI, headings, body, prose |
-| Geist Mono | `font-mono` | Nav, tabs, labels, dates, durations, code, in-article section headings |
-| STIX Two Text | `font-serif` | Registered only. No component uses it by default |
+| Geist Mono | `font-mono` | Code, keys, env values and short technical values. Not for headings, nav or labels |
+| Geist Serif | `font-serif` | Registered only. No component uses it by default |
+| Geist Pixel (square, grid) | `font-pixel-square`, `font-pixel-grid` | Registered only; opt-in for a pixel accent |
+
+The whole Geist family is loaded once in `@workspace/ui/lib/fonts` (`fontClassName` on `<html>`, `fontStyle` as its `style`);
+both apps use it, so type never drifts between them. Do not load fonts per app.
 
 | Role | Classes |
 | :--- | :--- |
 | Article / featured title | `text-3xl md:text-4xl font-medium leading-tight` |
-| Page name in the rail | `font-mono text-3xl leading-none` |
-| Section title in the rail | `font-mono text-2xl leading-tight` |
+| Page title (dashboard `PageHead`) | `text-2xl md:text-3xl font-medium tracking-tight`, description `text-base` |
+| Section title (landing band) | `text-4xl sm:text-5xl font-medium tracking-tight` |
+| Hero display (landing) | `text-5xl sm:text-7xl lg:text-8xl font-medium tracking-tight`, two lines at most |
 | Standfirst, prose | `text-lg leading-relaxed text-muted-foreground` (`max-sm:text-base`) |
 | Row title, UI body | `text-base` |
-| In-article H2/H3 | `font-mono text-sm font-medium uppercase tracking-wide` |
-| Nav, tabs, dates, durations | `font-mono text-sm text-muted-foreground` |
-| Labels, table headers, chips | `font-mono text-xs uppercase tracking-wider` |
+| Subheading | `text-lg font-medium` with a muted one-line hint beside it |
+| Nav, tabs, sidebar rows | `text-sm font-medium` (landing header cells `text-base`) |
+| Group labels, table headers | `text-sm text-muted-foreground`, sentence case. No `text-xs` uppercase mono labels |
 
 ---
 
@@ -163,7 +171,7 @@ Principles:
 
 ## 6. Components
 
-shadcn `base-nova`: rounded corners (`--radius: 0.625rem`: `rounded-lg` fields and buttons, `rounded-md` menu rows, `rounded-xl` cards), compact sizes, no shadows. Every component is installed (`shadcn add --all`), including the chat set (`message`, `bubble`, `code-block`, `trace`, `questionnaire`, `message-scroller`, `attachment`, `marker`) and `carousel`; add what the app needs, delete nothing.
+shadcn `base-nova`: rounded corners (`--radius: 0.375rem`: `rounded-lg` 6px fields and buttons, `rounded-md` menu rows, `rounded-2xl` about 11px for large inputs), compact sizes, no shadows. Every component is installed (`shadcn add --all`), including the chat set (`message`, `bubble`, `code-block`, `trace`, `questionnaire`, `message-scroller`, `attachment`, `marker`) and `carousel`; add what the app needs, delete nothing.
 
 | Need | Use |
 | :--- | :--- |
@@ -191,16 +199,14 @@ Rules:
 Patterns specific to this language:
 
 - **Inverted hover** on list rows: `hover:bg-primary hover:text-primary-foreground`, other rows dim to `opacity-35`.
-- **`└` marks hierarchy** in the TOC, article meta and spec lists, in `text-muted-foreground/50`.
-- **Bracketed keys** `[H]` before primary nav items, with matching keyboard shortcuts.
-- **Mono uppercase labels** for metadata, never for body text.
+- No ASCII hierarchy marks (`└`), bracketed keys or tiny mono uppercase labels. Hierarchy is size, weight and indent.
 
 ---
 
 ## Logo
 
 `AppLogo` (`packages/ui-patterns/src/app-logo.tsx`, shared by `apps/web` and `apps/dashboard`): an 8x8 pixel mark, a `>` prompt (`currentColor`, follows
-the theme), a little spark in `primary` and one muted ember, drawn as `<rect>`s with `shape-rendering="crispEdges"`.
+the theme), a little spark in `chart-1` (brand orange) and one muted ember, drawn as `<rect>`s with `shape-rendering="crispEdges"`.
 
 | Prop | Values | Use |
 | :--- | :--- | :--- |
@@ -215,6 +221,54 @@ Rules:
   `flex w-fit` box (an inline box would sit on the text baseline and add a gap below it).
 - `idle` animates only under `motion-safe`; with reduced motion it renders exactly like `static`.
 - The favicon is `apps/dashboard/app/icon.svg`, the same mark with fixed light/dark colors (`prefers-color-scheme`).
+
+---
+
+## Pixel art
+
+Own artwork, drawn in SVG, in `packages/ui-patterns/src/pixel-art.tsx`. Do not copy another brand's logo or illustrations.
+
+| Piece | What it is |
+| :--- | :--- |
+| `SPRITES` | 16x16 sprites (`dashboard`, `code`, `book`, `plug`, `palette`, `lock`, `building`, `key`), each drawn for one meaning, stored as run-length rows: `"3.4o2k"` is 3 empty, 4 orange, 2 ink |
+| `PixelArt name size` | Renders a sprite as `<rect>` runs with `shape-rendering: crispEdges`. `size` is `sm` 64px, `md` 96px, `lg` 128px (whole multiples of 16, so pixels stay crisp) |
+| `PixelTile name` | Card art: the sprite on a plate with a few loose squares and diamonds. Decorative, `aria-hidden` |
+| `PixelField tone` | A flat wallpaper of tinted squares (`orange`, `yellow`, `blue`, `green`) that fills its relative parent. The only fixed hex colors in the UI kit: they are illustrations and read the same in light and dark |
+
+Colors are theme tokens (`o` `chart-1`, `t` `chart-2`, `y` `chart-3`, `r` `chart-4`, `m` `chart-5`, `k` `foreground`), so a sprite follows light and
+dark. To add one, add its rows to `SPRITES`; `pixel-art.test.ts` fails if a row is not 16 wide or there are not 16 rows.
+
+---
+
+## Landing layout (apps/web)
+
+Modeled on Mistral's structure, with our own content and art. When you add a section, follow it:
+
+- **Bands, not cards.** Full-bleed sections cut by one hairline (`border-b`). Alternate the surface (`bg-background`, `bg-card`) for emphasis.
+- **Rails.** Two vertical hairlines run behind the page at the content edge (`app/page.tsx`, `inset-x-5 md:inset-x-9`). `GUTTER` in
+  `config/layout.ts` is the same offset; text inside a band adds `px-9` so it never touches a rail.
+- **Header.** 44px, full width, cut into hairline cells: logo, section links, then sign-in and the primary button.
+- **Hero.** Centered display type (`lg:text-8xl`, two lines at most), one short line, one pill link. Flat color blocks, diamonds and
+  sprites sit along both edges and rest on the blocks; hidden below `lg`.
+- **Feature rows.** Sticky list on the left (`SectionNav`), then rows of text plus a `PixelField` panel with a small static mock-up,
+  alternating sides. On mobile the list is hidden and every grid is `grid-cols-1` (a bare `grid` lets wide children push the page sideways).
+- **Footer.** Link columns split by hairlines, theme toggle, the logo mark at `size="xl"` standing on four color stripes.
+- Copy is plain: say what the repo does and what it does not do yet.
+
+---
+
+## Updating shadcn and Animate UI
+
+The look lives in the tokens in `globals.css`, so components read the theme without being edited. That is what keeps updates clean:
+
+- Do not restyle a component by editing its file. Change a token, or choose a `variant` / `size`.
+- Preview an update: `pnpm --filter @workspace/ui exec shadcn add <name> --diff`. `add --all --dry-run` lists every file; `overwrite` means it
+  differs from upstream, `skip (identical)` means an update applies with no conflict.
+- When this was checked, 29 of 66 files differed: accordion, button, checkbox, collapsible, context-menu, drawer, dropdown-menu, hover-card,
+  input-otp, navigation-menu, popover, progress, radio-group, select, slider, switch, tabs, toggle, tooltip, alert-dialog, dialog, pagination,
+  questionnaire, sheet, toast, menubar, toggle-group, sidebar and combobox. Most are the Animate UI versions from `pnpm --filter @workspace/ui animate`;
+  `button` also keeps its variants in `button-variants.tsx`. After overwriting one of these, re-run `animate` and read the diff. Not verified:
+  that this round trip restores each file exactly.
 
 ---
 
@@ -277,8 +331,8 @@ layout under `app/(dashboard)/<prefix>/[param]/`. `SessionNav` (server) filters 
 `ScopedNav` picks the scope from `usePathname()` and renders `NavTree`, which knows nothing about scopes.
 
 The header has two icon buttons (`ghost`, `icon-sm`): `SidebarTrigger` (with `SidebarPrimitive.TriggerIcon` swapping between collapse/expand icons; Cmd/Ctrl+B also works) and `ThemeToggle`
-(built on Animate UI's `ThemeTogglerButton` icon spin/blur swap, while the page theme flips instantly via `disableTransitionOnChange`). The account row shows `└`, a user icon, name and role. Icons are functional only: one per navigable page (and the
-account row), never on group headers or menu items; the `└` glyph stays next to them as the hierarchy mark.
+(built on Animate UI's `ThemeTogglerButton` icon spin/blur swap, while the page theme flips instantly via `disableTransitionOnChange`). The account row shows a user icon, name and role. Icons are functional only: one per navigable page (and the
+account row), never on group headers or menu items.
 
 Main header below `md`: sidebar trigger, wordmark, `/`, current page in ink, truncated with `…` rather than wrapping.
 
@@ -287,7 +341,7 @@ Main header below `md`: sidebar trigger, wordmark, `/`, current page in ink, tru
 The sidebar uses `collapsible="icon"`: the trigger (or a click on the rail edge) shrinks it from `w-64` to a 48px rail instead of
 hiding it, so every page stays one click away.
 
-- Every nav link carries `└`, its icon and its label. In the rail only the icon shows (the glyph and label hide; the
+- Every nav link carries its icon and its label. In the rail only the icon shows (the label hides; the
   current page's icon is `text-foreground` there) and a right-side tooltip names it (`SidebarMenuButton`'s rule: only
   while collapsed on desktop).
 - The rail lists individual pages only, never groups: a section label becomes a hairline between sections, a collapsible
@@ -298,15 +352,15 @@ hiding it, so every page stays one click away.
   because `entries` cross from a Server Component to the client `NavTree`.
 - Rows use `group-data-[collapsible=icon]:*` variants of the sidebar's own `group` wrapper; no JS state except the tooltip.
 
-### Tree items (the large TOC)
+### Menu rows
 
 | State | Look | Classes |
 | :--- | :--- | :--- |
-| Default | `└` muted at 50%, Tabler icon `size-4` and label `text-muted-foreground` | `font-mono text-sm py-1.5 text-muted-foreground` |
-| Hover | Label `text-foreground` and nudged 4px right, hover surface | `hover:bg-accent hover:text-foreground` |
-| Current | `└`, icon and label `text-foreground`, medium | `aria-current="page"`, glyph `text-foreground` |
-| Group | `└`, label and a caret that rotates when collapsed (no icon); children indent | `aria-expanded`, children `pl-4` |
-| Count | Mono, right aligned | `ml-auto text-xs text-muted-foreground tabular-nums` |
+| Default | Tabler icon `size-4` and label, `text-muted-foreground`, `rounded-lg px-3 py-2` | `text-sm font-medium` |
+| Hover | Label `text-foreground`, hover surface | `hover:bg-accent hover:text-foreground` |
+| Current | Label `font-medium text-foreground`, no fill (a fill lags the route change and flashes next to the hover surface) | `aria-current="page"` |
+| Group | Label and a caret that rotates when collapsed (no icon); children indent | `aria-expanded`, children `pl-3` |
+| Count | Right aligned | `ml-auto text-xs text-muted-foreground tabular-nums` |
 
 Keep the tree at most two levels deep; deeper structure belongs on its own page. Keyboard: arrows move, left/right
 collapse and expand groups, Enter opens.

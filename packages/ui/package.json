@@ -22,6 +22,7 @@
     "cn": "^0.4.0",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
+    "geist": "1.9.0-canary.2",
     "input-otp": "^1.5.0",
     "motion": "^14.4.0",
     "react": "19.3.0",
@@ -41,6 +42,7 @@
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^10",
+    "next": "16.4.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.4"

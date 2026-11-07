@@ -155,7 +155,7 @@ export function AuthHeading({
   return (
     <div className="flex flex-col gap-2">
       {eyebrow ? (
-        <span className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
+        <span className="text-sm text-muted-foreground">
           {eyebrow}
         </span>
       ) : null}

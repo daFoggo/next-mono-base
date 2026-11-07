@@ -33,8 +33,8 @@ export function DashboardBreadcrumb({
   const pathname = usePathname()
   const crumbs = breadcrumbTrail(pathname, scopes, workspace)
   return (
-    <Breadcrumb className="min-w-0 font-mono">
-      <BreadcrumbList className="flex-nowrap">
+    <Breadcrumb className="min-w-0">
+      <BreadcrumbList className="flex-nowrap text-base capitalize">
         {crumbs.map((crumb, index) => {
           if (index === crumbs.length - 1) {
             return (

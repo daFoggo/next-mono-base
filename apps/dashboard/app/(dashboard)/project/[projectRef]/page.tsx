@@ -19,7 +19,7 @@ async function ProjectSummary({
   const org = await getOrg(project.orgSlug)
   return (
     <>
-      <PageHead label="Project" title={project.name}>
+      <PageHead title={project.name}>
         Project-wide summary.
       </PageHead>
       <Spec

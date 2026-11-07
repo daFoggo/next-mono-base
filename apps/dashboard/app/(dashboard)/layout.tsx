@@ -1,7 +1,11 @@
 import { Suspense } from "react"
 import Link from "next/link"
 
-import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@workspace/ui/components/sidebar"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 
 import {
@@ -35,13 +39,18 @@ export default function DashboardLayout({
     <SidebarProvider>
       <AppSidebar>
         {/*
-          `px-3` puts the mark at the same x in the 256px sidebar and the 48px rail, so collapsing
-          never moves it. The wordmark never wraps or shrinks: the narrowing sidebar just clips it.
+          Logo left, toggle right. In the 48px icon rail the logo gives way and the toggle stays
+          at the right edge (padding never changes, so nothing jumps), so the rail can be reopened. Below md the sidebar is a Sheet and the
+          main header carries the toggle instead.
         */}
-        <ColumnHeader className="overflow-hidden px-3">
-          <Link href={DASHBOARD_PATH} className="shrink-0">
-            <AppLogo textClassName="whitespace-nowrap group-data-[collapsible=icon]:invisible" />
+        <ColumnHeader className="overflow-hidden px-2">
+          <Link
+            href={DASHBOARD_PATH}
+            className="shrink-0 pl-2 group-data-[collapsible=icon]:hidden"
+          >
+            <AppLogo textClassName="whitespace-nowrap" />
           </Link>
+          <SidebarTrigger className="ml-auto" />
         </ColumnHeader>
         <AppSidebarBody>
           {/* One AppSidebarSection per nav section (config/navigation.ts). */}

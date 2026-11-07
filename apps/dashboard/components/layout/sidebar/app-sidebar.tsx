@@ -5,8 +5,8 @@ import { cn } from "@workspace/ui/lib/utils"
  * Sidebar composed from the shadcn primitives, which stay untouched for future upgrades:
  * shadcn provides collapse, the mobile Sheet and the keyboard shortcut; these parts provide the
  * design-system layout. It collapses to a 48px icon rail (`collapsible="icon"`) instead of
- * disappearing, so every page stays one click away. The header trigger (or Cmd/Ctrl+B) toggles it;
- * there is no rail edge to click.
+ * disappearing, so every page stays one click away. The trigger in its header (or Cmd/Ctrl+B)
+ * toggles it; there is no rail edge to click.
  */
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   return <Sidebar collapsible="icon">{children}</Sidebar>
@@ -16,7 +16,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 export function AppSidebarBody({ children }: { children: React.ReactNode }) {
   return (
     <SidebarContent>
-      <div className="flex flex-1 flex-col gap-8 px-4 py-6 group-data-[collapsible=icon]:gap-4 group-data-[collapsible=icon]:px-2">
+      <div className="flex flex-1 flex-col gap-8 px-2 py-6 group-data-[collapsible=icon]:gap-4">
         {children}
       </div>
     </SidebarContent>
@@ -37,14 +37,14 @@ export function AppSidebarSection({
     <section
       data-sidebar="group"
       className={cn(
-        "relative flex flex-col gap-2 group-data-[collapsible=icon]:not-first:border-t group-data-[collapsible=icon]:not-first:pt-4",
+        "relative flex flex-col group-data-[collapsible=icon]:not-first:border-t group-data-[collapsible=icon]:not-first:pt-4",
         pinned && "mt-auto"
       )}
     >
       {/* The label gives way to a hairline between sections in the icon rail. */}
       <h2
         data-sidebar="group-label"
-        className="px-2 font-mono text-xs tracking-wider text-muted-foreground uppercase group-data-[collapsible=icon]:hidden"
+        className="mb-2 px-2 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden"
       >
         {label}
       </h2>

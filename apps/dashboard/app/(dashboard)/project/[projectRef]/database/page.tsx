@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Project database" }
 
 export default function ProjectDatabasePage() {
   return (
-    <PageHead label="Project" title="Database">
+    <PageHead title="Database">
       Tables, queries and migrations of this project.
     </PageHead>
   )

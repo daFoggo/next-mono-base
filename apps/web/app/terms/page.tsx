@@ -1,13 +1,10 @@
 import type { Metadata } from "next"
-import Link from "next/link"
-import { IconArrowLeft, IconScale, IconAlertTriangle } from "@tabler/icons-react"
+import { IconScale, IconAlertTriangle } from "@tabler/icons-react"
 
-import { Button } from "@workspace/ui/components/button"
-import { AppLogo } from "@workspace/ui-patterns/app-logo"
-import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
 
 import { CONTAINER } from "@/config/layout"
-import { SIGN_IN_HREF, dashboardHref } from "@/config/site"
+import { Header } from "@/components/sections/header"
+import { Footer } from "@/components/sections/footer"
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -17,46 +14,14 @@ export const metadata: Metadata = {
 export default function TermsOfServicePage() {
   return (
     <>
-      {/* Sticky navigation header */}
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
-        <div className={`${CONTAINER} flex h-14 items-center justify-between`}>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="group flex items-center gap-1.5 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <IconArrowLeft className="size-4 transition-transform motion-safe:group-hover:-translate-x-0.5" />
-              <span>Back</span>
-            </Link>
-            <AppLogo />
-          </div>
-          <nav className="flex items-center gap-2">
-            <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="sm"
-              render={<a href={SIGN_IN_HREF} />}
-              nativeButton={false}
-            >
-              Sign in
-            </Button>
-            <Button
-              size="sm"
-              render={<a href={dashboardHref("/dashboard")} />}
-              nativeButton={false}
-            >
-              Open dashboard
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className={`${CONTAINER} py-12 sm:py-16`}>
         <article className="mx-auto flex max-w-3xl flex-col gap-10">
           {/* Header */}
-          <div className="flex flex-col gap-3 border-b border-border/40 pb-8">
+          <div className="flex flex-col gap-3 border-b border-border pb-8">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/40 px-2.5 py-0.5 font-mono text-xs text-foreground/80">
+              <span className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2.5 py-0.5 font-mono text-xs text-foreground">
                 <IconScale className="size-3.5 text-primary" />
                 Legal Agreement
               </span>
@@ -104,7 +69,7 @@ export default function TermsOfServicePage() {
             <p className="text-sm text-muted-foreground leading-relaxed">
               You agree not to misuse the platform or assist others in doing so. Specifically, you agree not to:
             </p>
-            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/10 p-4 text-xs text-muted-foreground">
+            <div className="flex flex-col gap-2 border border-border bg-card p-4 text-xs text-muted-foreground">
               <div className="flex items-start gap-2">
                 <IconAlertTriangle className="size-4 shrink-0 text-amber-500 mt-0.5" />
                 <span>Violate applicable local, national, or international regulations, including the Law on Cybersecurity and Personal Data Protection Law.</span>
@@ -161,25 +126,7 @@ export default function TermsOfServicePage() {
         </article>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 py-10">
-        <div className={`${CONTAINER} flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-xs font-mono text-muted-foreground`}>
-          <div className="flex items-center gap-3">
-            <span>© 2026 Next Mono Base</span>
-            <span>·</span>
-            <span className="text-foreground font-medium">Terms of Service</span>
-            <span>·</span>
-            <Link href="/privacy" className="transition-colors hover:text-foreground">
-              Privacy Policy
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="https://github.com/daFoggo/next-mono-base" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">
-              GitHub
-            </a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   )
 }

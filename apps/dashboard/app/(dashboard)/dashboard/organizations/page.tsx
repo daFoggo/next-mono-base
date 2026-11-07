@@ -31,7 +31,7 @@ export default function OrganizationsPage() {
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageHead label="Workspace" title="Organizations">
+        <PageHead title="Organizations">
           Open an organization to switch the sidebar to its menu.
         </PageHead>
         <CreateOrgDialog />

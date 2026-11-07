@@ -32,7 +32,7 @@ The docs in `docs/` are the single source of truth for `apps/dashboard` (the das
 | Stacks: Neon Auth + Neon Postgres (default), Supabase, Keycloak or FastAPI OAuth2, starting a project on Neon or Supabase, provider seams, per-provider rules, latency | `docs/providers.md` |
 | Performance, code splitting, lazy loading, Core Web Vitals | `docs/performance-optimization.md` |
 | Redis cache, large uploads, SSE, telemetry, instant-navigation tests | `docs/advanced-patterns.md` |
-| UI: theme tokens, typography, spacing, responsive, shadcn component sizes, patterns, page templates, motion, admin shell | `docs/design-system.md` (visual: `docs/design-system/base-design-system.html`) |
+| UI: theme tokens, typography, spacing, responsive, shadcn component sizes, pixel art, updating shadcn and Animate UI, patterns, page templates, motion, admin shell | `docs/design-system.md` (visual: `docs/design-system/base-design-system.html`) |
 
 For a fast decision (which pattern applies) use the skill `.agents/skills/next-mono-base/SKILL.md`; it links back to the docs above.
 For any className, layout, theme or motion work use `.agents/skills/design-system/SKILL.md` (no arbitrary Tailwind values; component sizes via props) and `.agents/skills/animate-ui/SKILL.md` (always prioritize Animate UI components/primitives in `@workspace/ui/components/*` and `@workspace/ui/components/animate-ui/*` over static shadcn components).

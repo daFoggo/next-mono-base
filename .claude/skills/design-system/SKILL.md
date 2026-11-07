@@ -27,6 +27,10 @@ section when a case is not covered here.
 5. `font-serif` exists but is opt-in; do not apply it unless asked.
 6. CSS that comes from `vercel-react-view-transitions` (`::view-transition-*`) or `web-design-guidelines`
    (`content-visibility`, `transition`, etc.) must snap to the Tailwind scale and color tokens too; see
+7. Never edit a shadcn or Animate UI component file to restyle it: change a token in `globals.css` or pick a `variant`/`size`.
+   That keeps `shadcn add --diff` and Animate UI updates conflict-free (docs/design-system.md, Updating shadcn and Animate UI).
+8. The brand accent is `chart-1` (orange). Pixel art is `PixelArt` / `PixelTile` from `@workspace/ui-patterns/pixel-art`; the
+   sprites are our own, colored by tokens. Fonts load once in `@workspace/ui/lib/fonts`; do not load fonts per app.
 
 ## Spacing tier lookup
 
@@ -93,8 +97,8 @@ anchors use `scroll-mt-24`; the logo scrolls to `0`.
   The menu follows the URL: `NAV_SCOPES` holds one `NavScope` per prefix (global, `/org/<slug>`, `/project/<ref>`); scoped breadcrumbs start with organization / project menus (`Crumb.options`). New scope = one entry, no component edits.
   The sidebar collapses to a 48px icon rail (doc § Icon rail): every `NavLink` needs an `icon` name; icons are functional, never decorative.
 - Never edit shadcn files in `packages/ui`; compose in `apps/dashboard/components/layout/`.
-- Each section is the big TOC: mono `text-sm`, `└` + an icon per link (current glyph `text-foreground`), max two levels, counts
-  `ml-auto text-xs tabular-nums`.
+- Each section is a plain menu: `text-sm` rows with an icon per link, `font-medium text-foreground` (no fill) for the current page,
+  max two levels, counts `ml-auto text-xs tabular-nums`. No ASCII tree marks, no tiny mono uppercase labels.
 - Detail sheet (doc § Detail sheets): `<Sheet>` + `DetailSheetContent` (fits content, drag the left edge to resize) with three header
   tiers (opens at 42rem, resized by dragging its left edge, width remembered): `DetailSheetHeader` (close, title, copy, Previous/Next as a `ButtonGroup`), `DetailSheetPaneHeader` per pane, then
   `DetailSheetPaneBody`. Open state, width and selection stay inside the sheet (`TraceProvider`); compound parts, no boolean
@@ -106,8 +110,8 @@ anchors use `scroll-mt-24`; the logo scrolls to `0`.
 
 ## Type and motion
 
-- Titles `text-3xl md:text-4xl font-medium leading-tight`; prose `text-lg leading-relaxed text-muted-foreground`; labels
-  `font-mono text-xs uppercase tracking-wider`; nav/dates `font-mono text-sm text-muted-foreground`.
+- Page titles `text-2xl md:text-3xl font-medium tracking-tight`; prose `text-lg leading-relaxed text-muted-foreground`; group labels
+  `text-sm text-muted-foreground`; nav `text-sm font-medium`. `font-mono` only for code and technical values.
 - Transitions: colors `duration-150`, movement `duration-200 ease-out`; guard with `motion-safe:`.
 
 ## Before you finish

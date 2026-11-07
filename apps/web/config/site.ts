@@ -7,4 +7,9 @@ export function dashboardHref(path: string): string {
 
 export const REPO_URL = "https://github.com/daFoggo/next-mono-base"
 
+/** A file in the repo's docs/ folder on GitHub. */
+export function docsHref(file: string): string {
+  return `${REPO_URL}/blob/main/docs/${file}`
+}
+
 export const SIGN_IN_HREF = dashboardHref("/sign-in")

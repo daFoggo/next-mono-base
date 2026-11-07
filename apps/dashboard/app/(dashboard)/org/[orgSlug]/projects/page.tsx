@@ -43,7 +43,7 @@ export default function ProjectsPage({
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageHead label="Organization" title="Projects">
+        <PageHead title="Projects">
           Open a project to switch the sidebar to its menu.
         </PageHead>
         <Suspense fallback={null}>

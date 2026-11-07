@@ -5,7 +5,7 @@ export function StackShowcase() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <span className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
+        <span className="text-sm text-muted-foreground">
           Supported stack &amp; integrations
         </span>
         <p className="text-xs text-muted-foreground">

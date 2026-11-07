@@ -28,14 +28,13 @@ import { NavIcon } from "@/components/layout/sidebar/nav-icons"
 
 // `group-data-[collapsible=icon]` is the sidebar's 48px icon rail: rows keep only their icon.
 const row =
-  "group/row flex w-full items-center gap-2 rounded-md px-2 py-1.5 font-mono text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground group-data-[collapsible=icon]:justify-center"
+  "group/row flex w-full items-center gap-2 overflow-hidden rounded-lg px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
 
-/** Label nudges right on hover, like the claude.dev TOC (`translate-x-1`, `duration-200 ease-out`). */
 function RowLabel({ children }: { children: React.ReactNode }) {
   return (
     <span
       data-sidebar="menu-label"
-      className="group-data-[collapsible=icon]:hidden motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out motion-safe:group-hover/row:translate-x-1"
+      className="group-data-[collapsible=icon]:hidden"
     >
       {children}
     </span>
@@ -43,13 +42,13 @@ function RowLabel({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The large TOC of design system §8: `└` glyph, icon and label per link, the glyph highlighted
- * for the current page; groups indent, two levels max. Only the icon stays when the sidebar
+ * The sidebar menu of design system §8: icon and label per link, a heavier foreground label for the current page (no fill: a fill lags the route change and flashes beside the Animate UI hover surface);
+ * groups indent, two levels max. Only the icon stays when the sidebar
  * collapses to its icon rail (and then it carries the orange instead).
  */
 export function NavTree({ entries }: { entries: NavEntry[] }) {
   return (
-    <SidebarMenu>
+    <SidebarMenu className="gap-1">
       {entries.map((entry) => (
         <SidebarMenuItem key={entry.title}>
           {"items" in entry ? (
@@ -86,21 +85,14 @@ function TreeLink({ link }: { link: NavLink }) {
           />
         }
       >
-        <span className="flex text-muted-foreground transition-colors duration-150 group-hover/row:text-muted-foreground group-data-current/tree:text-foreground group-data-current/tree:group-data-[collapsible=icon]:text-foreground">
+        <span className="flex text-muted-foreground group-hover/row:text-muted-foreground group-data-current/tree:text-foreground group-data-current/tree:group-data-[collapsible=icon]:text-foreground">
           <NavIcon name={link.icon} />
-        </span>
-        <span
-          aria-hidden
-          data-sidebar="menu-glyph"
-          className="-order-1 text-muted-foreground/50 group-data-current/tree:text-foreground group-data-[collapsible=icon]:hidden"
-        >
-          └
         </span>
         <RowLabel>{link.title}</RowLabel>
         {link.badge ? (
           <span
             data-sidebar="menu-badge"
-            className="ml-auto font-mono text-xs text-muted-foreground tabular-nums group-data-[collapsible=icon]:hidden"
+            className="ml-auto text-xs text-muted-foreground tabular-nums group-data-[collapsible=icon]:hidden"
           >
             {link.badge}
           </span>
@@ -139,9 +131,6 @@ function TreeGroup({ group }: { group: NavGroup }) {
           containsCurrent && "text-foreground"
         )}
       >
-        <span aria-hidden className="text-muted-foreground/50">
-          └
-        </span>
         <RowLabel>{group.title}</RowLabel>
         <IconChevronDown
           aria-hidden
@@ -152,7 +141,7 @@ function TreeGroup({ group }: { group: NavGroup }) {
         />
       </CollapsibleTrigger>
       <CollapsibleContent keepMounted>
-        <SidebarMenu className="pl-4 group-data-[collapsible=icon]:pl-0">
+        <SidebarMenu className="gap-1 pl-3 group-data-[collapsible=icon]:pl-0">
           {group.items.map((item) => (
             <SidebarMenuItem key={item.href}>
               <TreeLink link={item} />

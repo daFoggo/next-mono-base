@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Project settings" }
 
 export default function ProjectSettingsPage() {
   return (
-    <PageHead label="Project" title="Settings">
+    <PageHead title="Settings">
       Project name, keys and danger zone.
     </PageHead>
   )

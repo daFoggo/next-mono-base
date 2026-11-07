@@ -18,7 +18,7 @@ async function SettingsContent({
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHead label="Organization" title="Settings">
+      <PageHead title="Settings">
         Organization details.
       </PageHead>
 
