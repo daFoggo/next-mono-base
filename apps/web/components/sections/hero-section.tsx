@@ -37,7 +37,7 @@ export function HeroSection() {
           render={<a href={SIGN_IN_HREF} />}
           nativeButton={false}
         >
-          <span>Explore Studio Dashboard</span>
+          <span>Go to Dashboard</span>
           <IconArrowRight className="size-4" />
         </Button>
         <Button

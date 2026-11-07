@@ -12,13 +12,13 @@ const FAQS = [
     id: "pluggable-auth",
     question: "How do I switch between Neon Auth, Supabase, Keycloak, and FastAPI OAuth2?",
     answer:
-      "All four providers are normalized behind the unified AuthProvider interface in @workspace/auth. Set AUTH_PROVIDER in apps/studio/.env.local (neon-auth, supabase, keycloak, or fastapi-oauth). Server actions, proxy session refreshes, and getSession() calls remain 100% identical without changing any application code.",
+      "All four providers are normalized behind the unified AuthProvider interface in @workspace/auth. Set AUTH_PROVIDER in apps/dashboard/.env.local (neon-auth, supabase, keycloak, or fastapi-oauth). Server actions, proxy session refreshes, and getSession() calls remain 100% identical without changing any application code.",
   },
   {
     id: "cache-components",
     question: "How does Next.js 16 Cache Components and Partial Prerendering (PPR) work?",
     answer:
-      "apps/studio has cacheComponents and partialPrefetching enabled in next.config.ts. Dynamic runtime APIs (cookies(), headers(), searchParams) are isolated inside <Suspense> boundaries, allowing layouts and static shells to prerender instantly while data fetching uses 'use cache' and cacheLife directives for per-user and shared caching.",
+      "apps/dashboard has cacheComponents and partialPrefetching enabled in next.config.ts. Dynamic runtime APIs (cookies(), headers(), searchParams) are isolated inside <Suspense> boundaries, allowing layouts and static shells to prerender instantly while data fetching uses 'use cache' and cacheLife directives for per-user and shared caching.",
   },
   {
     id: "data-access-layer",

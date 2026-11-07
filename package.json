@@ -13,7 +13,7 @@
     "check": "turbo run lint typecheck test",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
-    "neon:env": "neon env pull --services postgres,auth --file apps/studio/.env.local"
+    "neon:env": "neon env pull --services postgres,auth --file apps/dashboard/.env.local"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",

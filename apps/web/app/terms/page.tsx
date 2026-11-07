@@ -45,7 +45,7 @@ export default function TermsOfServicePage() {
               render={<a href={SIGN_UP_HREF} />}
               nativeButton={false}
             >
-              Open Studio
+              Open dashboard
             </Button>
           </nav>
         </div>
@@ -69,7 +69,7 @@ export default function TermsOfServicePage() {
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
               These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of Next Mono Base,
-              including the web landing site, studio dashboard, and associated software packages. By creating
+              including the web landing site, dashboard, and associated software packages. By creating
               an account or continuing to use our services, you agree to be bound by these Terms.
             </p>
           </div>
@@ -124,7 +124,7 @@ export default function TermsOfServicePage() {
           <section className="flex flex-col gap-3">
             <h2 className="text-xl font-medium text-foreground">4. Multi-Tenant Workspace &amp; Resources</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Organizations and projects created within the Studio dashboard are isolated per user token and organization tenant.
+              Organizations and projects created within the Dashboard are isolated per user token and organization tenant.
               You maintain ownership of all project configurations and data created within your workspace. We reserve the right to
               suspend or prune demo resources that remain inactive for extended durations.
             </p>
@@ -144,7 +144,7 @@ export default function TermsOfServicePage() {
           <section className="flex flex-col gap-3">
             <h2 className="text-xl font-medium text-foreground">6. Termination and Account Erasure</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              You may terminate these Terms at any time by deleting your account from the Studio Settings. We reserve the right
+              You may terminate these Terms at any time by deleting your account from the Dashboard Settings. We reserve the right
               to suspend or terminate accounts that breach these Terms. Upon termination, data erasure will be carried out in
               accordance with our Privacy Policy.
             </p>

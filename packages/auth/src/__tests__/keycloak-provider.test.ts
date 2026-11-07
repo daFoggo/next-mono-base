@@ -33,22 +33,22 @@ describe("Keycloak AuthProvider & Proxy", () => {
   it("rejects exchangeCode when state is mismatched or missing and cleans up pkce cookie", async () => {
     const { createKeycloakProvider } = await import("../keycloak/server")
     cookieJar.set(
-      "nmb-studio-auth.pkce",
+      "nmb-dashboard-auth.pkce",
       JSON.stringify({
         state: "expected-state",
         codeVerifier: "verifier-1",
         redirectUri: "http://localhost:3001/auth/callback",
       })
     )
-    const provider = createKeycloakProvider({ cookieName: "nmb-studio-auth" })
+    const provider = createKeycloakProvider({ cookieName: "nmb-dashboard-auth" })
     await expect(
       provider.oauth!.exchangeCode("code-123", "wrong-state")
     ).rejects.toThrow(/state/i)
-    expect(cookieJar.has("nmb-studio-auth.pkce")).toBe(false)
+    expect(cookieJar.has("nmb-dashboard-auth.pkce")).toBe(false)
 
     // Test missing/null state parameter
     cookieJar.set(
-      "nmb-studio-auth.pkce",
+      "nmb-dashboard-auth.pkce",
       JSON.stringify({
         state: "expected-state",
         codeVerifier: "verifier-1",
@@ -58,28 +58,28 @@ describe("Keycloak AuthProvider & Proxy", () => {
     await expect(
       provider.oauth!.exchangeCode("code-123", null)
     ).rejects.toThrow(/state/i)
-    expect(cookieJar.has("nmb-studio-auth.pkce")).toBe(false)
+    expect(cookieJar.has("nmb-dashboard-auth.pkce")).toBe(false)
   })
 
   it("always clears local cookies on signOut even when Keycloak logout endpoint fails", async () => {
     const { createKeycloakProvider } = await import("../keycloak/server")
-    cookieJar.set("nmb-studio-auth.access", "acc")
-    cookieJar.set("nmb-studio-auth.refresh", "ref")
-    cookieJar.set("nmb-studio-auth.id", "id")
+    cookieJar.set("nmb-dashboard-auth.access", "acc")
+    cookieJar.set("nmb-dashboard-auth.refresh", "ref")
+    cookieJar.set("nmb-dashboard-auth.id", "id")
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("ECONNREFUSED"))
 
-    const provider = createKeycloakProvider({ cookieName: "nmb-studio-auth" })
+    const provider = createKeycloakProvider({ cookieName: "nmb-dashboard-auth" })
     await provider.signOut()
 
-    expect(cookieJar.has("nmb-studio-auth.access")).toBe(false)
-    expect(cookieJar.has("nmb-studio-auth.refresh")).toBe(false)
-    expect(cookieJar.has("nmb-studio-auth.id")).toBe(false)
+    expect(cookieJar.has("nmb-dashboard-auth.access")).toBe(false)
+    expect(cookieJar.has("nmb-dashboard-auth.refresh")).toBe(false)
+    expect(cookieJar.has("nmb-dashboard-auth.id")).toBe(false)
   })
 
   it("short-circuits in updateSession when no tokens are present", async () => {
     const { updateSession } = await import("../keycloak/proxy")
     const req = new NextRequest("http://localhost:3001/dashboard")
-    const result = await updateSession(req, { cookieName: "nmb-studio-auth" })
+    const result = await updateSession(req, { cookieName: "nmb-dashboard-auth" })
     expect(result.isAuthenticated).toBe(false)
     expect(result.role).toBeNull()
   })
@@ -105,15 +105,15 @@ describe("Keycloak AuthProvider & Proxy", () => {
 
     const { updateSession } = await import("../keycloak/proxy")
     const req = new NextRequest("http://localhost:3001/dashboard")
-    req.cookies.set("nmb-studio-auth.refresh", "existing-refresh-token")
+    req.cookies.set("nmb-dashboard-auth.refresh", "existing-refresh-token")
 
-    const result = await updateSession(req, { cookieName: "nmb-studio-auth" })
+    const result = await updateSession(req, { cookieName: "nmb-dashboard-auth" })
     expect(result.isAuthenticated).toBe(true)
     expect(result.role).toBe("editor")
-    expect(result.response.cookies.get("nmb-studio-auth.access")?.value).toBe(
+    expect(result.response.cookies.get("nmb-dashboard-auth.access")?.value).toBe(
       "fresh-access-token"
     )
-    expect(result.response.cookies.get("nmb-studio-auth.refresh")?.value).toBe(
+    expect(result.response.cookies.get("nmb-dashboard-auth.refresh")?.value).toBe(
       "existing-refresh-token"
     )
   })

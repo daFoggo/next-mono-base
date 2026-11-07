@@ -3,7 +3,7 @@ import { CountingNumber } from "@workspace/ui/components/animate-ui/numbers/coun
 
 const PACKAGES = [
   {
-    path: "apps/studio",
+    path: "apps/dashboard",
     type: "app",
     role: "Production dashboard with Next.js 16.4, PPR & Cache Components",
     tag: "Next.js 16",

@@ -15,11 +15,11 @@ import {
 
 describe("keycloak cookies & PKCE parsing", () => {
   it("derives split cookie names from the app cookie prefix", () => {
-    expect(getKeycloakCookieNames("nmb-studio-auth")).toEqual({
-      access: "nmb-studio-auth.access",
-      refresh: "nmb-studio-auth.refresh",
-      id: "nmb-studio-auth.id",
-      pkce: "nmb-studio-auth.pkce",
+    expect(getKeycloakCookieNames("nmb-dashboard-auth")).toEqual({
+      access: "nmb-dashboard-auth.access",
+      refresh: "nmb-dashboard-auth.refresh",
+      id: "nmb-dashboard-auth.id",
+      pkce: "nmb-dashboard-auth.pkce",
     })
   })
 
@@ -47,7 +47,7 @@ describe("resolveKeycloakRole & verifyKeycloakJwt", () => {
   it("picks highest privilege when default realm roles coexist with admin/editor", () => {
     expect(
       resolveKeycloakRole({
-        realm_access: { roles: ["default-roles-studio", "customer", "admin"] },
+        realm_access: { roles: ["default-roles-dashboard", "customer", "admin"] },
       })
     ).toBe("admin")
     expect(
@@ -65,7 +65,7 @@ describe("resolveKeycloakRole & verifyKeycloakJwt", () => {
     jwk.alg = "RS256"
     jwk.use = "sig"
     const jwks = createLocalJWKSet({ keys: [jwk] })
-    const issuer = "http://localhost:8080/realms/studio"
+    const issuer = "http://localhost:8080/realms/dashboard"
 
     const token = await new SignJWT({
       email: "admin@next-mono-base.local",
@@ -103,7 +103,7 @@ describe("resolveKeycloakRole & verifyKeycloakJwt", () => {
     jwk.alg = "RS256"
     jwk.use = "sig"
     const jwks = createLocalJWKSet({ keys: [jwk] })
-    const issuer = "http://localhost:8080/realms/studio"
+    const issuer = "http://localhost:8080/realms/dashboard"
 
     // Mismatched azp
     const wrongAzpToken = await new SignJWT({
@@ -119,14 +119,14 @@ describe("resolveKeycloakRole & verifyKeycloakJwt", () => {
 
     expect(
       await verifyKeycloakJwt(wrongAzpToken, issuer, {
-        clientId: "studio-app",
+        clientId: "dashboard-app",
         jwksOverride: jwks,
       })
     ).toBeNull()
 
     // Invalid typ (e.g. Refresh token used as Access token)
     const wrongTypToken = await new SignJWT({
-      azp: "studio-app",
+      azp: "dashboard-app",
       typ: "Refresh",
     })
       .setProtectedHeader({ alg: "RS256", kid: "k2" })
@@ -138,16 +138,16 @@ describe("resolveKeycloakRole & verifyKeycloakJwt", () => {
 
     expect(
       await verifyKeycloakJwt(wrongTypToken, issuer, {
-        clientId: "studio-app",
+        clientId: "dashboard-app",
         jwksOverride: jwks,
       })
     ).toBeNull()
 
     // Valid azp and typ passes
     const validToken = await new SignJWT({
-      azp: "studio-app",
+      azp: "dashboard-app",
       typ: "Bearer",
-      resource_access: { "studio-app": { roles: ["editor"] } },
+      resource_access: { "dashboard-app": { roles: ["editor"] } },
     })
       .setProtectedHeader({ alg: "RS256", kid: "k2" })
       .setSubject("user-456")
@@ -157,7 +157,7 @@ describe("resolveKeycloakRole & verifyKeycloakJwt", () => {
       .sign(privateKey)
 
     const verified = await verifyKeycloakJwt(validToken, issuer, {
-      clientId: "studio-app",
+      clientId: "dashboard-app",
       jwksOverride: jwks,
     })
     expect(verified).not.toBeNull()
@@ -169,8 +169,8 @@ describe("OIDC URL builder", () => {
   it("builds login, registration, and google idp hint URLs with S256 PKCE", () => {
     const pkce = createPkceChallenge()
     const cfg = {
-      issuer: "http://localhost:8080/realms/studio",
-      clientId: "studio-app",
+      issuer: "http://localhost:8080/realms/dashboard",
+      clientId: "dashboard-app",
       clientSecret: "secret",
     }
     const loginUrl = new URL(
@@ -182,7 +182,7 @@ describe("OIDC URL builder", () => {
       })
     )
     expect(loginUrl.pathname).toBe(
-      "/realms/studio/protocol/openid-connect/auth"
+      "/realms/dashboard/protocol/openid-connect/auth"
     )
     expect(loginUrl.searchParams.get("code_challenge_method")).toBe("S256")
 
@@ -195,11 +195,11 @@ describe("OIDC URL builder", () => {
       })
     )
     expect(regUrl.pathname).toBe(
-      "/realms/studio/protocol/openid-connect/registrations"
+      "/realms/dashboard/protocol/openid-connect/registrations"
     )
 
     expect(getKeycloakEndpoints(cfg.issuer).certs).toBe(
-      "http://localhost:8080/realms/studio/protocol/openid-connect/certs"
+      "http://localhost:8080/realms/dashboard/protocol/openid-connect/certs"
     )
   })
 })

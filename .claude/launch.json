@@ -12,11 +12,11 @@
       "port": 3000
     },
     {
-      "name": "studio",
+      "name": "dashboard",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "--filter",
-        "studio",
+        "dashboard",
         "dev"
       ],
       "port": 3001

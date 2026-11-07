@@ -33,7 +33,7 @@ export function Footer() {
             href={SIGN_IN_HREF}
             className="transition-colors hover:text-foreground"
           >
-            Studio Dashboard
+            Dashboard
           </a>
         </div>
       </div>

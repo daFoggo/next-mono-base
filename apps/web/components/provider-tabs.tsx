@@ -19,9 +19,9 @@ const PROVIDERS: Record<ProviderKey, ProviderInfo> = {
     name: "Keycloak 26",
     badge: "Enterprise OIDC",
     envSnippet: `AUTH_PROVIDER="keycloak"
-KEYCLOAK_ISSUER="http://localhost:8080/realms/studio"
-KEYCLOAK_CLIENT_ID="studio-app"
-KEYCLOAK_CLIENT_SECRET="studio-dev-client-secret"`,
+KEYCLOAK_ISSUER="http://localhost:8080/realms/dashboard"
+KEYCLOAK_CLIENT_ID="dashboard-app"
+KEYCLOAK_CLIENT_SECRET="dashboard-dev-client-secret"`,
     features: [
       "PKCE S256 with split cookies under 4KB",
       "Offline RS256 JWT verification via public JWKS",

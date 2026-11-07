@@ -1,6 +1,6 @@
 import type { AuthOptions } from "@workspace/auth/types"
 
-/** The studio's own session cookie. */
+/** The dashboard's own session cookie. */
 export const AUTH_OPTIONS = {
-  cookieName: "nmb-studio-auth",
+  cookieName: "nmb-dashboard-auth",
 } as const satisfies AuthOptions

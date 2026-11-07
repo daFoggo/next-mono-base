@@ -1,6 +1,6 @@
 # Design system
 
-How `apps/studio` looks and behaves: color, type, spacing, responsive layout, components and motion. The theme is
+How `apps/dashboard` looks and behaves: color, type, spacing, responsive layout, components and motion. The theme is
 shadcn `base-nova` with the stock shadcn tokens, nothing custom. Every value is Tailwind's default scale. Tokens live in
 `packages/ui/src/styles/globals.css`, components in `packages/ui/src/components` (shadcn, style `base-nova`).
 An illustrated, interactive version of this guide lives in [design-system/base-design-system.html](design-system/base-design-system.html)
@@ -199,7 +199,7 @@ Patterns specific to this language:
 
 ## Logo
 
-`AppLogo` (`packages/ui-patterns/src/app-logo.tsx`, shared by `apps/web` and `apps/studio`): an 8x8 pixel mark, a `>` prompt (`currentColor`, follows
+`AppLogo` (`packages/ui-patterns/src/app-logo.tsx`, shared by `apps/web` and `apps/dashboard`): an 8x8 pixel mark, a `>` prompt (`currentColor`, follows
 the theme), a little spark in `primary` and one muted ember, drawn as `<rect>`s with `shape-rendering="crispEdges"`.
 
 | Prop | Values | Use |
@@ -214,7 +214,7 @@ Rules:
 - Do not redraw or recolor the mark at the call site; wrap it in a `Link` when it navigates. The logo is a block-level
   `flex w-fit` box (an inline box would sit on the text baseline and add a gap below it).
 - `idle` animates only under `motion-safe`; with reduced motion it renders exactly like `static`.
-- The favicon is `apps/studio/app/icon.svg`, the same mark with fixed light/dark colors (`prefers-color-scheme`).
+- The favicon is `apps/dashboard/app/icon.svg`, the same mark with fixed light/dark colors (`prefers-color-scheme`).
 
 ---
 
@@ -270,7 +270,7 @@ section an entry is a link or a collapsible group of links (two levels max).
 
 ### Scoped menus (organization, project)
 
-The menu depends on the URL, like Supabase's Studio: `/org/<slug>/...` shows the organization menu, `/project/<ref>/...`
+The menu depends on the URL, like Supabase's Dashboard: `/org/<slug>/...` shows the organization menu, `/project/<ref>/...`
 the project menu, everything else the global one. A menu is a `NavScope` in `NAV_SCOPES` (`config/navigation.ts`): plain
 data (`id`, `prefix`, `param`, `sections`) whose hrefs hold `:param` placeholders. To add a scope, add one entry and its
 layout under `app/(dashboard)/<prefix>/[param]/`. `SessionNav` (server) filters every scope by role; the client
@@ -336,10 +336,10 @@ collapse and expand groups, Enter opens.
 Needed components: `pnpm dlx shadcn@latest add sidebar sheet badge tabs` (from `packages/ui`). shadcn's sidebar width
 comes from the `--sidebar-width` variable; change it in the theme rather than with a class.
 
-### Implementation (apps/studio)
+### Implementation (apps/dashboard)
 
 shadcn files in `packages/ui` are **never edited**, so `shadcn add --overwrite` and future migrations stay clean. The
-Next Mono Base look is composed on top in `apps/studio/components/layout/`, grouped by area (`sidebar/`, `header/`; `ColumnHeader` and `PageHead` sit at the root). No barrel `index.ts`: import the file you need (`@/components/layout/sidebar/nav-tree`):
+Next Mono Base look is composed on top in `apps/dashboard/components/layout/`, grouped by area (`sidebar/`, `header/`; `ColumnHeader` and `PageHead` sit at the root). No barrel `index.ts`: import the file you need (`@/components/layout/sidebar/nav-tree`):
 
 
 | Part | File | Built from |
@@ -454,7 +454,7 @@ Interactive components use **Animate UI v2** (`@animate-ui/react` + `AnimateUIPr
 
 Everything respects `prefers-reduced-motion` (`AnimateUIProvider` + `useShouldReduceMotion()` for Animate UI, and `motion-safe:` / `motion-reduce:` for CSS).
 
-Applied in `apps/studio`:
+Applied in `apps/dashboard`:
 
 | Pattern | Where | Implementation |
 | :--- | :--- | :--- |

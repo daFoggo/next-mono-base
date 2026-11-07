@@ -25,7 +25,7 @@ export function Header() {
             render={<a href={SIGN_UP_HREF} />}
             nativeButton={false}
           >
-            Open Studio
+            Open dashboard
           </Button>
         </nav>
       </div>

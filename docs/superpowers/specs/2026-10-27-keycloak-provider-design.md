@@ -10,7 +10,7 @@
 
 ## 1. Intent and Why
 
-`next-mono-base` is architected around a strict provider seam (`@workspace/auth` and `apps/studio/lib/dal.ts`) that currently supports two stacks selected via `AUTH_PROVIDER`:
+`next-mono-base` is architected around a strict provider seam (`@workspace/auth` and `apps/dashboard/lib/dal.ts`) that currently supports two stacks selected via `AUTH_PROVIDER`:
 1. `better-auth` (Self-hosted Better Auth + PostgreSQL + FastAPI)
 2. `supabase` (Supabase Auth + PostgREST/RLS)
 
@@ -23,19 +23,19 @@ The goal of this project is to add **`keycloak`** as a third first-class identit
 ### Goals
 1. **Standalone Keycloak Docker Project (`d:\Dev_Projects\keycloak-idp`):**
    - Run `quay.io/keycloak/keycloak:26.0` backed by `postgres:17-alpine` on host port `8080` so state persists across container restarts.
-   - Automatically provision a complete `studio` realm on first startup using `--import-realm` (`realms/studio-realm.json`).
-   - Pre-configure the confidential OIDC client (`studio-app`), PKCE (`S256`), realm roles (`admin`, `editor`, `customer`), protocol mappers for `role` and `calendar` claims, and three pre-seeded test users (`admin@next-mono-base.local`, `editor@next-mono-base.local`, `customer@next-mono-base.local`).
+   - Automatically provision a complete `dashboard` realm on first startup using `--import-realm` (`realms/dashboard-realm.json`).
+   - Pre-configure the confidential OIDC client (`dashboard-app`), PKCE (`S256`), realm roles (`admin`, `editor`, `customer`), protocol mappers for `role` and `calendar` claims, and three pre-seeded test users (`admin@next-mono-base.local`, `editor@next-mono-base.local`, `customer@next-mono-base.local`).
 2. **Standards-Compliant OIDC in `@workspace/auth` (`packages/auth/src/keycloak/`):**
    - Implement `AuthProvider` (`server.ts`) and `updateSession` (`proxy.ts`) using OIDC Authorization Code Flow with PKCE (`S256`) and `state` CSRF protection.
    - Validate Access Tokens locally with `jose` (`createRemoteJWKSet` + `jwtVerify`) against Keycloak's JWKS endpoint (`/protocol/openid-connect/certs`) with zero network calls per page request when the token is valid.
    - Refresh expiring tokens transparently in `proxy.ts` via `grant_type=refresh_token` and propagate refreshed cookies across redirects via `redirectWithSession`.
    - Perform server-side RP-Initiated / Backchannel Logout against Keycloak's `/protocol/openid-connect/logout` endpoint on `signOut()`.
-3. **Provider-Aware Auth UI in `apps/studio`:**
+3. **Provider-Aware Auth UI in `apps/dashboard`:**
    - Keep existing Email/Password forms untouched for `better-auth` and `supabase`.
    - Render OIDC redirect actions ("Continue with Keycloak" on `/sign-in`, "Create account with Keycloak" on `/sign-up`) when `AUTH_PROVIDER=keycloak`, plus the existing Demo Login button if `DEMO_AUTH` is enabled.
 4. **Full Verification & Documentation:**
    - Unit tests for Keycloak JWT/JWKS verification, role resolution, multi-cookie management, PKCE/state validation, and proxy refresh.
-   - Update `docs/authentication.md`, `docs/providers.md`, `apps/studio/.env.example`, `apps/studio/next.config.ts` (CSP `form-action`), and `turbo.json`.
+   - Update `docs/authentication.md`, `docs/providers.md`, `apps/dashboard/.env.example`, `apps/dashboard/next.config.ts` (CSP `form-action`), and `turbo.json`.
 
 ### Non-Goals
 - Modifying existing `better-auth` or `supabase` runtime logic.
@@ -52,14 +52,14 @@ The goal of this project is to add **`keycloak`** as a third first-class identit
 ## 3. Constraints
 
 1. **Next.js 16.4 Cache Components (`cacheComponents: true`):**
-   - `getSession()` in `apps/studio/lib/dal.ts` runs inside `"use cache: private"`. Any clock-based JWT check must call `await io()` from `next/cache` before reading `cookies()` or checking `Date.now()` so prerendering suspends cleanly without blocking partial prefetching.
+   - `getSession()` in `apps/dashboard/lib/dal.ts` runs inside `"use cache: private"`. Any clock-based JWT check must call `await io()` from `next/cache` before reading `cookies()` or checking `Date.now()` so prerendering suspends cleanly without blocking partial prefetching.
    - Server Components cannot set or delete cookies. Token refresh must happen exclusively in `proxy.ts`, and login/logout cookie mutations must happen in Server Actions or Route Handlers.
 2. **Cookie Size Limit (4096 bytes):**
    - Keycloak tokens (`access_token`, `refresh_token`, `id_token`) are RS256-signed JWTs averaging 1.1–1.8 KB each. They must be stored in separate `httpOnly` cookies prefixed by `AuthOptions.cookieName`.
 3. **Content Security Policy (CSP):**
-   - `apps/studio/next.config.ts` restricts `form-action`. Because `<OAuthButton>` submits a `<form>` to a Server Action that redirects (`303`) to the Keycloak server, `new URL(process.env.KEYCLOAK_ISSUER).origin` must be added to `form-action` when `AUTH_PROVIDER=keycloak`.
+   - `apps/dashboard/next.config.ts` restricts `form-action`. Because `<OAuthButton>` submits a `<form>` to a Server Action that redirects (`303`) to the Keycloak server, `new URL(process.env.KEYCLOAK_ISSUER).origin` must be added to `form-action` when `AUTH_PROVIDER=keycloak`.
 4. **ESLint Architectural Boundaries:**
-   - `features/*/components/**` and `components/**` in `apps/studio` are forbidden from importing `@workspace/auth/config`, `@workspace/auth/server`, or `@/lib/auth`. Provider branching for UI must happen in `app/(auth)/sign-in/page.tsx` and `app/(auth)/sign-up/page.tsx` (or via props passed from `app/`).
+   - `features/*/components/**` and `components/**` in `apps/dashboard` are forbidden from importing `@workspace/auth/config`, `@workspace/auth/server`, or `@/lib/auth`. Provider branching for UI must happen in `app/(auth)/sign-in/page.tsx` and `app/(auth)/sign-up/page.tsx` (or via props passed from `app/`).
 
 ---
 
@@ -87,7 +87,7 @@ d:\Dev_Projects\keycloak-idp\
 ├── .env.example
 ├── README.md
 └── realms\
-    └── studio-realm.json
+    └── dashboard-realm.json
 ```
 
 #### `docker-compose.yml`
@@ -112,15 +112,15 @@ d:\Dev_Projects\keycloak-idp\
   - Volumes: `./realms:/opt/keycloak/data/import:ro`
   - Depends on `postgres` (`service_healthy`).
 
-#### `realms/studio-realm.json`
-- **Realm:** `studio` (`enabled: true`, `registrationAllowed: true`, `registrationEmailAsUsername: true`, `loginWithEmailAllowed: true`, `resetPasswordAllowed: true`, `rememberMe: true`).
+#### `realms/dashboard-realm.json`
+- **Realm:** `dashboard` (`enabled: true`, `registrationAllowed: true`, `registrationEmailAsUsername: true`, `loginWithEmailAllowed: true`, `resetPasswordAllowed: true`, `rememberMe: true`).
 - **Realm Roles:**
   - `customer` (added to `defaultRoles` of the realm so newly registered users automatically receive `customer`)
   - `editor`
   - `admin`
-- **Client (`studio-app`):**
-  - `clientId`: `"studio-app"`
-  - `secret`: `"studio-dev-client-secret-at-least-32-chars"`
+- **Client (`dashboard-app`):**
+  - `clientId`: `"dashboard-app"`
+  - `secret`: `"dashboard-dev-client-secret-at-least-32-chars"`
   - `publicClient`: `false` (Confidential client)
   - `standardFlowEnabled`: `true` (Authorization Code Flow)
   - `directAccessGrantsEnabled`: `false` (Disabled per OAuth 2.1 best practice)
@@ -129,7 +129,7 @@ d:\Dev_Projects\keycloak-idp\
   - `attributes`:
     - `"pkce.code.challenge.method"`: `"S256"`
     - `"post.logout.redirect.uris"`: `"http://localhost:3001/*"`
-  - **Protocol Mappers on `studio-app`:**
+  - **Protocol Mappers on `dashboard-app`:**
     1. `realm-roles-mapper` (`oidc-usermodel-realm-role-mapper`): maps user realm roles into claim `roles` (multivalued array in both ID Token and Access Token) alongside standard `realm_access.roles`.
     2. `timezone-mapper`, `week-start-mapper`, `adopted-on-mapper` (`oidc-usermodel-attribute-mapper`): maps optional user attributes `timezone` (String), `week_start` (int), `adopted_on` (String) into the Access Token for the `Session.calendar` seam.
 - **Pre-seeded Users:**
@@ -145,12 +145,12 @@ Extend `authSchema` in `packages/auth/src/config.ts`:
 ```ts
   z.object({
     AUTH_PROVIDER: z.literal("keycloak"),
-    KEYCLOAK_ISSUER: z.url(), // e.g. http://localhost:8080/realms/studio
+    KEYCLOAK_ISSUER: z.url(), // e.g. http://localhost:8080/realms/dashboard
     KEYCLOAK_CLIENT_ID: z.string().min(1),
     KEYCLOAK_CLIENT_SECRET: z.string().min(1),
   }),
 ```
-Add `KEYCLOAK_ISSUER`, `KEYCLOAK_CLIENT_ID`, and `KEYCLOAK_CLIENT_SECRET` to `turbo.json` (`tasks.build.env`) and `apps/studio/.env.example`.
+Add `KEYCLOAK_ISSUER`, `KEYCLOAK_CLIENT_ID`, and `KEYCLOAK_CLIENT_SECRET` to `turbo.json` (`tasks.build.env`) and `apps/dashboard/.env.example`.
 
 Update `packages/auth/src/server.ts` and `packages/auth/src/proxy.ts` to dispatch to `./keycloak/server` and `./keycloak/proxy` when `authConfig.AUTH_PROVIDER === "keycloak"`.
 
@@ -160,7 +160,7 @@ Update `packages/auth/src/server.ts` and `packages/auth/src/proxy.ts` to dispatc
 
 Files to create in `packages/auth/src/keycloak/`:
 - `cookies.ts`:
-  - Cookie names derived from `options.cookieName` (e.g. `nmb-studio-auth`):
+  - Cookie names derived from `options.cookieName` (e.g. `nmb-dashboard-auth`):
     - `${cookieName}.access` (`httpOnly: true`, `sameSite: "lax"`, `secure: isProd`, `path: "/"`, `maxAge`: token `expires_in`)
     - `${cookieName}.refresh` (`httpOnly: true`, `sameSite: "lax"`, `secure: isProd`, `path: "/"`, `maxAge`: `refresh_expires_in` or 30 days)
     - `${cookieName}.id` (`httpOnly: true`, `sameSite: "lax"`, `secure: isProd`, `path: "/"`, `maxAge`: `refresh_expires_in` or 30 days)
@@ -208,23 +208,23 @@ Files to create in `packages/auth/src/keycloak/`:
 
 ---
 
-### 5.4 Callback Route & Auth Pages in `apps/studio`
+### 5.4 Callback Route & Auth Pages in `apps/dashboard`
 
 1. **`packages/auth/src/types.ts`:**
    - Widen `OAuthStartProvider` to `"google" | "keycloak" | "keycloak-register"`.
    - Update `oauth.exchangeCode(code: string, state?: string | null): Promise<void>`.
-2. **`apps/studio/app/auth/callback/route.ts`:**
+2. **`apps/dashboard/app/auth/callback/route.ts`:**
    - Pass `searchParams.get("state")` as the second argument: `await provider.oauth.exchangeCode(code, state)`.
-3. **`apps/studio/features/auth/actions.ts`:**
+3. **`apps/dashboard/features/auth/actions.ts`:**
    - Add `signInWithKeycloakAction()` (calls `provider.oauth?.start("keycloak", callbackUrl)`) and `signUpWithKeycloakAction()` (calls `provider.oauth?.start("keycloak-register", callbackUrl)`).
-4. **`apps/studio/app/(auth)/sign-in/page.tsx` & `sign-up/page.tsx`:**
+4. **`apps/dashboard/app/(auth)/sign-in/page.tsx` & `sign-up/page.tsx`:**
    - Read `authConfig.AUTH_PROVIDER` (or export `isKeycloakAuth()` from `@/lib/auth`).
    - When `AUTH_PROVIDER === "keycloak"`:
      - `/sign-in` renders `<OAuthButton action={signInWithKeycloakAction}>Continue with Keycloak</OAuthButton>` (plus `<DemoSignInButton>` if enabled).
      - `/sign-up` renders `<OAuthButton action={signUpWithKeycloakAction}>Create account with Keycloak</OAuthButton>`.
    - When `AUTH_PROVIDER` is `better-auth` or `supabase`:
      - Renders the existing `<SignInForm>` / `<SignUpForm>` unchanged.
-5. **`apps/studio/next.config.ts`:**
+5. **`apps/dashboard/next.config.ts`:**
    - When `process.env.AUTH_PROVIDER === "keycloak"` and `process.env.KEYCLOAK_ISSUER` is set, push `new URL(process.env.KEYCLOAK_ISSUER).origin` to `formActions` in `contentSecurityPolicy()`.
 
 ---

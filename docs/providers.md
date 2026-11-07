@@ -1,6 +1,6 @@
 # Providers: Neon, Supabase, Keycloak, or FastAPI OAuth2
 
-`apps/studio` is built to run on one of four **stacks**, chosen by a single env var. Pages, queries, actions, cache,
+`apps/dashboard` is built to run on one of four **stacks**, chosen by a single env var. Pages, queries, actions, cache,
 components and the DAL do not know which one is active.
 
 | `AUTH_PROVIDER` | Identity | Data and business rules | Schema lives in |
@@ -21,7 +21,7 @@ Neon (Postgres) with Drizzle, in `packages/db`:
 - `@workspace/db/neon` (`getDb()`, `node-postgres` pool over the pooled `DATABASE_URL`) and `@workspace/db/neon/schema`
   (app tables `orgs` / `projects` in `public`; Neon Auth keeps its users in the `neon_auth` schema of the same branch).
 - Migrations: `packages/db/neon/migrations`, applied with `pnpm --filter @workspace/db neon:migrate` over the direct
-  `DATABASE_URL_UNPOOLED` (reads `apps/studio/.env.local`; fill it with `pnpm neon:env`). Change the schema in `schema.ts`, then
+  `DATABASE_URL_UNPOOLED` (reads `apps/dashboard/.env.local`; fill it with `pnpm neon:env`). Change the schema in `schema.ts`, then
   `pnpm --filter @workspace/db neon:generate`. Never edit an applied migration.
 - Tenant boundary: every query filters by the signed-in `userId` (`ownerId`); another user's org looks missing.
 - Provisioning: `neon.ts` (services), `.neon` (project link, git-ignored), `.mcp.json` (Neon MCP, OAuth), skills `neon`
@@ -33,7 +33,7 @@ Neon (Postgres) with Drizzle, in `packages/db`:
   `neon_auth` schema of the same branch, so `ownerId` in `orgs` is that user id. Not wired: Google (needs provider setup
   in the Neon console), email verification, organizations.
 
-**Current state.** A project built on the base can run on `supabase` (hosted project, foundation schema only; the studio
+**Current state.** A project built on the base can run on `supabase` (hosted project, foundation schema only; the dashboard
 uses it through `packages/auth` and `packages/db`). All stacks stay in the base: switching `AUTH_PROVIDER` still works
 for a project that wants Keycloak, Supabase, or pure FastAPI OAuth2. History below is the base's: the Supabase **foundation**
 stays in the base (§1) so a new project can start on Supabase without setup work. The original Supabase data path (schema, RLS, SQL functions, pgTAP tests, the
@@ -46,7 +46,7 @@ identity with the other data path without the backend work in §8.
 
 ## 1. The Supabase foundation (kept in the base)
 
-Paths relative to `apps/studio/`.
+Paths relative to `apps/dashboard/`.
 
 | Piece | Files | What it gives a new project |
 | :--- | :--- | :--- |
@@ -63,9 +63,9 @@ Paths relative to `apps/studio/`.
 ## 2. Running each stack
 
 ### 2.1 Neon (Neon Auth + Neon Postgres)
-1. `pnpm neon:env` (root) pulls the Neon variables into `apps/studio/.env.local`; add `NEON_AUTH_COOKIE_SECRET` (32+ chars) and `DATA_PROVIDER=neon`.
+1. `pnpm neon:env` (root) pulls the Neon variables into `apps/dashboard/.env.local`; add `NEON_AUTH_COOKIE_SECRET` (32+ chars) and `DATA_PROVIDER=neon`.
 2. `pnpm --filter @workspace/db neon:migrate`.
-3. `pnpm --filter studio dev`.
+3. `pnpm --filter dashboard dev`.
 
 ### 2.2 A new project on Supabase (from this base)
 Commands run from `packages/db` with `pnpm exec` (the Supabase CLI and `supabase/` live there).
@@ -77,12 +77,12 @@ Commands run from `packages/db` with `pnpm exec` (the Supabase CLI and `supabase
    `supabase db advisors --linked`, then `supabase gen types typescript --linked > packages/db/src/database.types.ts`.
 4. Feature data: a project with one stack writes `features/<x>/server.ts` directly with `createDataClient` + `unwrap`.
    A repo that keeps both stacks uses the selector: `server.ts` picks `server.api.ts` or `server.supabase.ts` and types
-   the second as `typeof api`, so `tsc` fails when they drift (example: `git show 91c11f0:apps/studio/features/goals/server.ts`).
+   the second as `typeof api`, so `tsc` fails when they drift (example: `git show 91c11f0:apps/dashboard/features/goals/server.ts`).
 5. Auth settings: site URL and `<app>/auth/callback` as a redirect URL, in the dashboard or with `supabase config push`.
    `config push` writes **every** property `config.toml` declares, including local-only ones (email rate limit, MFA
    off): to push one block, run it with `--workdir <dir>` whose `supabase/config.toml` declares only that block, and
    preview with `supabase config diff`.
-6. `pnpm --filter studio dev`; then the parity checklist (§7) for the flows the project has.
+6. `pnpm --filter dashboard dev`; then the parity checklist (§7) for the flows the project has.
 
 ### 2.3 Back on Supabase
 Everything is in commit `91c11f0`:
@@ -94,18 +94,18 @@ Everything is in commit `91c11f0`:
 4. `e2e/parity.spec.ts` on both stacks (8/8 each at `91c11f0`).
 
 ### 2.4 Keycloak IDP
-1. In `d:\Dev_Projects\keycloak-idp`: `docker compose up -d` (starts Keycloak 26 on port 8080 and Postgres 17; imports the `studio` realm).
-2. `apps/studio/.env.local`: `AUTH_PROVIDER=keycloak`, `KEYCLOAK_ISSUER=http://localhost:8080/realms/studio`, `KEYCLOAK_CLIENT_ID=studio-app`, `KEYCLOAK_CLIENT_SECRET=studio-dev-client-secret-at-least-32-chars`.
-3. `pnpm --filter studio dev`.
+1. In `d:\Dev_Projects\keycloak-idp`: `docker compose up -d` (starts Keycloak 26 on port 8080 and Postgres 17; imports the `dashboard` realm).
+2. `apps/dashboard/.env.local`: `AUTH_PROVIDER=keycloak`, `KEYCLOAK_ISSUER=http://localhost:8080/realms/dashboard`, `KEYCLOAK_CLIENT_ID=dashboard-app`, `KEYCLOAK_CLIENT_SECRET=dashboard-dev-client-secret-at-least-32-chars`.
+3. `pnpm --filter dashboard dev`.
 
 ### 2.5 FastAPI OAuth2 (pure)
 The backend hashes passwords (`bcrypt`), stores its own `users` table, and issues/verifies its
 own JWTs (`PyJWT`, HS256). There is no JWKS endpoint — issuer and verifier are the same service, so the frontend
 verifies the signature with a secret it must be given, not a published public key.
 1. `docker compose up -d` in `your FastAPI backend` (your FastAPI backend).
-2. `apps/studio/.env.local`: `AUTH_PROVIDER=fastapi-oauth`, `API_BASE_URL=http://localhost:8000`,
+2. `apps/dashboard/.env.local`: `AUTH_PROVIDER=fastapi-oauth`, `API_BASE_URL=http://localhost:8000`,
    `JWT_SECRET_KEY=<same value as the backend's own JWT_SECRET_KEY>`.
-3. `pnpm --filter studio dev`.
+3. `pnpm --filter dashboard dev`.
 No social login: the backend doesn't implement any, so `SocialAuthButtons` shows both buttons disabled on this stack.
 
 ## 3. The seams (the only code that knows the provider)
@@ -177,7 +177,7 @@ Rules:
 
 ## 7. Parity checklist
 
-Automated in `apps/studio/e2e/parity.spec.ts`: switch `AUTH_PROVIDER`, restart `next dev`, run it again.
+Automated in `apps/dashboard/e2e/parity.spec.ts`: switch `AUTH_PROVIDER`, restart `next dev`, run it again.
 
 - Sign up → Today, timezone synced from the browser; sign out → sign in; wrong password keeps the email.
 - Goal → habit from the goal page → full / minimum / undo → reload keeps it; streak updates.

@@ -1,6 +1,6 @@
 # Authentication
 
-How authentication works in the dashboard app (`apps/studio`; `apps/web` is a public landing page with no session) and why. The code lives in
+How authentication works in the dashboard app (`apps/dashboard`; `apps/web` is a public landing page with no session) and why. The code lives in
 `packages/auth` (`@workspace/auth`) and `packages/db` (`@workspace/db`) so every app shares it.
 Applies to Next.js 16.4 with Cache Components enabled.
 
@@ -43,7 +43,7 @@ Browser ─cookie─▶ proxy.ts ─▶ updateSession (provider): optimistic coo
                               JWKS (RS256/ES256) or HS256 verification at backend
 ```
 
-Paths in `apps/studio/` unless they start with `packages/`:
+Paths in `apps/dashboard/` unless they start with `packages/`:
 - `proxy.ts`: calls `updateSession(request, AUTH_OPTIONS)` from `@workspace/auth/proxy`, which refreshes the active
   provider's session; `redirectWithSession` keeps the refreshed cookies on redirects.
 - `config/auth.ts`: `AUTH_OPTIONS` (this app's cookie name); `lib/auth.ts`: `getAuthProvider()` bound to it.
@@ -67,11 +67,11 @@ Only the `keycloak` and `fastapi-oauth` stacks send a Bearer token to FastAPI. K
 
 ## Shared packages, per-app cookies and roles
 
-**Auth UI (`apps/studio/features/auth/components`).** The forms hold no logic, so they copy cleanly into another
+**Auth UI (`apps/dashboard/features/auth/components`).** The forms hold no logic, so they copy cleanly into another
 project: `SignInForm`, `SignUpForm`, `DemoSignInButton`, `OAuthButton`, `SignOutButton`, `SignOutMenuItem`,
 `PasswordInput` and `FormError` take the Server Action as an `action` prop (`<SignInForm action={signInAction} />`) and
 share the state types in `features/auth/types.ts`. `features/auth/actions.ts` owns the provider, cookie and redirects.
-Like Supabase (its sign-in form lives in `apps/studio/components/interfaces/SignIn`, not in a package), the forms stay
+Like Supabase (its sign-in form lives in `apps/dashboard/components/interfaces/SignIn`, not in a package), the forms stay
 in the app that owns the login; they become a package only when a second app needs them. The page frame
 (`app/(auth)/_components`, the stack showcase) is the product's look and stays in the app too.
 
@@ -86,7 +86,7 @@ in the app that owns the login; they become a package only when a second app nee
 | `@workspace/db/{public,server,errors,format,types}` | Supabase clients (`createPublicClient` for `"use cache"`, `createDataClient(token)` for RLS as the user), `unwrap`, `DataError`, `formatVnd`, `slugify`, generated `Database` |
 
 **One cookie per app.** `AuthOptions.cookieName` becomes the Supabase cookie name (`cookieOptions.name`) and the Better
-Auth cookie prefix (`advanced.cookiePrefix`). The studio uses `nmb-studio-auth`. A second app (a back office) would pick its own name:
+Auth cookie prefix (`advanced.cookiePrefix`). The dashboard uses `nmb-dashboard-auth`. A second app (a back office) would pick its own name:
 in dev apps share `localhost` (ports do not separate cookies), and in production they sit on different domains anyway,
 so signing in or out of one never touches the other.
 

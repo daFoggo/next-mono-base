@@ -25,7 +25,7 @@ Có 2 mẫu. Chọn theo mức ở bước triage (`references/00-triage.md`):
 
 ### Ví dụ mức 1: landing page có form liên hệ và Google Analytics
 
-> **Rà soát pháp lý: studio-an.vn** (02/11/2026)
+> **Rà soát pháp lý: dashboard-an.vn** (02/11/2026)
 >
 > **Kết quả quét:** mức 1. Có form liên hệ (`index.html:14`, gửi qua Formspree) và Google Analytics (`index.html:5`). Không bán hàng, không có tài khoản người dùng.
 >

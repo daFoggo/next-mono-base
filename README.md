@@ -7,7 +7,7 @@ Next.js 16.4 + Turborepo + pnpm monorepo base with shadcn/ui (`base-nova` + Anim
 ```
 apps/
   web/                    Next.js landing page (runnable, public)
-  studio/                 Next.js dashboard: sign-in, organizations, projects (runnable)
+  dashboard/                 Next.js dashboard: sign-in, organizations, projects (runnable)
 packages/
   ui/                     @workspace/ui — shared shadcn/ui components, styles
   auth/                   @workspace/auth — Neon Auth / Supabase / Keycloak / FastAPI OAuth2 providers behind AUTH_PROVIDER
@@ -24,8 +24,8 @@ scoped `@workspace/*`, declared with `workspace:*`, and never nested or imported
 
 ```bash
 pnpm install
-pnpm dev                          # all apps: web (landing) on :3000, studio (dashboard) on :3001
-pnpm turbo run dev --filter=studio   # one app
+pnpm dev                          # all apps: web (landing) on :3000, dashboard (dashboard) on :3001
+pnpm turbo run dev --filter=dashboard   # one app
 pnpm build
 pnpm check                        # lint + typecheck
 ```
@@ -33,7 +33,7 @@ pnpm check                        # lint + typecheck
 ## Adding shadcn components
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/studio
+pnpm dlx shadcn@latest add button -c apps/dashboard
 ```
 
 Components land in `packages/ui/src/components`; import with

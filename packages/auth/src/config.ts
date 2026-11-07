@@ -40,14 +40,14 @@ export function getAuthSchema(isProd = process.env.NODE_ENV === "production") {
     }),
     z.object({
       AUTH_PROVIDER: z.literal("keycloak"),
-      KEYCLOAK_ISSUER: z.url().default("http://localhost:8080/realms/studio"),
-      KEYCLOAK_CLIENT_ID: z.string().min(1).default("studio-app"),
+      KEYCLOAK_ISSUER: z.url().default("http://localhost:8080/realms/dashboard"),
+      KEYCLOAK_CLIENT_ID: z.string().min(1).default("dashboard-app"),
       KEYCLOAK_CLIENT_SECRET: isProd
         ? z.string().min(1, "KEYCLOAK_CLIENT_SECRET is required in production")
         : z
             .string()
             .min(1)
-            .default("studio-dev-client-secret-at-least-32-chars"),
+            .default("dashboard-dev-client-secret-at-least-32-chars"),
     }),
     z.object({
       AUTH_PROVIDER: z.literal("fastapi-oauth"),
@@ -95,7 +95,7 @@ export function parseAuthConfig(
     KEYCLOAK_CLIENT_ID: env.KEYCLOAK_CLIENT_ID,
     KEYCLOAK_CLIENT_SECRET:
       env.KEYCLOAK_CLIENT_SECRET ||
-      (!isProd ? "studio-dev-client-secret-at-least-32-chars" : undefined),
+      (!isProd ? "dashboard-dev-client-secret-at-least-32-chars" : undefined),
     API_BASE_URL: env.API_BASE_URL,
     JWT_SECRET_KEY:
       env.JWT_SECRET_KEY ||

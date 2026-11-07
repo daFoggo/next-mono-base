@@ -33,7 +33,7 @@ importers:
         specifier: ^2.11.7
         version: 2.11.7
 
-  apps/studio:
+  apps/dashboard:
     dependencies:
       '@base-ui/react':
         specifier: ^1.9.0

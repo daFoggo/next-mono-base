@@ -1,8 +1,8 @@
 # Routing, Layouts & Route Segments
 
-How `apps/studio` organizes routes, handles multi-panel layouts, modals, and segment boundaries.
+How `apps/dashboard` organizes routes, handles multi-panel layouts, modals, and segment boundaries.
 Written against **Next.js 16.4.2** with React 19, `cacheComponents: true`, and `partialPrefetching: true`.
-Sources are the docs shipped with the package (`apps/studio/node_modules/next/dist/docs/01-app/`, written `DOCS/` below).
+Sources are the docs shipped with the package (`apps/dashboard/node_modules/next/dist/docs/01-app/`, written `DOCS/` below).
 For feature folder layout and component tiers, see [project-structure.md](project-structure.md).
 For data fetching and caching rules, see [data-fetching.md](data-fetching.md).
 
@@ -74,7 +74,7 @@ Parallel routes allow simultaneously or conditionally rendering multiple indepen
 Slots are folders prefixed with `@` (e.g. `@analytics`, `@team`). They are passed as props to the parent layout alongside `children`:
 
 ```
-apps/studio/app/(dashboard)/dashboard/
+apps/dashboard/app/(dashboard)/dashboard/
   layout.tsx
   page.tsx             # Implicit slot: children
   @analytics/
@@ -346,7 +346,7 @@ export async function generateMetadata({
 Generate search engine sitemaps dynamically (`DOCS/03-api-reference/03-file-conventions/04-metadata-file-conventions/sitemap.md`):
 
 ```ts
-// apps/studio/app/sitemap.ts
+// apps/dashboard/app/sitemap.ts
 import type { MetadataRoute } from 'next'
 import { getPublicCaseSlugs } from '@/features/cases/server'
 
@@ -377,7 +377,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 Control search crawler indexing (`DOCS/03-api-reference/03-file-conventions/04-metadata-file-conventions/robots.md`):
 
 ```ts
-// apps/studio/app/robots.ts
+// apps/dashboard/app/robots.ts
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -400,7 +400,7 @@ export default function robots(): MetadataRoute.Robots {
 Generate dynamic Open Graph cards on the edge using JSX and `@vercel/og` (`DOCS/03-api-reference/03-file-conventions/04-metadata-file-conventions/opengraph-image.md`):
 
 ```tsx
-// apps/studio/app/cases/[id]/opengraph-image.tsx
+// apps/dashboard/app/cases/[id]/opengraph-image.tsx
 import { ImageResponse } from 'next/og'
 import { getCaseDetail } from '@/features/cases/queries'
 

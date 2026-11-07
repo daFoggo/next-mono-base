@@ -36,7 +36,7 @@ export function isKeycloakProvider(): boolean {
   return authConfig.AUTH_PROVIDER === "keycloak"
 }
 
-/** The active provider (`AUTH_PROVIDER`, docs/providers.md) bound to the studio cookie. */
+/** The active provider (`AUTH_PROVIDER`, docs/providers.md) bound to the dashboard cookie. */
 export async function getAuthProvider(): Promise<AuthProvider> {
   const cookieStore = await cookies()
   const demo = await readDemoSession(cookieStore.get(DEMO_COOKIE)?.value)

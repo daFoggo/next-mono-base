@@ -35,7 +35,7 @@ export type NavEntry = NavLink | NavGroup
 export type NavSection = { label: string; entries: NavEntry[] }
 
 /**
- * One sidebar menu, chosen by the URL like Supabase's Studio. A scope with a `prefix` owns every
+ * One sidebar menu, chosen by the URL like Supabase's Dashboard. A scope with a `prefix` owns every
  * path under `<prefix>/<param value>`; the scope without one is the fallback. Plain data, so a
  * Server Component can filter it and hand it to the client.
  */

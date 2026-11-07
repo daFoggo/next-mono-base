@@ -45,7 +45,7 @@ export default function PrivacyPolicyPage() {
               render={<a href={SIGN_UP_HREF} />}
               nativeButton={false}
             >
-              Open Studio
+              Open dashboard
             </Button>
           </nav>
         </div>
@@ -79,7 +79,7 @@ export default function PrivacyPolicyPage() {
           <section className="flex flex-col gap-3">
             <h2 className="text-xl font-medium text-foreground">1. Data Controller and Contact Information</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Next Mono Base operates as the data controller for personal data processed through our website and studio dashboard.
+              Next Mono Base operates as the data controller for personal data processed through our website and dashboard.
               If you have any questions, requests, or concerns regarding your privacy or this policy, you may reach our Data Protection Officer (DPO) at:
             </p>
             <div className="rounded-lg border border-border/50 bg-muted/20 p-4 font-mono text-xs text-foreground/90">
@@ -102,7 +102,7 @@ export default function PrivacyPolicyPage() {
               </li>
               <li>
                 <strong className="text-foreground font-medium">Authentication &amp; Session Identifiers:</strong> Access tokens,
-                session cookies (<code className="font-mono text-xs">nmb-studio-auth.access</code>, <code className="font-mono text-xs">SameSite=Lax</code>),
+                session cookies (<code className="font-mono text-xs">nmb-dashboard-auth.access</code>, <code className="font-mono text-xs">SameSite=Lax</code>),
                 and IP addresses required for session binding and defense against token theft.
               </li>
               <li>
@@ -206,7 +206,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-xl font-medium text-foreground">7. Account Deletion and Data Retention</h2>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              You may initiate account deletion directly from your Studio Dashboard Settings under the &ldquo;Danger Zone&rdquo; section,
+              You may initiate account deletion directly from your Dashboard Settings under the &ldquo;Danger Zone&rdquo; section,
               or by submitting a written request to <code className="font-mono text-xs">privacy@next-mono-base.local</code>. Upon confirmation,
               all personal data, active tokens, and workspace associations will be irreversibly purged within 20 business days.
             </p>

@@ -16,9 +16,9 @@ import {
 function getOidcConfig(): KeycloakOidcConfig {
   if (authConfig.AUTH_PROVIDER !== "keycloak") {
     return {
-      issuer: "http://localhost:8080/realms/studio",
-      clientId: "studio-app",
-      clientSecret: "studio-dev-client-secret-at-least-32-chars",
+      issuer: "http://localhost:8080/realms/dashboard",
+      clientId: "dashboard-app",
+      clientSecret: "dashboard-dev-client-secret-at-least-32-chars",
     }
   }
   return {
