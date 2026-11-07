@@ -7,7 +7,7 @@ import { AppLogo } from "@workspace/ui-patterns/app-logo"
 import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
 
 import { CONTAINER } from "@/config/layout"
-import { SIGN_IN_HREF, SIGN_UP_HREF } from "@/config/site"
+import { SIGN_IN_HREF, dashboardHref } from "@/config/site"
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
             </Button>
             <Button
               size="sm"
-              render={<a href={SIGN_UP_HREF} />}
+              render={<a href={dashboardHref("/dashboard")} />}
               nativeButton={false}
             >
               Open dashboard
@@ -206,8 +206,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-xl font-medium text-foreground">7. Account Deletion and Data Retention</h2>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              You may initiate account deletion directly from your Dashboard Settings under the &ldquo;Danger Zone&rdquo; section,
-              or by submitting a written request to <code className="font-mono text-xs">privacy@next-mono-base.local</code>. Upon confirmation,
+              You may request account deletion by submitting a written request to <code className="font-mono text-xs">privacy@next-mono-base.local</code>. Upon confirmation,
               all personal data, active tokens, and workspace associations will be irreversibly purged within 20 business days.
             </p>
           </section>

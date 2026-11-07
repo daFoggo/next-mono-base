@@ -10,6 +10,7 @@ export function CopyCommand({ command }: { command: string }) {
       <span className="select-all text-foreground/90 font-medium">{command}</span>
       <CopyButton
         content={command}
+        aria-label="Copy command"
         variant="ghost"
         size="icon"
         className="size-6 text-muted-foreground hover:text-foreground hover:bg-transparent"

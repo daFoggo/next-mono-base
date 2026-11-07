@@ -3,7 +3,7 @@ import { AppLogo } from "@workspace/ui-patterns/app-logo"
 import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
 
 import { CONTAINER } from "@/config/layout"
-import { SIGN_IN_HREF, SIGN_UP_HREF } from "@/config/site"
+import { SIGN_IN_HREF, dashboardHref } from "@/config/site"
 
 export function Header() {
   return (
@@ -22,7 +22,7 @@ export function Header() {
           </Button>
           <Button
             size="sm"
-            render={<a href={SIGN_UP_HREF} />}
+            render={<a href={dashboardHref("/dashboard")} />}
             nativeButton={false}
           >
             Open dashboard

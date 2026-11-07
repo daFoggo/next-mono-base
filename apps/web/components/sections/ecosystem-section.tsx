@@ -1,14 +1,5 @@
-import dynamic from "next/dynamic"
-
 import { CountingNumber } from "@workspace/ui/components/animate-ui/numbers/counting-number"
-import { StackGridSkeleton } from "@/components/skeletons/stack-grid-skeleton"
-
-const StackGrid = dynamic(
-  () => import("@workspace/ui-patterns/stack-grid").then((m) => m.StackGrid),
-  {
-    loading: () => <StackGridSkeleton />,
-  }
-)
+import { StackGrid } from "@workspace/ui-patterns/stack-grid"
 
 export function EcosystemSection() {
   return (

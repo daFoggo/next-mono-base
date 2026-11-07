@@ -7,7 +7,7 @@ import { AppLogo } from "@workspace/ui-patterns/app-logo"
 import { ThemeToggle } from "@workspace/ui-patterns/theme-toggle"
 
 import { CONTAINER } from "@/config/layout"
-import { SIGN_IN_HREF, SIGN_UP_HREF } from "@/config/site"
+import { SIGN_IN_HREF, dashboardHref } from "@/config/site"
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -42,7 +42,7 @@ export default function TermsOfServicePage() {
             </Button>
             <Button
               size="sm"
-              render={<a href={SIGN_UP_HREF} />}
+              render={<a href={dashboardHref("/dashboard")} />}
               nativeButton={false}
             >
               Open dashboard
@@ -144,7 +144,7 @@ export default function TermsOfServicePage() {
           <section className="flex flex-col gap-3">
             <h2 className="text-xl font-medium text-foreground">6. Termination and Account Erasure</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              You may terminate these Terms at any time by deleting your account from the Dashboard Settings. We reserve the right
+              You may terminate these Terms at any time by requesting deletion of your account (see our Privacy Policy). We reserve the right
               to suspend or terminate accounts that breach these Terms. Upon termination, data erasure will be carried out in
               accordance with our Privacy Policy.
             </p>

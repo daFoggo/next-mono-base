@@ -1,19 +1,12 @@
 import dynamic from "next/dynamic"
 
 import { ProviderTabsSkeleton } from "@/components/skeletons/provider-tabs-skeleton"
-import { MonorepoMapSkeleton } from "@/components/skeletons/monorepo-map-skeleton"
+import { MonorepoMap } from "@/components/monorepo-map"
 
 const ProviderTabs = dynamic(
   () => import("@/components/provider-tabs").then((m) => m.ProviderTabs),
   {
     loading: () => <ProviderTabsSkeleton />,
-  }
-)
-
-const MonorepoMap = dynamic(
-  () => import("@/components/monorepo-map").then((m) => m.MonorepoMap),
-  {
-    loading: () => <MonorepoMapSkeleton />,
   }
 )
 

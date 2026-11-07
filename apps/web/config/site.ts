@@ -8,4 +8,3 @@ export function dashboardHref(path: string): string {
 export const REPO_URL = "https://github.com/daFoggo/next-mono-base"
 
 export const SIGN_IN_HREF = dashboardHref("/sign-in")
-export const SIGN_UP_HREF = dashboardHref("/sign-up")

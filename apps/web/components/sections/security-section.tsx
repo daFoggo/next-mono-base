@@ -17,7 +17,7 @@ export function SecuritySection() {
         </div>
         <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-foreground/85">
-            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="size-1.5 rounded-full bg-emerald-500 motion-safe:animate-pulse" />
             10/10 Coverage Units Verified
           </span>
         </div>

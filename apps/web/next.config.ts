@@ -69,7 +69,7 @@ const nextConfig: NextConfig = {
     return [
       {
         // Not the dashboard paths: they answer with their own CSP.
-        source: `/((?!${DASHBOARD_PATHS.join("|")}).*)`,
+        source: `/((?!(?:${[...DASHBOARD_PATHS, "dashboard-static"].join("|")})(?:/|\\.segments|$)).*)`,
         headers: [
           { key: "Content-Security-Policy", value: contentSecurityPolicy() },
           { key: "X-Content-Type-Options", value: "nosniff" },

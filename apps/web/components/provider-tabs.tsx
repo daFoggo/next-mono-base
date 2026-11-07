@@ -32,7 +32,6 @@ KEYCLOAK_CLIENT_SECRET="dashboard-dev-client-secret"`,
     name: "Neon Auth",
     badge: "Managed + Postgres",
     envSnippet: `AUTH_PROVIDER="neon-auth"
-DATA_PROVIDER="neon"
 NEON_AUTH_BASE_URL="https://ep-xxx.neonauth.../neondb/auth"
 NEON_AUTH_COOKIE_SECRET="your-32-character-random-secret"
 DATABASE_URL="postgresql://..."`,

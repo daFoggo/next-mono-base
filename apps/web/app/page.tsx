@@ -15,7 +15,7 @@ import { Footer } from "@/components/sections/footer"
  * - Wide 1336px responsive container with comfortable whitespace
  * - Animate UI components: spring CopyButton, CountingNumber, spring gliding tabs
  * - Strict design system compliance: smallest text is text-xs, zero custom -[] values
- * - Decoupled modular sections with code splitting and lazy loading via next/dynamic
+ * - Decoupled modular sections (only client components that need it are lazy loaded)
  * - Zero barrel overhead with explicit package imports
  */
 export default function HomePage() {
