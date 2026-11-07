@@ -3,8 +3,7 @@
 How `apps/dashboard` looks and behaves: color, type, spacing, responsive layout, components and motion. The theme is
 shadcn `base-nova` with the stock shadcn tokens, nothing custom. Every value is Tailwind's default scale. Tokens live in
 `packages/ui/src/styles/globals.css`, components in `packages/ui/src/components` (shadcn, style `base-nova`).
-An illustrated, interactive version of this guide lives in [design-system/base-design-system.html](design-system/base-design-system.html)
-(it still shows the previous theme). When the two disagree, this file wins.
+The landing page (`apps/web`) and the dashboard are the live reference for this guide; when they disagree with this file, fix whichever is wrong.
 
 ---
 

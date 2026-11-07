@@ -55,10 +55,10 @@ const TREE = [
   ["  dashboard", "signed-in app"],
   ["  web", "landing page"],
   ["packages/", ""],
-  ["  auth", "AuthProvider and 5 providers"],
-  ["  db", "Drizzle for Neon, Supabase SQL"],
-  ["  ui", "shadcn, Animate UI, tokens"],
-  ["  ui-patterns", "logo, theme toggle, pixel art"],
+  ["  auth", "5 sign-in stacks"],
+  ["  db", "Drizzle, Supabase SQL"],
+  ["  ui", "shadcn, Animate UI"],
+  ["  ui-patterns", "logo, pixel art"],
 ] as const
 
 export function PackagesPanel() {
@@ -67,7 +67,7 @@ export function PackagesPanel() {
       <div className="relative w-4/5 min-w-72 bg-zinc-950 p-5 font-mono text-sm leading-relaxed whitespace-pre text-zinc-100">
         {TREE.map(([name, note]) => (
           <div key={name} className="flex gap-4">
-            <span className="w-28 shrink-0">{name}</span>
+            <span className="w-32 shrink-0">{name}</span>
             <span className="text-zinc-400 max-sm:hidden">{note}</span>
           </div>
         ))}

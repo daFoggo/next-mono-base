@@ -31,7 +31,7 @@ export function OrgCard({ org, projects }: { org: Org; projects: number }) {
         <Card className="h-full transition-colors duration-150 hover:bg-accent">
           <CardHeader>
             <CardTitle>{org.name}</CardTitle>
-            <CardDescription className="font-mono">
+            <CardDescription>
               {projects} projects · {org.members} members
             </CardDescription>
             <Badge variant="secondary" className="w-fit">
@@ -51,7 +51,7 @@ export function ProjectCard({ project }: { project: Project }) {
         <Card className="h-full transition-colors duration-150 hover:bg-accent">
           <CardHeader>
             <CardTitle>{project.name}</CardTitle>
-            <CardDescription className="font-mono">
+            <CardDescription>
               {project.ref} · {project.region}
             </CardDescription>
             <Badge

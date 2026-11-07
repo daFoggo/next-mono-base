@@ -25,7 +25,7 @@ async function SettingsContent({
       {/* General Settings */}
       <div className="flex flex-col gap-4 rounded-lg border border-border/50 bg-muted/10 p-6">
         <h2 className="text-base font-medium text-foreground">Organization Overview</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 font-mono text-xs">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 text-sm">
           <div>
             <span className="text-muted-foreground">Name</span>
             <p className="mt-1 text-sm font-medium text-foreground">{org.name}</p>

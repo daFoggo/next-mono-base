@@ -25,7 +25,7 @@ export function AuthAside({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col gap-8 text-foreground">{children}</div>
         </div>
         {/* Same height as the header so the showcase stays vertically centered. */}
-        <div className="relative flex h-24 shrink-0 items-center justify-between font-mono text-xs text-muted-foreground">
+        <div className="relative flex h-24 shrink-0 items-center justify-between text-sm text-muted-foreground">
           <span>© 2026 Next Mono Base</span>
           <ThemeToggle />
         </div>
@@ -59,7 +59,7 @@ export function AuthMain({ children }: { children: React.ReactNode }) {
   return (
     <main className="flex min-h-svh flex-col px-9 max-sm:px-6 lg:col-span-6 xl:col-span-5">
       {children}
-      <p className="py-8 text-center font-mono text-xs text-balance text-muted-foreground">
+      <p className="py-8 text-center text-sm text-balance text-muted-foreground">
         By continuing, you agree to the{" "}
         <a
           href={`${LANDING_URL}/terms`}
@@ -96,7 +96,7 @@ export function AuthHeader({ children }: { children: React.ReactNode }) {
       </a>
       <a
         href={LANDING_URL}
-        className="hidden font-mono text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground lg:block"
+        className="hidden text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground lg:block"
       >
         Go to home page
       </a>
@@ -116,7 +116,7 @@ export function AuthSwitch({
   children: React.ReactNode
 }) {
   return (
-    <p className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
+    <p className="flex items-center gap-2 text-sm text-muted-foreground">
       <span className="max-sm:hidden">{prompt}</span>
       <Link
         href={href}
