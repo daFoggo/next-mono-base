@@ -47,7 +47,8 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     const origin = process.env.DASHBOARD_ORIGIN ?? "http://localhost:3001"
-    return [
+    // beforeFiles: Vercel resolves segment prefetches (`.segments`) before the afterFiles rewrites run.
+    const beforeFiles = [
       ...DASHBOARD_PATHS.flatMap((path) => [
         { source: `/${path}`, destination: `${origin}/${path}` },
         { source: `/${path}/:rest*`, destination: `${origin}/${path}/:rest*` },
@@ -62,6 +63,7 @@ const nextConfig: NextConfig = {
         destination: `${origin}/dashboard-static/:path+`,
       },
     ]
+    return { beforeFiles }
   },
   async headers() {
     return [
