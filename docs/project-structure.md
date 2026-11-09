@@ -21,7 +21,7 @@ This document defines how code is organized across the monorepo, the feature-bas
 next-mono-base/
 ├── apps/
 │   ├── web/                                # Public landing page (no auth, links to dashboard)
-│   └── dashboard/                             # The dashboard: auth, org/project scopes, everything signed-in
+│   └── dashboard/                             # The dashboard: auth, the app shell, everything signed-in
 │       ├── app/                            # Routing & composition only (page.tsx, layout.tsx)
 │       │   ├── (auth)/                     # Route group: sign-in, sign-up
 │       │   ├── (dashboard)/                # Route group: authenticated application shell
@@ -110,7 +110,7 @@ When creating a new component, choose its location based on **reusability scope*
 | Scope | Location | When to Use | Example |
 | :--- | :--- | :--- | :--- |
 | **Page-Local** | `app/**/_components/` | Used on **only one page** or route. Next.js ignores `_` folders from routing. | `app/(dashboard)/<name>/_components/<name>-hero.tsx` |
-| **Feature-Domain** | `features/<name>/components/` | Used across **multiple pages within the same feature/domain**. | `features/workspace/components/create-dialogs.tsx` |
+| **Feature-Domain** | `features/<name>/components/` | Used across **multiple pages within the same feature/domain**. | `features/invoices/components/invoice-table.tsx` |
 | **App-Wide Shell** | `components/layout/` | App shell, navigation, global header, sidebar. | `components/layout/sidebar/nav-tree.tsx` |
 | **App-Wide Shared** | `components/shared/` | Reusable across **multiple features**, but specific to `apps/dashboard` (pure presentational UI). | `components/shared/copy-button.tsx`, `components/shared/detail-sheet.tsx` |
 | **Primitive UI** | `packages/ui/src/components/` | Generic, **zero-business-logic** primitives from shadcn/ui. | `@workspace/ui/components/button` |
@@ -122,15 +122,15 @@ When Feature A needs to render a component owned by Feature B (for example, a `D
 1. **Composition via Slots / Children in `app/**/page.tsx` (Recommended)**:
    Keep features completely decoupled. Let the page compose them together:
    ```tsx
-   // apps/dashboard/app/(dashboard)/projects/page.tsx
-   import { ProjectTable } from "@/features/projects/components/project-table"
+   // apps/dashboard/app/(dashboard)/invoices/page.tsx
+   import { InvoiceTable } from "@/features/invoices/components/invoice-table"
    import { UserAvatar } from "@/features/users/components/user-avatar"
 
    export default async function Page() {
-     const projects = await getProjects()
+     const invoices = await getInvoices()
      return (
-       <ProjectTable
-         list={projects}
+       <InvoiceTable
+         list={invoices}
          renderUser={(user) => <UserAvatar name={user.name} image={user.avatarUrl} />}
        />
      )

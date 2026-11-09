@@ -34,7 +34,7 @@ Only the stock shadcn tokens exist: `background`, `foreground`, `card`, `popover
 `accent`, `destructive`, `border`, `input`, `ring`, `chart-1..5`, `sidebar-*` (each with its `-foreground`), plus `--radius`
 (`0.375rem`). Both `:root` and `.dark` define every token.
 `chart-1..4` are the brand ramp (orange, tangerine, yellow, red); `chart-1` (`#ff5229`) is the one accent color, used by the
-logo spark and the pixel art. Buttons stay neutral (`primary` is near-black in light, near-white in dark).
+logo spark. Buttons stay neutral (`primary` is near-black in light, near-white in dark).
 
 | Need | Use |
 | :--- | :--- |
@@ -46,7 +46,7 @@ logo spark and the pixel art. Buttons stay neutral (`primary` is near-black in l
 | Hover surface | `bg-accent` |
 | Errors, blocked | `text-destructive`, `<Alert variant="destructive">` |
 | Hairlines, field outlines | `border-border`, `border-input` |
-| The brand accent (logo spark, pixel art) | `fill-chart-1` … `fill-chart-4`, `text-chart-1`. Never for body text or buttons |
+| The brand accent (logo spark) | `fill-chart-1` … `fill-chart-4`, `text-chart-1`. Never for body text or buttons |
 
 To add a semantic color (success, warning), add a token to both `:root` and `.dark` and map it in `@theme inline`.
 
@@ -223,35 +223,17 @@ Rules:
 
 ---
 
-## Pixel art
-
-Own artwork, drawn in SVG, in `packages/ui-patterns/src/pixel-art.tsx`. Do not copy another brand's logo or illustrations.
-
-| Piece | What it is |
-| :--- | :--- |
-| `SPRITES` | 16x16 sprites (`dashboard`, `code`, `book`, `plug`, `palette`, `lock`, `building`, `key`), each drawn for one meaning, stored as run-length rows: `"3.4o2k"` is 3 empty, 4 orange, 2 ink |
-| `PixelArt name size` | Renders a sprite as `<rect>` runs with `shape-rendering: crispEdges`. `size` is `sm` 64px, `md` 96px, `lg` 128px (whole multiples of 16, so pixels stay crisp) |
-| `PixelTile name` | Card art: the sprite on a plate with a few loose squares and diamonds. Decorative, `aria-hidden` |
-| `PixelField tone` | A flat wallpaper of tinted squares (`orange`, `yellow`, `blue`, `green`) that fills its relative parent. The only fixed hex colors in the UI kit: they are illustrations and read the same in light and dark |
-
-Colors are theme tokens (`o` `chart-1`, `t` `chart-2`, `y` `chart-3`, `r` `chart-4`, `m` `chart-5`, `k` `foreground`), so a sprite follows light and
-dark. To add one, add its rows to `SPRITES`; `pixel-art.test.ts` fails if a row is not 16 wide or there are not 16 rows.
-
----
-
 ## Landing layout (apps/web)
 
-Modeled on Mistral's structure, with our own content and art. When you add a section, follow it:
+A single page of bands. When you add a section, follow it:
 
-- **Bands, not cards.** Full-bleed sections cut by one hairline (`border-b`). Alternate the surface (`bg-background`, `bg-card`) for emphasis.
+- **Bands, not cards.** Full-bleed sections cut by one hairline (`border-b`). Surfaces come from tokens only (`bg-background`, `bg-card`).
 - **Rails.** Two vertical hairlines run behind the page at the content edge (`app/page.tsx`, `inset-x-5 md:inset-x-9`). `GUTTER` in
   `config/layout.ts` is the same offset; text inside a band adds `px-9` so it never touches a rail.
-- **Header.** 44px, full width, cut into hairline cells: logo, section links, then sign-in and the primary button.
-- **Hero.** Centered display type (`lg:text-8xl`, two lines at most), one short line, one pill link. Flat color blocks, diamonds and
-  sprites sit along both edges and rest on the blocks; hidden below `lg`.
-- **Feature rows.** Sticky list on the left (`SectionNav`), then rows of text plus a `PixelField` panel with a small static mock-up,
-  alternating sides. On mobile the list is hidden and every grid is `grid-cols-1` (a bare `grid` lets wide children push the page sideways).
-- **Footer.** Link columns split by hairlines, theme toggle, the logo mark at `size="xl"` standing on four color stripes.
+- **Header.** 56px, full width, cut into hairline cells: logo, then links, then the primary button.
+- **Hero.** Centered display type (`sm:text-7xl`), one short line, a primary and an outline button. No illustrations.
+- **Section heading.** A band of its own (`border-b py-16`) holding one `h2`, then the content band below it.
+- **Mobile.** Every grid is `grid-cols-1` first (a bare `grid` lets wide children push the page sideways).
 - Copy is plain: say what the repo does and what it does not do yet.
 
 ---
@@ -292,7 +274,7 @@ detail sheet. Reference demo: the "Next Mono Base Design System" artifact, secti
 ### Anatomy
 
 Two full-height columns. Each column is a **header cell** plus a scrolling body. All header cells use one shared
-component so they always line up and the hairline runs straight across. Anything more (a record, a trace, a file) opens
+component so they always line up and the hairline runs straight across. Anything more (a record, an order, a file) opens
 as a [detail sheet](#detail-sheets) from the page, never as a third column.
 
 ```tsx
@@ -303,8 +285,8 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
 
 | Column | Header cell | Body |
 | :--- | :--- | :--- |
-| Sidebar (shadcn `<Sidebar collapsible="icon">`, `w-64`) | Logo + workspace switcher | `px-4 py-6 gap-8`: one labelled **section** per nav group (`WORKSPACE`, `SETTINGS`, ...), then account pinned to the bottom |
-| Main (`flex-1 min-w-0`) | `SidebarTrigger`, logo (below `md` only), path breadcrumb (`dashboard / settings / account`, no project name), `ThemeToggle` at the far right | `px-4 sm:px-8 pt-10 pb-14 gap-8`: page head, metrics, tabs + list |
+| Sidebar (shadcn `<Sidebar collapsible="icon">`, `w-64`) | Logo + sidebar trigger | `px-4 py-6 gap-8`: one labelled **section** per nav group (`WORKSPACE`, `SETTINGS`, ...), then account pinned to the bottom |
+| Main (`flex-1 min-w-0`) | `SidebarTrigger`, logo (below `md` only), path breadcrumb (`dashboard / settings / account`), `ThemeToggle` at the far right | `px-4 sm:px-8 pt-10 pb-14 gap-8`: page head, metrics, tabs + list |
 
 The header holds no state of its own: shadcn owns the sidebar's open state (`SidebarProvider`), `next-themes` the theme.
 
@@ -317,17 +299,17 @@ Scroll areas hide their scrollbar but stay scrollable (mouse, keys, touch):
 ### Sections
 
 The sidebar holds any number of **sections**, each a mono `text-xs` uppercase label over a tree
-(`config/navigation.ts`, `NavSection`). Name a section after what its pages are about (`Workspace`, `Settings`,
-`Projects`), never after the widget ("Tree", "Menu"). A section whose links the role cannot open is hidden. Inside a
+(`config/navigation.ts`, `NavSection`). Name a section after what its pages are about (`Overview`, `Billing`,
+`Settings`), never after the widget ("Tree", "Menu"). A section whose links the role cannot open is hidden. Inside a
 section an entry is a link or a collapsible group of links (two levels max).
 
-### Scoped menus (organization, project)
+### Scoped menus
 
-The menu depends on the URL, like Supabase's Dashboard: `/org/<slug>/...` shows the organization menu, `/project/<ref>/...`
-the project menu, everything else the global one. A menu is a `NavScope` in `NAV_SCOPES` (`config/navigation.ts`): plain
-data (`id`, `prefix`, `param`, `sections`) whose hrefs hold `:param` placeholders. To add a scope, add one entry and its
-layout under `app/(dashboard)/<prefix>/[param]/`. `SessionNav` (server) filters every scope by role; the client
-`ScopedNav` picks the scope from `usePathname()` and renders `NavTree`, which knows nothing about scopes.
+The menu depends on the URL, like Supabase's Dashboard: `/<prefix>/<id>/...` shows that scope's menu, everything else the global
+one. A menu is a `NavScope` in `NAV_SCOPES` (`config/navigation.ts`): plain data (`id`, `prefix`, `param`, `sections`) whose hrefs
+hold `:param` placeholders. `SessionNav` (server) filters every scope by role; the client `ScopedNav` picks the scope from
+`usePathname()` and renders `NavTree`, which knows nothing about scopes. How to add one, with the breadcrumb and the gate layout:
+[routing-and-layouts.md](routing-and-layouts.md) §6.4.
 
 The header has two icon buttons (`ghost`, `icon-sm`): `SidebarTrigger` (with `SidebarPrimitive.TriggerIcon` swapping between collapse/expand icons; Cmd/Ctrl+B also works) and `ThemeToggle`
 (built on Animate UI's `ThemeTogglerButton` icon spin/blur swap, while the page theme flips instantly via `disableTransitionOnChange`). The account row shows a user icon, name and role. Icons are functional only: one per navigable page (and the
@@ -404,7 +386,7 @@ Next Mono Base look is composed on top in `apps/dashboard/components/layout/`, g
 | `DetailSheet*` | `components/shared/detail-sheet.tsx` | Compound parts over animated `Sheet` (see Detail sheets) |
 | `CopyButton` | `components/shared/copy-button.tsx` | Animate UI `CopyButton` + `CopyButtonIcon` (`ghost`, `icon-sm`) |
 | `UserMenu` | `sidebar/user-menu.tsx` | Animated `DropdownMenu` with `data-sidebar="menu-button"` on the trigger; items are passed as children (sign out comes from `features/auth`) |
-| `DashboardBreadcrumb`, `CrumbMenu` | `header/dashboard-breadcrumb.tsx`, `header/crumb-menu.tsx` | `Breadcrumb`; global pages read like the path, scoped pages start with organization / project menus (`Crumb.options`, a `DropdownMenu`) then the page title from the nav |
+| `DashboardBreadcrumb`, `CrumbMenu` | `header/dashboard-breadcrumb.tsx`, `header/crumb-menu.tsx` | `Breadcrumb`; global pages read like the path, scoped pages start with a menu of siblings (`Crumb.options`, a `DropdownMenu`) then the page title from the nav |
 | `ScopedNav` | `sidebar/scoped-nav.tsx` | Client; the sidebar sections of the current scope, over `NavTree` |
 | `PageHead`, `Metrics`, `SpecList` | `page-head.tsx`, `components/shared/` | Plain markup |
 | `InfoHint` | `components/shared/info-hint.tsx` | `Popover` + ghost `icon-xs` `Button`; copy comes from `config/help.ts` (also read by the Guide page). `PageHead`, `Metric` and section titles take a `hint` key |
@@ -416,7 +398,7 @@ is not part of the shell: use a detail sheet.
 
 ### Detail sheets
 
-A record that needs more room than a row (a trace, an order, a file) opens in a right `Sheet` from the page that owns
+A record that needs more room than a row (an order, a file) opens in a right `Sheet` from the page that owns
 the data. It never takes layout space and the shell keeps no state for it. Built with composition
 (vercel-composition-patterns): compound parts over one `Sheet` instead of boolean props, and the open state and the
 width live inside the sheet, so a page needs no provider and the header no button.
@@ -436,21 +418,21 @@ sheet's own width (container query `@xl`), not the viewport's.
 
 ```tsx
 <Sheet>
-  <SheetTrigger render={<Button size="lg" />}>Open trace</SheetTrigger>
+  <SheetTrigger render={<Button size="lg" />}>Open record</SheetTrigger>
   <DetailSheetContent>
-    <TraceProvider>
+    <RecordProvider>
       <DetailSheetHeader>
         <DetailSheetClose />
         …
       </DetailSheetHeader>
       <DetailSheetSplit>
         <DetailSheetList>
-          <DetailSheetPaneHeader>Spans (8)</DetailSheetPaneHeader>
-          <DetailSheetPaneBody><SpanTree /></DetailSheetPaneBody>
+          <DetailSheetPaneHeader>Items (8)</DetailSheetPaneHeader>
+          <DetailSheetPaneBody><ItemTree /></DetailSheetPaneBody>
         </DetailSheetList>
-        <DetailSheetMain><SpanDetail /></DetailSheetMain>
+        <DetailSheetMain><ItemDetail /></DetailSheetMain>
       </DetailSheetSplit>
-    </TraceProvider>
+    </RecordProvider>
   </DetailSheetContent>
 </Sheet>
 ```
@@ -464,7 +446,7 @@ States: hover `bg-muted` (the ghost default), selected `data-current:bg-primary/
 `muted`, `accent` and `secondary` are the same grey, so never tell hover from selected with those.
 
 The selection, the open nodes and the `J` / `K` keys are shared by the tree, the detail pane and the stepper, so they live in a
-provider inside the sheet (`TraceProvider` + `useTrace`), not in the shell. It mounts with the sheet and goes with it.
+provider inside the sheet (`RecordProvider` + `useRecord`), not in the shell. It mounts with the sheet and goes with it.
 Other shadcn parts for similar jobs: `Accordion` (flat expandable list), `SidebarMenuSub` (navigation only), `Tabs`
 (peer views of one record).
 
@@ -483,9 +465,12 @@ the width on release. In the same spirit here:
 
 Rules: always render a `SheetTitle` (and a `SheetDescription`, `sr-only` if needed); never put `w-*` on `SheetContent`
 (use the sheet's own width); a client part that needs `window` (copy link) is its own component, because a server page
-cannot pass functions or icon components to a client one. The Overview page carries a working example in
-`app/(dashboard)/dashboard/_components/` (`trace-sheet.tsx` assembles `span-tree.tsx`, `span-detail.tsx`, `trace-nav.tsx`,
-`trace-context.tsx` and the mock `trace-data.ts`); delete it when you add real data.
+cannot pass functions or icon components to a client one. The parts live in `components/shared/detail-sheet.tsx`.
+<!-- demo:start -->
+The Overview page carries a working example in `app/(dashboard)/dashboard/_components/` (`trace-sheet.tsx` assembles
+`span-tree.tsx`, `span-detail.tsx`, `trace-nav.tsx`, `trace-context.tsx` and the mock `trace-data.ts`); `pnpm clean:start`
+removes it.
+<!-- demo:end -->
 
 ---
 

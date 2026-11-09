@@ -28,9 +28,11 @@ describe("proxy", () => {
 
   it.each([
     "/dashboard",
+    // demo:start
     "/dashboard/organizations",
     "/org/acme",
     "/project/web",
+    // demo:end
   ])("sends a signed-out visitor from %s to sign-in", async (path) => {
     const res = await run(path)
     expect(res.status).toBe(307)

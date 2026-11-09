@@ -19,7 +19,8 @@ All principles derive from and link back to the Single Source of Truth in `docs/
 
 | Task / Intent | Solution Pattern | Quick Ref | Source of Truth (Docs) |
 | :--- | :--- | :--- | :--- |
-| **Add a feature / page / route** | Feature slice in `features/<name>` + compose in `app/` | [project-structure.md](references/project-structure.md) | [project-structure.md](../../../docs/project-structure.md) |
+| **Add a feature / page / route** | Follow the playbook: schemas → `server.ts` → `queries.ts` → `actions.ts` → components → route + nav → tests | [project-structure.md](references/project-structure.md) | [adding-a-feature.md](../../../docs/adding-a-feature.md), [project-structure.md](../../../docs/project-structure.md) |
+| **Scoped sidebar menu / breadcrumb / gate layout** | `NavScope` in `config/navigation.ts` + `breadcrumbTrail` + gate next to `children` | [project-structure.md](references/project-structure.md) | [routing-and-layouts.md §6.4](../../../docs/routing-and-layouts.md#64-scoped-areas-and-the-breadcrumb) |
 | **Read data for a page** | Server Component $\rightarrow$ `queries.ts` $\rightarrow$ `server.ts` | [reads.md](references/reads.md) | [data-fetching.md §4](../../../docs/data-fetching.md#4-reading-on-the-server) |
 | **Pass data to Client Component** | Pass un-awaited Promise $\rightarrow$ React 19 `use(promise)` | [reads.md](references/reads.md) | [data-fetching.md §7.1](../../../docs/data-fetching.md#71-promise--use) |
 | **Cache shared data** | `"use cache"` + `cacheLife("hours")` + `cacheTag()` | [caching.md](references/caching.md) | [data-fetching.md §5.1](../../../docs/data-fetching.md#51-use-cache) |
@@ -54,6 +55,7 @@ All principles derive from and link back to the Single Source of Truth in `docs/
 ## 3. Source of Truth Documentation Index
 
 When facing complex edge cases, always consult the full architecture docs:
+- [docs/adding-a-feature.md](../../../docs/adding-a-feature.md) — The ordered checklist and file shapes for a new feature.
 - [docs/project-structure.md](../../../docs/project-structure.md) — Feature-based architecture, ESLint boundaries, and monorepo package extraction.
 - [docs/routing-and-layouts.md](../../../docs/routing-and-layouts.md) — Parallel Routes, Intercepting Routes, Route Groups, and Layout/Template lifecycle.
 - [docs/data-fetching.md](../../../docs/data-fetching.md) — Core reading, caching, streaming, and mutation model.

@@ -30,8 +30,10 @@ const DASHBOARD_PATHS = [
   "sign-in",
   "sign-up",
   "dashboard",
+  // demo:start
   "org",
   "project",
+  // demo:end
   "auth",
   "api/auth",
 ] as const

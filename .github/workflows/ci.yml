@@ -22,8 +22,26 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run lint typecheck test --affected
+        # demo:start
         env:
           # Live Neon test (apps/dashboard workspace.neon.test.ts): a disposable branch URL; empty skips it.
           NEON_TEST_DATABASE_URL: ${{ secrets.NEON_TEST_DATABASE_URL }}
+        # demo:end
       # Separate step: `next build` and `tsc` both rewrite apps/*/.next/types, so running them together flakes.
       - run: pnpm turbo run build --affected
+  # demo:start
+  # The clean script and its overlay files are full copies of shared files: this proves the empty base still builds.
+  clean-start:
+    runs-on: ubuntu-latest
+    env:
+      AUTH_PROVIDER: neon-auth
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify:clean
+  # demo:end

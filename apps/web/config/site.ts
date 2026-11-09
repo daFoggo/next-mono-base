@@ -12,4 +12,4 @@ export function docsHref(file: string): string {
   return `${REPO_URL}/blob/main/docs/${file}`
 }
 
-export const SIGN_IN_HREF = dashboardHref("/sign-in")
+export const DASHBOARD_HREF = dashboardHref("/dashboard")

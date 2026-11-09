@@ -39,9 +39,11 @@ describe("multi-zone rewrites (landing + dashboard on one domain)", () => {
     ["/sign-in", `${ORIGIN}/sign-in`],
     ["/sign-up", `${ORIGIN}/sign-up`],
     ["/dashboard", `${ORIGIN}/dashboard`],
+    // demo:start
     ["/dashboard/organizations", `${ORIGIN}/dashboard/organizations`],
     ["/org/acme/settings", `${ORIGIN}/org/acme/settings`],
     ["/project/web", `${ORIGIN}/project/web`],
+    // demo:end
     ["/auth/callback", `${ORIGIN}/auth/callback`],
     ["/api/auth/get-session", `${ORIGIN}/api/auth/get-session`],
     // segment prefetches (partialPrefetching) must reach the zone too
@@ -75,8 +77,10 @@ describe("multi-zone rewrites (landing + dashboard on one domain)", () => {
       expect(csp.test(path), path).toBe(true)
     }
     for (const path of [
+      // demo:start
       "/org",
       "/org/acme",
+      // demo:end
       "/dashboard",
       "/sign-in",
       "/sign-in.segments/a",

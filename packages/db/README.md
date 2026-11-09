@@ -5,7 +5,7 @@ Data layer shared by the apps. Two independent halves; `AUTH_PROVIDER` decides w
 
 | Half | Exports | Used by |
 | :--- | :--- | :--- |
-| Neon Postgres (Drizzle) | `@workspace/db/neon` (`getDb()`), `@workspace/db/neon/schema` (`orgs`, `projects`) | `apps/dashboard/features/workspace/server.neon.ts` |
+| Neon Postgres (Drizzle) | `@workspace/db/neon` (`getDb()`), `@workspace/db/neon/schema` (your app tables<!-- demo:start -->: the sample `orgs` and `projects`<!-- demo:end -->) | feature `server.ts` files on the Neon stack |
 | Supabase foundation | `/env`, `/server` (`createDataClient`, `unwrap`), `/public` (`createPublicClient`), `/types`, `/errors` | `@workspace/auth` (`/env`), `apps/dashboard` (`/errors`); `/server`, `/public` are kept for a project that starts on Supabase |
 
 ## Neon (`neon/`, `src/neon/`)

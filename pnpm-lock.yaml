@@ -300,6 +300,9 @@ importers:
       '@tabler/icons-react':
         specifier: ^3.49.0
         version: 3.49.0(react@19.3.0)
+      '@yusufceng1z/ding-react':
+        specifier: ^0.0.2
+        version: 0.0.2(react@19.3.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -324,6 +327,9 @@ importers:
       motion:
         specifier: ^14.4.0
         version: 14.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -2534,6 +2540,16 @@ packages:
 
   '@vitest/spy@5.0.4':
     resolution: {integrity: sha512-MZKk/gSkm2q+ICobMxCpH1mA+cCAWm8WV7UhxlqGjq/sJ3AGc1BqFOs5CRVXxH78wQtme9q/NAAgBquj4AcyMw==}
+
+  '@yusufceng1z/ding-react@0.0.2':
+    resolution: {integrity: sha512-lwSeNwxTifI9UZu5SOQgZU3brU/NuAKPsWyhHyn7HmvgHO6d2jysj7Kv592XT42OIxQ/JMtNuheWshAQJSJVjA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: '>=18'
+
+  '@yusufceng1z/ding@0.0.2':
+    resolution: {integrity: sha512-amncS7tqeC8zHx+Xz0lCOyMGr3Tt7D7l0b9xUkBqjbtW1m0XqRLkG+pFGjFDYNRqx6BRucOzVxG989xoObXkWQ==}
+    engines: {node: '>=18'}
 
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
@@ -6909,6 +6925,13 @@ snapshots:
       vite: 8.3.4(@types/node@20.19.43)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
 
   '@vitest/spy@5.0.4': {}
+
+  '@yusufceng1z/ding-react@0.0.2(react@19.3.0)':
+    dependencies:
+      '@yusufceng1z/ding': 0.0.2
+      react: 19.3.0
+
+  '@yusufceng1z/ding@0.0.2': {}
 
   accepts@2.0.0:
     dependencies:

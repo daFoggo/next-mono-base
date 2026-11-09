@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
 
-import { PixelTile, type SpriteName } from "@workspace/ui-patterns/pixel-art"
 import { PageHead } from "@/components/layout/page-head"
 import { requirePermission } from "@/lib/dal"
 
@@ -13,24 +12,20 @@ export const metadata: Metadata = { title: "Overview" }
 const DOCS = "https://github.com/daFoggo/next-mono-base/blob/main/docs"
 
 const TILES: readonly {
-  sprite: SpriteName
   title: string
   href: string
   external?: boolean
 }[] = [
   {
-    sprite: "building",
     title: "Create an organization",
     href: "/dashboard/organizations",
   },
   {
-    sprite: "plug",
     title: "Switch the sign-in stack",
     href: `${DOCS}/providers.md`,
     external: true,
   },
   {
-    sprite: "palette",
     title: "Change the look",
     href: `${DOCS}/design-system.md`,
     external: true,
@@ -62,8 +57,7 @@ export default function DashboardPage() {
           {TILES.map((tile) => {
             const body = (
               <>
-                <PixelTile name={tile.sprite} />
-                <span className="p-4 text-sm font-medium">{tile.title}</span>
+                <span className="p-6 text-sm font-medium">{tile.title}</span>
               </>
             )
             const cls =

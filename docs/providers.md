@@ -16,25 +16,31 @@ components and the DAL do not know which one is active.
 `AUTH_PROVIDER` picks the whole stack, identity and data together. There is no separate data switch, so a demo cookie can never
 reach a real database and an identity can never meet another app's data. `neon-auth` uses Neon Postgres (`lib/env.ts` refuses to
 start at runtime without `DATABASE_URL`; `next build` does not need it); `demo` uses the bounded in-memory store. `supabase`,
+Feature `server.ts` files select their implementation from `AUTH_PROVIDER` (one `server.<stack>.ts` per stack, type-checked
+against the primary one; see [adding-a-feature.md](adding-a-feature.md)).
+<!-- demo:start -->
 `keycloak` and `fastapi-oauth` have no data path in the dashboard yet: they fall back to the in-memory store and log a warning on
-start (data is lost on restart) until you write theirs (§2.2, §8). Feature `server.ts` files select the implementation from
-`AUTH_PROVIDER` (`server.mock.ts` / `server.neon.ts`, the latter type-checked against the former). Today only `features/workspace`
-has a Neon path.
+start (data is lost on restart) until you write theirs (§2.2, §8). Today only `features/workspace` (`server.mock.ts` /
+`server.neon.ts`) has a Neon path.
+<!-- demo:end -->
 
 Neon (Postgres) with Drizzle, in `packages/db`:
 - `@workspace/db/neon` (`getDb()`, `node-postgres` pool over the pooled `DATABASE_URL`) and `@workspace/db/neon/schema`
-  (app tables `orgs` / `projects` in `public`; Neon Auth keeps its users in the `neon_auth` schema of the same branch).
+  (your app tables in `public`; Neon Auth keeps its users in the `neon_auth` schema of the same branch).
+<!-- demo:start -->
+  The sample tables are `orgs` and `projects`; `pnpm clean:start` drops them with a new migration.
+<!-- demo:end -->
 - Migrations: `packages/db/neon/migrations`, applied with `pnpm --filter @workspace/db neon:migrate` over the direct
   `DATABASE_URL_UNPOOLED` (reads `apps/dashboard/.env.local`; fill it with `pnpm neon:env`). Change the schema in `schema.ts`, then
   `pnpm --filter @workspace/db neon:generate`. Never edit an applied migration.
-- Tenant boundary: every query filters by the signed-in `userId` (`ownerId`); another user's org looks missing.
+- Tenant boundary: every query filters by the signed-in `userId` (`ownerId`); another user's rows look missing.
 - Provisioning: `neon.ts` (services), `.neon` (project link, git-ignored), `.mcp.json` (Neon MCP, OAuth), skills `neon`
   and `neon-postgres`.
 - `AUTH_PROVIDER=neon-auth`: Neon Auth (managed Better Auth, `@neon/auth`). `packages/auth/src/neon-auth/` implements
   `AuthProvider`; `/api/auth/[...path]` proxies to Neon's server; the signed session cookie is kept by the SDK. Env:
   `NEON_AUTH_BASE_URL` (from `neon deploy`) and your own `NEON_AUTH_COOKIE_SECRET`. The proxy check is optimistic (cookie
   presence); the DAL validates. `role` comes from Neon's user `role` (`user` maps to `customer`). Users live in the
-  `neon_auth` schema of the same branch, so `ownerId` in `orgs` is that user id. Not wired: Google (needs provider setup
+  `neon_auth` schema of the same branch, so an owner column (`ownerId`) holds that user id. Not wired: Google (needs provider setup
   in the Neon console), email verification, organizations.
 
 **Current state.** A project built on the base can run on `supabase` (hosted project, foundation schema only; the dashboard

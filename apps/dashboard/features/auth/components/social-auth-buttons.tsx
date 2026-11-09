@@ -26,21 +26,17 @@ export function SocialAuthButtons({
 
   const handleKeycloakClick = () => {
     if (!isKeycloakActive) {
-      toast.add({
-        title: "Provider not configured",
+      toast.error("Provider not configured", {
         description: `Keycloak SSO is not enabled on this deployment (active: ${activeProvider}).`,
-        type: "error",
       })
     }
   }
 
   const handleGoogleClick = () => {
     if (!isGoogleActive) {
-      toast.add({
-        title: "Provider not configured",
+      toast.error("Provider not configured", {
         description:
           "Google login is not enabled on this deployment. Please enable Google provider in config.",
-        type: "error",
       })
     }
   }

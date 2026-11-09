@@ -29,8 +29,7 @@ section when a case is not covered here.
    (`content-visibility`, `transition`, etc.) must snap to the Tailwind scale and color tokens too; see
 7. Never edit a shadcn or Animate UI component file to restyle it: change a token in `globals.css` or pick a `variant`/`size`.
    That keeps `shadcn add --diff` and Animate UI updates conflict-free (docs/design-system.md, Updating shadcn and Animate UI).
-8. The brand accent is `chart-1` (orange). Pixel art is `PixelArt` / `PixelTile` from `@workspace/ui-patterns/pixel-art`; the
-   sprites are our own, colored by tokens. Fonts load once in `@workspace/ui/lib/fonts`; do not load fonts per app.
+8. The brand accent is `chart-1` (orange). Fonts load once in `@workspace/ui/lib/fonts`; do not load fonts per app.
 
 ## Spacing tier lookup
 
@@ -94,14 +93,14 @@ anchors use `scroll-mt-24`; the logo scrolls to `0`.
 - Logo lives in the sidebar header; below `md` (or with the sidebar collapsed) it shows in the main header next to the `SidebarTrigger`.
 - Sidebar body = labelled sections (`config/navigation.ts`), named by content (`Workspace`, `Settings`), never "Tree".
   Header = `SidebarTrigger` + path breadcrumb (no project name) + `ThemeToggle`; no header state, no bare-key shortcuts.
-  The menu follows the URL: `NAV_SCOPES` holds one `NavScope` per prefix (global, `/org/<slug>`, `/project/<ref>`); scoped breadcrumbs start with organization / project menus (`Crumb.options`). New scope = one entry, no component edits.
+  The menu follows the URL: `NAV_SCOPES` holds one `NavScope` per prefix (the global one plus one per `/<prefix>/<id>`); scoped breadcrumbs start with a menu of siblings (`Crumb.options`). New scope = one entry, no component edits.
   The sidebar collapses to a 48px icon rail (doc § Icon rail): every `NavLink` needs an `icon` name; icons are functional, never decorative.
 - Never edit shadcn files in `packages/ui`; compose in `apps/dashboard/components/layout/`.
 - Each section is a plain menu: `text-sm` rows with an icon per link, `font-medium text-foreground` (no fill) for the current page,
   max two levels, counts `ml-auto text-xs tabular-nums`. No ASCII tree marks, no tiny mono uppercase labels.
 - Detail sheet (doc § Detail sheets): `<Sheet>` + `DetailSheetContent` (fits content, drag the left edge to resize) with three header
   tiers (opens at 42rem, resized by dragging its left edge, width remembered): `DetailSheetHeader` (close, title, copy, Previous/Next as a `ButtonGroup`), `DetailSheetPaneHeader` per pane, then
-  `DetailSheetPaneBody`. Open state, width and selection stay inside the sheet (`TraceProvider`); compound parts, no boolean
+  `DetailSheetPaneBody`. Open state, width and selection stay inside the sheet (`RecordProvider`); compound parts, no boolean
   props (vercel-composition-patterns). Trees follow shadcn File Tree: `Collapsible` per node + ghost `Button` rows; hover
   `bg-muted`, selected `bg-primary/10`, chevron `aria-expanded:bg-transparent`. Never animate a size (width, max-width): slide with transform/opacity only; no `backdrop-filter`; memoize provider values.
   List rows elsewhere: selected `bg-primary text-primary-foreground`.

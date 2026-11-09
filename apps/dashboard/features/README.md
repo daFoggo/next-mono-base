@@ -22,9 +22,13 @@ Create only the files a feature needs.
 
 - **`features/auth`**: Complete vertical slice implementation demonstrating authentication actions (`signInAction`, `signUpAction`, `signOutAction`), schema validation and session handling. Its forms in `components/` hold no logic: each takes the Server Action as an `action` prop. Its forms live in `packages/auth-ui` and receive these actions as props.
 
+<!-- demo:start -->
 - **`features/workspace`**: organizations and projects (the `/org/<slug>` and `/project/<ref>` scopes). A read + write slice
   over a mock `server.ts`: `queries.ts` with a per-user `"use cache: private"` read, `actions.ts` creating records with
   `updateTag` + `redirect`, create dialogs using `useActionState`, and tests of the mock backend. Swap `server.ts` to go live.
+<!-- demo:end -->
+
+New feature: follow [docs/adding-a-feature.md](../../../docs/adding-a-feature.md) (file order, code shapes, checklist).
 
 ## Rules (enforced in `eslint.config.js`)
 

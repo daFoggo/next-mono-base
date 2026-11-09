@@ -24,6 +24,7 @@ The docs in `docs/` are the single source of truth for `apps/dashboard` (the das
 
 | Working on | Read |
 | :--- | :--- |
+| Adding a feature end to end (file order, shapes, checklist) | `docs/adding-a-feature.md` |
 | Folder layout, feature slices, ESLint boundaries, extracting `packages/` | `docs/project-structure.md` (summary: `apps/dashboard/features/README.md`) |
 | Data fetching, caching, mutations, Server Actions | `docs/data-fetching.md` |
 | Routes, layouts, parallel and intercepting routes | `docs/routing-and-layouts.md` |

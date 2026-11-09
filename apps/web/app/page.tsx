@@ -1,14 +1,13 @@
+import { CommandsSection } from "@/components/sections/commands-section"
+import { DocsSection } from "@/components/sections/docs-section"
+import { Footer } from "@/components/sections/footer"
 import { Header } from "@/components/sections/header"
 import { HeroSection } from "@/components/sections/hero-section"
-import { StripSection } from "@/components/sections/strip-section"
-import { FeaturesSection } from "@/components/sections/features-section"
-import { WorkSection } from "@/components/sections/work-section"
-import { DeeperSection } from "@/components/sections/deeper-section"
-import { Footer } from "@/components/sections/footer"
+import { OverviewSection } from "@/components/sections/overview-section"
 
 /**
  * Landing page: full-bleed bands cut by hairlines, with two vertical rails along the content edge. Colors come from the
- * theme tokens; the pixel art is our own (docs/design-system.md, Pixel art).
+ * theme tokens only (docs/design-system.md, Landing layout).
  */
 export default function HomePage() {
   return (
@@ -17,10 +16,9 @@ export default function HomePage() {
       <div className="relative isolate">
         <main>
           <HeroSection />
-          <StripSection />
-          <FeaturesSection />
-          <WorkSection />
-          <DeeperSection />
+          <CommandsSection />
+          <OverviewSection />
+          <DocsSection />
         </main>
         <Footer />
         <div

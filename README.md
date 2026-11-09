@@ -7,7 +7,7 @@ Next.js 16.4 + Turborepo + pnpm monorepo base with shadcn/ui (`base-nova` + Anim
 ```
 apps/
   web/                    Next.js landing page (runnable, public)
-  dashboard/                 Next.js dashboard: sign-in, organizations, projects (runnable)
+  dashboard/                 Next.js dashboard: sign-in and the app shell (runnable)
 packages/
   ui/                     @workspace/ui — shared shadcn/ui components, styles
   auth/                   @workspace/auth — Neon Auth / Supabase / Keycloak / FastAPI OAuth2 providers behind AUTH_PROVIDER

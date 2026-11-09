@@ -281,31 +281,81 @@ export default function GlobalError({
 - `unauthorized()` $\rightarrow$ triggers `unauthorized.tsx` (HTTP 401).
 - `forbidden()` $\rightarrow$ triggers `forbidden.tsx` (HTTP 403).
 
-### 6.1 Scoped areas: `/org/<slug>` and `/project/<ref>`
+### 6.4 Scoped areas and the breadcrumb
 
-The dashboard has Supabase-style scopes. `config/routes.ts` lists `/org` and `/project` in `PROTECTED_PREFIXES`, and each
-scope has one entry in `NAV_SCOPES` (`config/navigation.ts`) that drives both the sidebar menu and the breadcrumb:
+An area with its own sidebar menu and breadcrumb (`/<prefix>/<id>/…`, for example `/customer/<id>`) is a
+**scope**: one entry in `NAV_SCOPES` (`config/navigation.ts`) that drives both the sidebar and the breadcrumb. Plain data, so a
+Server Component can filter it by role and hand it to the client:
 
+```ts
+export type NavScope = {
+  id: string
+  prefix?: string // owns every path under `<prefix>/<param value>`; the scope without one is the fallback
+  param?: string // name of the URL segment after `prefix`, used as `:param` in hrefs
+  sections: NavSection[] // hrefs may hold `:param` placeholders
+}
 ```
-app/(dashboard)/
-  dashboard/                  global menu
-  org/[orgSlug]/layout.tsx    gate: requirePermission + notFound() for an unknown slug
-  org/[orgSlug]/{page,projects,settings}
-  project/[projectRef]/layout.tsx
-  project/[projectRef]/{page,database,settings}
+
+Adding a scope is four steps:
+
+1. Add its prefix to `PROTECTED_PREFIXES` in `config/routes.ts`.
+2. Add one `NavScope` to `NAV_SCOPES`: `{ id: "customer", prefix: "/customer", param: "customerId", sections: [...] }`.
+3. Create the routes and a gate layout (below) under `app/(dashboard)/customer/[customerId]/`.
+4. If the breadcrumb should show a name instead of the raw id, extend `breadcrumbTrail` (below).
+
+**Sidebar.** `SessionNav` (server) filters every scope with `filterNav(scopes, can)`; the client `ScopedNav` picks the scope with
+`resolveScope(scopes, usePathname())` and renders `NavTree`, which knows nothing about scopes. `fillHref` replaces `:param`.
+
+**Breadcrumb.** `breadcrumbTrail(pathname, scopes)` returns `Crumb[]` (`label`, optional `icon`, `href`, `options`). Pages read
+like the path (`dashboard / invoices`); the last crumb is the page, named by the matching nav link. To show a name instead of an
+id (`Acme` instead of `42`), add an argument that carries the names and build that scope's crumbs from it; a crumb with `options`
+renders as a `DropdownMenu` (`CrumbMenu`) that jumps to a sibling (another customer). The server loads only the names for the
+ids in the URL and passes them down, so the client never receives the full dataset:
+
+```tsx
+// app/(dashboard)/_components/crumbs.tsx (Server Component, streamed in <Suspense fallback={null}>)
+export async function DashboardCrumbs() {
+  await requirePermission("account:view")
+  const customers = await getCustomerNames() // from a cached query shared with the pages
+  return <DashboardBreadcrumb scopes={NAV_SCOPES} names={{ customers }} />
+}
 ```
 
-The scope layout renders a gate next to `children`, not around them: the gate awaits `params` inside `<Suspense>` and
-calls `notFound()` for an unknown id, so the existence check runs in parallel with the page's reads instead of delaying
-them (data-fetching.md §4.2). It does not authorize: `queries.ts` calls `requirePermission` next to the data, and every
-read sits in a `<Suspense>` with a sized skeleton (`components/skeletons.tsx`), never `fallback={null}`. Unknown ids
-render `not-found.tsx` (the status is 200 because the shell has already streamed). Names for the
-breadcrumb come from the `features/workspace` slice, a full reference implementation with a mock backend:
-`schemas.ts` (Zod DTOs and form input), `server.ts` (the only backend calls; an in-memory mock today, so replace its bodies
-with `apiFetch` or `createDataClient` and keep the signatures), `queries.ts` (`getWorkspace` as `"use cache: private"`
-tagged `workspace:<userId>`, plus `getOrg` / `getProject` / `getProjectsOf` derived from it), `actions.ts`
-(`createOrgAction`, `createProjectAction`: authorize, Zod, write, `updateTag`, `redirect`) and `components/` (cards, create
-dialogs). Pages call `queries.ts` only.
+**Gate layout.** The scope layout renders a gate **next to** `children`, not around them. The gate awaits `params` inside
+`<Suspense>` and calls `notFound()` for an unknown id, so the existence check runs in parallel with the page's reads instead of
+delaying them ([data-fetching.md](data-fetching.md) §4.2):
+
+```tsx
+// app/(dashboard)/customer/[customerId]/layout.tsx
+async function CustomerGate({ params }: { params: Promise<{ customerId: string }> }) {
+  const { customerId } = await params
+  if (!(await getCustomer(customerId))) notFound()
+  return null
+}
+
+export default function CustomerLayout({ params, children }: Props) {
+  return (
+    <>
+      <Suspense fallback={null}>
+        <CustomerGate params={params} />
+      </Suspense>
+      {children}
+    </>
+  )
+}
+```
+
+The gate does not authorize: `queries.ts` calls `requirePermission` next to the data, and every read sits in a `<Suspense>` with
+a sized skeleton, never `fallback={null}` for content. Unknown ids render `not-found.tsx` (status 200, because the shell has
+already streamed). Menu and header chrome: [design-system.md](design-system.md) §8. Feature slice for the data:
+[adding-a-feature.md](adding-a-feature.md).
+
+<!-- demo:start -->
+In this base the scopes are `/org/<slug>` (`org/[orgSlug]/{page,projects,settings}`) and `/project/<ref>`
+(`project/[projectRef]/{page,database,settings}`). Their names come from `features/workspace`, a full reference slice over a mock
+backend (`schemas.ts`, `server.ts`, `queries.ts` with `getWorkspace` as `"use cache: private"`, `actions.ts`, `components/`).
+`pnpm clean:start` removes all of it; the pattern above stays.
+<!-- demo:end -->
 
 ---
 
@@ -443,7 +493,7 @@ export default async function Image({
 
 ## One domain for landing and dashboard (multi-zone)
 
-`apps/web` owns the domain and proxies the dashboard paths (`/sign-in`, `/sign-up`, `/dashboard`, `/org`, `/project`, `/auth`, `/api/auth`) to `apps/dashboard` with `rewrites` in `apps/web/next.config.ts`. The dashboard sets `assetPrefix: "/dashboard-static"` so its `/_next` assets do not collide with the landing page, and `serverActions.allowedOrigins` so Server Actions accept the landing domain as `Origin`.
+`apps/web` owns the domain and proxies the dashboard paths (`/sign-in`, `/sign-up`, `/dashboard`,<!-- demo:start --> `/org`, `/project`,<!-- demo:end --> `/auth`, `/api/auth`, and the prefix of every scope you add) to `apps/dashboard` with `rewrites` in `apps/web/next.config.ts`. The dashboard sets `assetPrefix: "/dashboard-static"` so its `/_next` assets do not collide with the landing page, and `serverActions.allowedOrigins` so Server Actions accept the landing domain as `Origin`.
 
 Deploy as two Vercel projects (free on Hobby): the dashboard project (Root Directory `apps/dashboard`) keeps its `*.vercel.app` address, and only the web project gets the public domain. Set:
 

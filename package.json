@@ -13,7 +13,10 @@
     "check": "turbo run lint typecheck test",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
-    "neon:env": "neon env pull --services postgres,auth --file apps/dashboard/.env.local"
+    "neon:env": "neon env pull --services postgres,auth --file apps/dashboard/.env.local",
+    "clean:start": "node scripts/clean-start.mjs",
+    "clean:start:check": "node scripts/clean-start.mjs --dry-run",
+    "verify:clean": "node scripts/verify-clean.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",

@@ -1,21 +1,17 @@
 import type { ComponentType, SVGProps } from "react"
 import {
   IconBetterAuth,
-  IconClaude,
   IconDocker,
   IconFastapi,
   IconKeycloak,
   IconNextjs,
   IconPnpm,
   IconPostgresql,
-  IconRedis,
   IconSupabase,
   IconTailwind,
-  IconTanstack,
   IconTurborepo,
   IconVercel,
   IconZod,
-  IconZustand,
 } from "./stack-icons"
 
 export interface StackItem {
@@ -26,40 +22,26 @@ export interface StackItem {
 }
 
 /**
- * 16 primary technologies comprising the next-mono-base stack,
- * ordered logically across 5 cohesive architectural tiers:
- * 1. Monorepo & browser runtime: Next.js, TanStack, Turborepo, pnpm
- * 2. Frontend & state: Tailwind CSS, Zustand, Zod
- * 3. Tri-stack auth seam: Keycloak, Better Auth, Supabase
- * 4. Backend & database: PostgreSQL, FastAPI, Docker
- * 5. Platform, cache & AI: Vercel, Redis, Claude AI
+ * The technologies this repo actually depends on or documents a stack for, in 12 cells (4 x 3):
+ * 1. Monorepo & runtime: Next.js, Turborepo, pnpm
+ * 2. Frontend & contracts: Tailwind CSS, Zod
+ * 3. Sign-in stacks (`AUTH_PROVIDER`): Better Auth (Neon Auth), Keycloak, Supabase
+ * 4. Backend & database: PostgreSQL (Neon), FastAPI, Docker (the Keycloak and FastAPI dev servers)
+ * Vercel closes the list: the multi-zone deploy in docs/routing-and-layouts.md targets it.
  */
 export const STACK_ITEMS: readonly StackItem[] = [
-  // Tier 1: Foundation, Monorepo & Browser Runtime
   { name: "Next.js", category: "foundation", Icon: IconNextjs },
-  { name: "TanStack", category: "frontend", Icon: IconTanstack },
   { name: "Turborepo", category: "foundation", Icon: IconTurborepo },
   { name: "pnpm", category: "foundation", Icon: IconPnpm },
-
-  // Tier 2: Frontend, State & Contracts
   { name: "Tailwind CSS", category: "frontend", Icon: IconTailwind },
-  { name: "Zustand", category: "frontend", Icon: IconZustand },
   { name: "Zod", category: "frontend", Icon: IconZod },
-
-  // Tier 3: Tri-Stack Auth Seam
-  { name: "Keycloak", category: "auth", Icon: IconKeycloak },
   { name: "Better Auth", category: "auth", Icon: IconBetterAuth },
+  { name: "Keycloak", category: "auth", Icon: IconKeycloak },
   { name: "Supabase", category: "auth", Icon: IconSupabase },
-
-  // Tier 4: Backend & Database
   { name: "PostgreSQL", category: "backend", Icon: IconPostgresql },
   { name: "FastAPI", category: "backend", Icon: IconFastapi },
   { name: "Docker", category: "backend", Icon: IconDocker },
-
-  // Tier 5: Platform, Cache & AI Workflow
   { name: "Vercel", category: "platform", Icon: IconVercel },
-  { name: "Redis", category: "platform", Icon: IconRedis },
-  { name: "Claude AI", category: "platform", Icon: IconClaude },
 ] as const
 
 export interface StackGridProps {
@@ -70,7 +52,7 @@ export interface StackGridProps {
 
 /**
  * Clean hairline-bordered tech stack grid matching the reference bento design:
- * - 4 columns of 4 rows on sm+ viewports (16 items total; 2x8 on mobile)
+ * - 4 columns of 3 rows on sm+ viewports (12 items total; 2x6 on mobile)
  * - Centered icons + brand names
  * - Subtle hover highlighting
  * - Full light/dark mode support
